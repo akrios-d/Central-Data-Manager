@@ -127,6 +127,12 @@ export class DevopsBoardsComponent implements OnInit {
       conditions.push(`[System.IterationPath] = @CurrentIteration`);
     }
 
+    const hiddenStates = this.columnConfigs().filter(c => !c.visible).map(c => c.state);
+    if (hiddenStates.length) {
+      const list = hiddenStates.map(s => `'${s}'`).join(', ');
+      conditions.push(`[System.State] NOT IN (${list})`);
+    }
+
     const types = [...this.filterTypes()];
     if (types.length) {
       const list = types.map(t => `'${t}'`).join(', ');
