@@ -284,12 +284,9 @@ export class DevopsBoardsComponent implements OnInit {
 
   resetColConfig(): void {
     localStorage.removeItem(this.colConfigKey);
-    const allStates = this.columnConfigs().map(c => c.state);
-    const ordered = [
-      ...PREFERRED_STATES.filter(s => allStates.includes(s)),
-      ...allStates.filter(s => !PREFERRED_STATES.includes(s)),
-    ];
-    this.columnConfigs.set(ordered.map(state => ({ state, visible: true })));
+    this.columnConfigs.set([]);
+    this.showColManager.set(false);
+    this.loadBoard();
   }
 
   openItem(wi: DevOpsWorkItem): void {

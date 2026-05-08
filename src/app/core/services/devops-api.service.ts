@@ -23,6 +23,7 @@ export class DevOpsApiService {
     return new HttpHeaders({
       Authorization: `Basic ${encoded}`,
       'Content-Type': 'application/json-patch+json',
+      'X-HTTP-Method-Override': 'PATCH',
     });
   }
 
@@ -98,7 +99,7 @@ export class DevOpsApiService {
   }
 
   updateWorkItemState(project: string, id: number, state: string): Observable<DevOpsWorkItem> {
-    return this.http.patch<DevOpsWorkItem>(
+    return this.http.post<DevOpsWorkItem>(
       `${this.base(project)}/wit/workitems/${id}?api-version=7.1`,
       [{ op: 'add', path: '/fields/System.State', value: state }],
       { headers: this.patchHeaders }
