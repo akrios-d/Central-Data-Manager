@@ -1,6 +1,6 @@
 <div class="page-header">
   <h1>Dashboard</h1>
-  <p>Overview of your latest runs and work items.</p>
+  <p>Overview of your pipelines and work items.</p>
 </div>
 
 @if (hasAdo()) {
@@ -13,23 +13,38 @@
 <div class="dashboard-grid">
   @if (hasGh()) {
     <section class="card">
-      <h2 class="section-title">Recent GitHub Runs</h2>
+      <div class="section-header">
+        <h2 class="section-title">Pipelines</h2>
+        @if (!ghLoading()) {
+          <span class="text-muted text-sm">{{ filteredPipelines().length }} / {{ pipelines().length }}</span>
+        }
+      </div>
+
+      <input class="form-control filter-input" type="text"
+        placeholder="Search pipeline or repo…"
+        [ngModel]="pipelineSearch()" (ngModelChange)="pipelineSearch.set($event)" />
+
       @if (ghLoading()) {
-        <div class="empty-state"><div class="spinner"></div></div>
+        <div class="empty-state mt-2"><div class="spinner"></div></div>
       } @else if (ghError()) {
-        <p class="text-muted text-sm">{{ ghError() }}</p>
-      } @else if (runs().length === 0) {
-        <div class="empty-state"><p>No recent runs found.</p></div>
+        <p class="text-muted text-sm mt-2">{{ ghError() }}</p>
+      } @else if (filteredPipelines().length === 0) {
+        <div class="empty-state mt-2"><p>No pipelines match.</p></div>
       } @else {
-        <ul class="run-list">
-          @for (run of runs(); track run.id) {
-            <li class="run-item">
-              <span class="run-dot" [class]="runClass(run)"></span>
-              <div class="run-info">
-                <span class="run-name">{{ run.name }}</span>
-                <span class="run-repo text-muted text-sm">{{ run.repository.name }} · {{ run.head_branch }}</span>
+        <ul class="pipeline-list">
+          @for (p of filteredPipelines(); track p.workflowId + p.repoFullName) {
+            <li class="pipeline-item">
+              <span class="run-dot" [class]="runClass(p.lastRun)"></span>
+              <div class="pipeline-info">
+                <span class="pipeline-name">{{ p.name }}</span>
+                <span class="pipeline-meta text-muted text-sm">
+                  {{ p.repo }} · {{ p.lastRun.head_branch }} · {{ p.lastRun.created_at | date:'dd MMM HH:mm' }}
+                </span>
               </div>
-              <span class="run-time text-muted text-sm">{{ run.created_at | date:'dd MMM HH:mm' }}</span>
+              <span class="badge"
+                [class]="'badge-' + (runClass(p.lastRun) === 'success' ? 'success' : runClass(p.lastRun) === 'failure' ? 'danger' : runClass(p.lastRun) === 'in_progress' ? 'info' : 'muted')">
+                {{ runClass(p.lastRun).replace('_', ' ') }}
+              </span>
             </li>
           }
         </ul>

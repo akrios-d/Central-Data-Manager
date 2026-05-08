@@ -39,6 +39,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'pipeline-runner',
+    canActivate: [tokenGuard],
+    loadComponent: () =>
+      import('./features/pipeline-runner/pipeline-runner.component').then(
+        (m) => m.PipelineRunnerComponent
+      ),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./features/settings/settings.component').then((m) => m.SettingsComponent),

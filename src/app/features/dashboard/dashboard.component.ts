@@ -1,15 +1,24 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { catchError, of, switchMap } from 'rxjs';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { catchError, of, switchMap, forkJoin } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { TokenService } from '../../core/services/token.service';
 import { GitHubApiService, GhRun } from '../../core/services/github-api.service';
 import { DevOpsApiService, DevOpsWorkItem } from '../../core/services/devops-api.service';
 import { SprintWidgetComponent } from '../../shared/components/sprint-widget/sprint-widget.component';
 
+export interface Pipeline {
+  workflowId: number;
+  name: string;
+  repo: string;
+  repoFullName: string;
+  lastRun: GhRun;
+}
+
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, RouterLink, SprintWidgetComponent],
+  imports: [DatePipe, RouterLink, FormsModule, SprintWidgetComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -21,12 +30,22 @@ export class DashboardComponent implements OnInit {
   readonly hasGh  = this.tokens.hasGitHub;
   readonly hasAdo = this.tokens.hasDevOps;
 
-  runs          = signal<GhRun[]>([]);
-  workItems     = signal<DevOpsWorkItem[]>([]);
-  ghLoading     = signal(false);
-  adoLoading    = signal(false);
-  ghError       = signal<string | null>(null);
-  adoError      = signal<string | null>(null);
+  pipelines  = signal<Pipeline[]>([]);
+  workItems  = signal<DevOpsWorkItem[]>([]);
+  ghLoading  = signal(false);
+  adoLoading = signal(false);
+  ghError    = signal<string | null>(null);
+  adoError   = signal<string | null>(null);
+
+  pipelineSearch = signal('');
+
+  readonly filteredPipelines = computed(() => {
+    const q = this.pipelineSearch().toLowerCase().trim();
+    if (!q) return this.pipelines();
+    return this.pipelines().filter(
+      (p) => p.name.toLowerCase().includes(q) || p.repo.toLowerCase().includes(q)
+    );
+  });
 
   ngOnInit(): void {
     if (this.tokens.hasGitHub()) this.loadGitHub();
@@ -38,13 +57,41 @@ export class DashboardComponent implements OnInit {
     this.gh.listRepos().pipe(
       switchMap((repos) => {
         if (!repos.length) return of([]);
-        // fetch runs for up to 5 repos sequentially to avoid rate limits
+        // top 5 repos mais recentes
         const top = repos.slice(0, 5);
-        return this.gh.listRuns(top[0].full_name).pipe(
-          catchError(() => of({ workflow_runs: [] })),
-          switchMap((first) => {
-            const all = [...(first.workflow_runs ?? [])];
-            return of(all);
+        return forkJoin(
+          top.map((r) =>
+            this.gh.listRuns(r.full_name).pipe(
+              catchError(() => of({ workflow_runs: [] }))
+            )
+          )
+        ).pipe(
+          switchMap((results) => {
+            const pipelines: Pipeline[] = [];
+            results.forEach((res, i) => {
+              const runs = (res as any).workflow_runs as GhRun[];
+              const seen = new Set<number>();
+              for (const run of runs) {
+                if (!seen.has(run.workflow_id)) {
+                  seen.add(run.workflow_id);
+                  pipelines.push({
+                    workflowId:   run.workflow_id,
+                    name:         run.name,
+                    repo:         top[i].name,
+                    repoFullName: top[i].full_name,
+                    lastRun:      run,
+                  });
+                }
+              }
+            });
+            // ordenar: running primeiro, depois por data desc
+            pipelines.sort((a, b) => {
+              const aActive = a.lastRun.status !== 'completed' ? 1 : 0;
+              const bActive = b.lastRun.status !== 'completed' ? 1 : 0;
+              if (aActive !== bActive) return bActive - aActive;
+              return new Date(b.lastRun.created_at).getTime() - new Date(a.lastRun.created_at).getTime();
+            });
+            return of(pipelines);
           })
         );
       }),
@@ -52,8 +99,8 @@ export class DashboardComponent implements OnInit {
         this.ghError.set(err?.message ?? 'GitHub error');
         return of([]);
       })
-    ).subscribe((runs) => {
-      this.runs.set((runs as GhRun[]).slice(0, 8));
+    ).subscribe((pipelines) => {
+      this.pipelines.set(pipelines as Pipeline[]);
       this.ghLoading.set(false);
     });
   }
@@ -61,7 +108,6 @@ export class DashboardComponent implements OnInit {
   private loadDevOps(): void {
     this.adoLoading.set(true);
     let resolvedProject = '';
-
     this.ado.listProjects().pipe(
       switchMap((res) => {
         resolvedProject = res.value[0]?.name ?? '';

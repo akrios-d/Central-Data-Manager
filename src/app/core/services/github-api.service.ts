@@ -62,6 +62,14 @@ export class GitHubApiService {
     return this.http.get<{ workflow_runs: GhRun[] }>(url, { headers: this.headers });
   }
 
+  triggerWorkflow(fullName: string, workflowId: number, ref: string, inputs: Record<string, string>): Observable<void> {
+    return this.http.post<void>(
+      `https://api.github.com/repos/${fullName}/actions/workflows/${workflowId}/dispatches`,
+      { ref, inputs },
+      { headers: this.headers }
+    );
+  }
+
   rerunWorkflow(fullName: string, runId: number): Observable<void> {
     return this.http.post<void>(
       `https://api.github.com/repos/${fullName}/actions/runs/${runId}/rerun`,

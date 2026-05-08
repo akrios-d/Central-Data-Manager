@@ -1,0 +1,189 @@
+.runner-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+// ── Form card ─────────────────────────────────────────────────────────────────
+
+.runner-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.selected-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.mini-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+// ── Picker list ───────────────────────────────────────────────────────────────
+
+.picker-list {
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+
+    &:last-child { border-bottom: none; }
+    &:hover      { background: var(--surface-2); }
+    &.selected   { background: rgba(88,166,255,0.1); color: var(--accent); }
+  }
+}
+
+.repo-lock { font-size: 0.75rem; flex-shrink: 0; }
+
+.wf-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-muted);
+  &.active { background: var(--success); }
+}
+
+// ── Inputs grid ───────────────────────────────────────────────────────────────
+
+.inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+// ── Tracker ───────────────────────────────────────────────────────────────────
+
+.tracker-header { margin-bottom: 0.75rem; }
+
+.tracker-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.polling-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--accent);
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.tracked-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tracked-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tracked-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tracked-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tracked-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tracked-actions { display: flex; gap: 0.5rem; }
+
+// ── Status dot (same as github-actions) ──────────────────────────────────────
+
+.run-dot-lg {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  background: var(--text-muted);
+  &.success     { background: var(--success); }
+  &.failure     { background: var(--danger); }
+  &.in_progress { background: var(--info); box-shadow: 0 0 0 3px rgba(88,166,255,0.2); }
+  &.queued      { background: var(--warning); }
+}
+
+// ── Indeterminate progress bar ────────────────────────────────────────────────
+
+.progress-bar-wrap {
+  height: 3px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-indeterminate {
+  height: 100%;
+  width: 40%;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: indeterminate 1.4s ease-in-out infinite;
+}
+
+@keyframes indeterminate {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(350%); }
+}
