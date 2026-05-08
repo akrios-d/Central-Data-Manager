@@ -47,6 +47,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'chain-builder',
+    canActivate: [tokenGuard],
+    loadComponent: () =>
+      import('./features/chain-builder/chain-builder.component').then(
+        (m) => m.ChainBuilderComponent
+      ),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./features/settings/settings.component').then((m) => m.SettingsComponent),

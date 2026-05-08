@@ -16,7 +16,7 @@
       <div class="section-header">
         <h2 class="section-title">Pipelines</h2>
         @if (!ghLoading()) {
-          <span class="text-muted text-sm">{{ filteredPipelines().length }} / {{ pipelines().length }}</span>
+          <span class="text-muted text-sm">{{ filteredRepos().length }} / {{ allRepos().length }} repos</span>
         }
       </div>
 
@@ -28,26 +28,40 @@
         <div class="empty-state mt-2"><div class="spinner"></div></div>
       } @else if (ghError()) {
         <p class="text-muted text-sm mt-2">{{ ghError() }}</p>
-      } @else if (filteredPipelines().length === 0) {
+      } @else if (repoGroups().length === 0) {
         <div class="empty-state mt-2"><p>No pipelines match.</p></div>
       } @else {
-        <ul class="pipeline-list">
-          @for (p of filteredPipelines(); track p.workflowId + p.repoFullName) {
-            <li class="pipeline-item">
-              <span class="run-dot" [class]="runClass(p.lastRun)"></span>
-              <div class="pipeline-info">
-                <span class="pipeline-name">{{ p.name }}</span>
-                <span class="pipeline-meta text-muted text-sm">
-                  {{ p.repo }} · {{ p.lastRun.head_branch }} · {{ p.lastRun.created_at | date:'dd MMM HH:mm' }}
-                </span>
-              </div>
-              <span class="badge"
-                [class]="'badge-' + (runClass(p.lastRun) === 'success' ? 'success' : runClass(p.lastRun) === 'failure' ? 'danger' : runClass(p.lastRun) === 'in_progress' ? 'info' : 'muted')">
-                {{ runClass(p.lastRun).replace('_', ' ') }}
-              </span>
-            </li>
+        <div class="repo-groups">
+          @for (group of repoGroups(); track group.repoFullName) {
+            <div class="repo-group">
+              <button class="repo-group-header" (click)="toggleRepo(group.repoFullName)">
+                <span class="run-dot" [class]="group.worstStatus"></span>
+                <span class="repo-group-name">{{ group.repoFullName }}</span>
+                <span class="repo-group-meta text-muted text-sm">{{ group.pipelines.length }} workflow{{ group.pipelines.length === 1 ? '' : 's' }}</span>
+                <span class="expand-icon">{{ isExpanded(group.repoFullName) ? '▾' : '▸' }}</span>
+              </button>
+              @if (isExpanded(group.repoFullName)) {
+                <ul class="pipeline-list">
+                  @for (p of group.pipelines; track p.workflowId) {
+                    <li class="pipeline-item">
+                      <span class="run-dot sm" [class]="runClass(p.lastRun)"></span>
+                      <div class="pipeline-info">
+                        <span class="pipeline-name">{{ p.name }}</span>
+                        <span class="pipeline-meta text-muted text-sm">
+                          {{ p.lastRun.head_branch }} · {{ p.lastRun.created_at | date:'dd MMM HH:mm' }}
+                        </span>
+                      </div>
+                      <span class="badge"
+                        [class]="'badge-' + (runClass(p.lastRun) === 'success' ? 'success' : runClass(p.lastRun) === 'failure' ? 'danger' : runClass(p.lastRun) === 'in_progress' ? 'info' : 'muted')">
+                        {{ runClass(p.lastRun).replace('_', ' ') }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
           }
-        </ul>
+        </div>
       }
     </section>
   }

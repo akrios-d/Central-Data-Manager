@@ -11,6 +11,7 @@ export interface ChainStep {
 export interface Chain {
   id: string;
   name: string;
+  ref: string;
   steps: ChainStep[];
   createdAt: string;
 }

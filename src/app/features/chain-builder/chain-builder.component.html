@@ -44,6 +44,10 @@
             placeholder="Chain name…"
             [ngModel]="chainName()"
             (ngModelChange)="chainName.set($event)" />
+          <input class="form-control chain-ref-input"
+            placeholder="Default branch / ref (e.g. main)"
+            [ngModel]="chainRef()"
+            (ngModelChange)="chainRef.set($event)" />
           <div class="editor-actions">
             <button class="btn btn-sm btn-outline" (click)="saveChain()">Save</button>
             @if (selectedId() !== 'new') {
@@ -70,13 +74,14 @@
                 <div class="step-info">
                   <span class="step-wf-name">{{ step.workflowName }}</span>
                   <span class="text-muted text-sm">{{ step.repoFullName }} · {{ step.ref }}</span>
-                  @if (objectKeys(step.inputs).length > 0) {
+                  @if (hasInputs(step.inputs)) {
                     <span class="text-muted text-sm step-inputs-summary">{{ inputsSummary(step.inputs) }}</span>
                   }
                 </div>
                 <div class="step-controls">
                   <button class="icon-btn" title="Move up"   [disabled]="i === 0"  (click)="moveStep(i, -1)">↑</button>
                   <button class="icon-btn" title="Move down" [disabled]="last"     (click)="moveStep(i,  1)">↓</button>
+                  <button class="icon-btn" title="Edit"                             (click)="editStep(step)">✎</button>
                   <button class="icon-btn icon-btn-danger" title="Remove"           (click)="removeStep(i)">✕</button>
                 </div>
               </li>
@@ -89,7 +94,10 @@
           <button class="btn btn-sm btn-outline add-step-btn" (click)="openAddStep()">+ Add Step</button>
         } @else {
           <div class="add-step-form">
-            <h3 class="add-step-title">Add Step</h3>
+            <div class="add-step-header">
+              <h3 class="add-step-title">{{ editingStepId() ? 'Edit Step' : 'Add Step' }}</h3>
+              <button class="btn btn-sm btn-outline" (click)="cancelAddStep()">Cancel</button>
+            </div>
 
             <!-- Repo search -->
             <div class="form-group">
@@ -132,10 +140,25 @@
 
               <!-- Branch -->
               <div class="form-group">
-                <label class="form-label">Branch / Ref</label>
-                <input class="form-control"
-                  [ngModel]="stepRef()"
-                  (ngModelChange)="stepRef.set($event)" />
+                <label class="form-label override-label">
+                  <input type="checkbox"
+                    [ngModel]="stepOverrideRef()"
+                    (ngModelChange)="onOverrideChange($event)" />
+                  Override branch / ref
+                </label>
+                @if (stepOverrideRef()) {
+                  <input class="form-control mt-1"
+                    list="branch-list"
+                    [ngModel]="stepRef()"
+                    (ngModelChange)="stepRef.set($event)" />
+                  <datalist id="branch-list">
+                    @for (b of stepBranches(); track b) {
+                      <option [value]="b"></option>
+                    }
+                  </datalist>
+                } @else {
+                  <p class="text-muted text-sm mt-1">Uses chain default: <strong>{{ chainRef() || '(not set)' }}</strong></p>
+                }
               </div>
 
               <!-- Inputs -->
@@ -150,12 +173,13 @@
                 }
                 <button class="btn btn-xs btn-outline" (click)="addStepInput()">+ Input</button>
               </div>
-            }
 
-            <div class="add-step-actions">
-              <button class="btn btn-sm btn-primary" [disabled]="!stepWf()" (click)="addStep()">Add Step</button>
-              <button class="btn btn-sm btn-outline" (click)="cancelAddStep()">Cancel</button>
-            </div>
+              <div class="add-step-actions">
+                <button class="btn btn-sm btn-primary" [disabled]="!stepWf()" (click)="addStep()">
+                  {{ editingStepId() ? 'Update Step' : 'Add Step' }}
+                </button>
+              </div>
+            }
           </div>
         }
       </div>

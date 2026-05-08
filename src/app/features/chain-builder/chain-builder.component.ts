@@ -29,6 +29,7 @@ export class ChainBuilderComponent {
   // ── Selection / Editor ────────────────────────────────────────────────────────
   selectedId = signal<string | null>(null);
   chainName  = signal('');
+  chainRef   = signal('');
   editSteps  = signal<ChainStep[]>([]);
 
   // ── Add-step form ─────────────────────────────────────────────────────────────
@@ -38,10 +39,13 @@ export class ChainBuilderComponent {
   stepRepo     = signal<GhRepo | null>(null);
   stepWfs      = signal<GhWorkflow[]>([]);
   stepWfLoad   = signal(false);
-  stepWf       = signal<GhWorkflow | null>(null);
-  stepRef      = signal('main');
-  stepInputs:   StepInput[] = [];
-  showAddStep  = signal(false);
+  stepWf          = signal<GhWorkflow | null>(null);
+  stepRef         = signal('main');
+  stepOverrideRef = signal(false);
+  stepBranches    = signal<string[]>([]);
+  stepInputs:      StepInput[] = [];
+  showAddStep   = signal(false);
+  editingStepId = signal<string | null>(null);
 
   // ── Executor ──────────────────────────────────────────────────────────────────
   readonly activeRun = this.executor.activeRun;
@@ -78,6 +82,7 @@ export class ChainBuilderComponent {
   selectChain(chain: Chain): void {
     this.selectedId.set(chain.id);
     this.chainName.set(chain.name);
+    this.chainRef.set(chain.ref ?? '');
     this.editSteps.set(chain.steps.map(s => ({ ...s })));
     this.showAddStep.set(false);
     this.resetStepForm();
@@ -86,6 +91,7 @@ export class ChainBuilderComponent {
   newChain(): void {
     this.selectedId.set('new');
     this.chainName.set('');
+    this.chainRef.set('');
     this.editSteps.set([]);
     this.showAddStep.set(false);
     this.resetStepForm();
@@ -100,6 +106,7 @@ export class ChainBuilderComponent {
     const chain: Chain = {
       id,
       name,
+      ref: this.chainRef().trim(),
       steps: this.editSteps(),
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
@@ -151,20 +158,72 @@ export class ChainBuilderComponent {
     }
   }
 
+  onOverrideChange(checked: boolean): void {
+    this.stepOverrideRef.set(checked);
+    if (checked) {
+      const repo = this.stepRepo();
+      this.stepRef.set(repo?.default_branch || this.chainRef().trim() || 'main');
+    }
+  }
+
   selectStepRepo(repo: GhRepo): void {
     this.stepRepo.set(repo);
     this.repoSearch.set(repo.full_name);
+    if (this.stepOverrideRef()) {
+      this.stepRef.set(repo.default_branch || 'main');
+    }
     this.stepWf.set(null);
     this.stepWfs.set([]);
+    this.stepBranches.set([]);
     this.stepWfLoad.set(true);
     this.gh.listWorkflows(repo.full_name).subscribe({
       next: (res) => { this.stepWfs.set(res.workflows.filter(w => w.state === 'active')); this.stepWfLoad.set(false); },
       error: ()   => this.stepWfLoad.set(false),
     });
+    this.gh.listBranches(repo.full_name).subscribe({
+      next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
+      error: ()  => {},
+    });
   }
 
   addStepInput(): void         { this.stepInputs.push({ key: '', value: '' }); }
   removeStepInput(i: number):void { this.stepInputs.splice(i, 1); }
+
+  editStep(step: ChainStep): void {
+    this.editingStepId.set(step.id);
+    this.showAddStep.set(true);
+    if (!this.repos().length) this.loadRepos();
+
+    // Restore repo (synthetic GhRepo from saved data)
+    const fakeRepo: GhRepo = {
+      id: 0, name: step.repoName, full_name: step.repoFullName,
+      private: false, html_url: '', default_branch: step.ref,
+    };
+    this.stepRepo.set(fakeRepo);
+    this.repoSearch.set(step.repoFullName);
+
+    // Load workflows & branches for this repo
+    this.stepWfLoad.set(true);
+    this.gh.listWorkflows(step.repoFullName).subscribe({
+      next: (res) => {
+        this.stepWfs.set(res.workflows.filter(w => w.state === 'active'));
+        this.stepWf.set(res.workflows.find(w => w.id === step.workflowId) ?? null);
+        this.stepWfLoad.set(false);
+      },
+      error: () => this.stepWfLoad.set(false),
+    });
+    this.gh.listBranches(step.repoFullName).subscribe({
+      next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
+      error: () => {},
+    });
+
+    const chainDefaultRef = this.chainRef().trim() || 'main';
+    const hasOverride = step.ref !== chainDefaultRef;
+    this.stepOverrideRef.set(hasOverride);
+    this.stepRef.set(step.ref);
+
+    this.stepInputs = Object.entries(step.inputs).map(([key, value]) => ({ key, value }));
+  }
 
   addStep(): void {
     const repo = this.stepRepo();
@@ -173,19 +232,26 @@ export class ChainBuilderComponent {
     const inputs = this.stepInputs
       .filter(p => p.key.trim())
       .reduce((acc, p) => ({ ...acc, [p.key.trim()]: p.value }), {} as Record<string, string>);
-    const step: ChainStep = {
-      id: crypto.randomUUID(),
-      repoFullName: repo.full_name,
-      repoName: repo.name,
-      workflowId: wf.id,
-      workflowName: wf.name,
-      ref: this.stepRef().trim() || 'main',
-      inputs,
-    };
-    this.editSteps.update(list => [...list, step]);
+    const ref = this.stepOverrideRef() ? (this.stepRef().trim() || 'main') : (this.chainRef().trim() || 'main');
+    const editingId = this.editingStepId();
+
+    if (editingId) {
+      this.editSteps.update(list => list.map(s => s.id !== editingId ? s : {
+        ...s, repoFullName: repo.full_name, repoName: repo.name,
+        workflowId: wf.id, workflowName: wf.name, ref, inputs,
+      }));
+      this.toasts.show(`Step "${wf.name}" updated`, 'success');
+    } else {
+      const step: ChainStep = {
+        id: crypto.randomUUID(),
+        repoFullName: repo.full_name, repoName: repo.name,
+        workflowId: wf.id, workflowName: wf.name, ref, inputs,
+      };
+      this.editSteps.update(list => [...list, step]);
+      this.toasts.show(`Step "${wf.name}" added`, 'success');
+    }
     this.resetStepForm();
     this.showAddStep.set(false);
-    this.toasts.show(`Step "${wf.name}" added`, 'success');
   }
 
   cancelAddStep(): void {
@@ -198,7 +264,10 @@ export class ChainBuilderComponent {
     this.stepRepo.set(null);
     this.stepWfs.set([]);
     this.stepWf.set(null);
+    this.stepBranches.set([]);
     this.stepRef.set('main');
+    this.stepOverrideRef.set(false);
+    this.editingStepId.set(null);
     this.stepInputs = [];
   }
 
@@ -212,6 +281,7 @@ export class ChainBuilderComponent {
     const chain: Chain = {
       id,
       name,
+      ref: this.chainRef().trim(),
       steps,
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };

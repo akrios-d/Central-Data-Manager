@@ -62,6 +62,13 @@ export class GitHubApiService {
     return this.http.get<{ workflow_runs: GhRun[] }>(url, { headers: this.headers });
   }
 
+  listBranches(fullName: string): Observable<{ name: string }[]> {
+    return this.http.get<{ name: string }[]>(
+      `https://api.github.com/repos/${fullName}/branches?per_page=100`,
+      { headers: this.headers }
+    );
+  }
+
   triggerWorkflow(fullName: string, workflowId: number, ref: string, inputs: Record<string, string>): Observable<void> {
     return this.http.post<void>(
       `https://api.github.com/repos/${fullName}/actions/workflows/${workflowId}/dispatches`,
@@ -101,6 +108,7 @@ export interface GhRepo {
   full_name: string;
   private: boolean;
   html_url: string;
+  default_branch: string;
 }
 
 export interface GhWorkflow {

@@ -30,6 +30,52 @@
   margin-bottom: 0.75rem;
 }
 
+// ── Repo groups ───────────────────────────────────────────────────────────────
+
+.repo-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.repo-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.repo-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.35rem 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  border-radius: 4px;
+  &:hover { background: var(--surface-hover, rgba(255,255,255,0.04)); }
+}
+
+.repo-group-name {
+  flex: 1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+
+.repo-group-meta { font-size: 0.72rem; }
+
+.expand-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 // ── Pipeline list ─────────────────────────────────────────────────────────────
 
 .pipeline-list {
@@ -65,13 +111,14 @@
 // ── Run status dot ────────────────────────────────────────────────────────────
 
 .run-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
   background: var(--text-muted);
   &.success     { background: var(--success); }
   &.failure     { background: var(--danger); }
   &.in_progress { background: var(--info); box-shadow: 0 0 0 3px rgba(88,166,255,0.2); }
   &.queued      { background: var(--warning); }
   &.cancelled   { background: var(--text-muted); }
+  &.sm          { width: 7px; height: 7px; }
 }
 
 // ── Work items ────────────────────────────────────────────────────────────────

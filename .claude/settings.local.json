@@ -3,7 +3,9 @@
     "allow": [
       "Bash(ng version *)",
       "Bash(npm --version)",
-      "Bash(ng new *)"
+      "Bash(ng new *)",
+      "Bash(npx tsc *)",
+      "Bash(npx ng *)"
     ]
   }
 }
