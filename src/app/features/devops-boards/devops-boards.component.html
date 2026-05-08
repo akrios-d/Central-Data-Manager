@@ -5,7 +5,7 @@
   </div>
   @if (projects().length > 1) {
     <select class="form-control" style="width:auto"
-      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event); loadTeamMembers($event)">
+      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event); loadTeamMembers($event); loadSavedColConfig($event)">
       @for (p of projects(); track p.id) {
         <option [value]="p.name">{{ p.name }}</option>
       }
@@ -43,6 +43,36 @@
           <option [value]="m"></option>
         }
       </datalist>
+      <div class="filter-divider"></div>
+      <div class="col-manager-wrap">
+        <button class="btn-col-manager" (click)="showColManager.set(!showColManager())"
+          [class.active]="showColManager()">
+          ⚙ Colunas
+          @if (columnConfigs().length) {
+            <span class="col-count">{{ columnConfigs().length }}</span>
+          }
+        </button>
+        @if (showColManager()) {
+          <div class="col-manager-panel">
+            @if (!columnConfigs().length) {
+              <p class="col-manager-empty">Carrega o board primeiro para configurar as colunas.</p>
+            } @else {
+              @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
+                <div class="col-manager-row">
+                  <label class="col-manager-label">
+                    <input type="checkbox" [checked]="cfg.visible" (change)="toggleColVisibility(cfg.state)" />
+                    {{ cfg.state }}
+                  </label>
+                  <div class="col-manager-arrows">
+                    <button [disabled]="i === 0" (click)="moveCol(i, -1)">↑</button>
+                    <button [disabled]="i === columnConfigs().length - 1" (click)="moveCol(i, 1)">↓</button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
       <button class="btn btn-primary" [disabled]="boardLoading()" (click)="loadBoard()">
         @if (boardLoading()) { <span class="spinner-inline"></span> }
         @else { ▷ }
@@ -56,29 +86,8 @@
   }
 
   @if (boardReady() && !boardLoading()) {
-    <div class="board-meta">
-      <span class="text-muted text-sm">{{ totalItems() }} itens em {{ columns().length }} estados</span>
-      <div class="col-manager-wrap">
-        <button class="btn-col-manager" (click)="showColManager.set(!showColManager())">
-          ⚙ Colunas
-        </button>
-        @if (showColManager()) {
-          <div class="col-manager-panel">
-            @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
-              <div class="col-manager-row">
-                <label class="col-manager-label">
-                  <input type="checkbox" [checked]="cfg.visible" (change)="toggleColVisibility(cfg.state)" />
-                  {{ cfg.state }}
-                </label>
-                <div class="col-manager-arrows">
-                  <button [disabled]="i === 0" (click)="moveCol(i, -1)">↑</button>
-                  <button [disabled]="i === columnConfigs().length - 1" (click)="moveCol(i, 1)">↓</button>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </div>
+    <div class="board-meta text-muted text-sm">
+      {{ totalItems() }} itens · {{ visibleColumns().length }} de {{ columns().length }} colunas visíveis
     </div>
     <div class="kanban-board">
       @for (col of visibleColumns(); track col.state) {

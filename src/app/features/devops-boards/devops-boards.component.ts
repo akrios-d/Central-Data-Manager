@@ -63,6 +63,7 @@ export class DevopsBoardsComponent implements OnInit {
         if (res.value.length) {
           this.selectedProject.set(res.value[0].name);
           this.loadTeamMembers(res.value[0].name);
+          this.loadSavedColConfig(res.value[0].name);
         }
       },
       error: (e) => { this.error.set(e?.message); this.loading.set(false); },
@@ -149,6 +150,17 @@ export class DevopsBoardsComponent implements OnInit {
 
   private get colConfigKey(): string {
     return `cdm_col_cfg_${this.selectedProject()}`;
+  }
+
+  loadSavedColConfig(project: string): void {
+    try {
+      const key = `cdm_col_cfg_${project}`;
+      const saved: ColumnConfig[] = JSON.parse(localStorage.getItem(key) ?? 'null');
+      if (saved?.length) this.columnConfigs.set(saved);
+      else this.columnConfigs.set([]);
+    } catch {
+      this.columnConfigs.set([]);
+    }
   }
 
   private loadColConfig(states: string[]): ColumnConfig[] {
