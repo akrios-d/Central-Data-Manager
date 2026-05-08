@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin, switchMap } from 'rxjs';
 import { DevOpsApiService, DevOpsProject, DevOpsWorkItem } from '../../core/services/devops-api.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -13,7 +14,7 @@ interface ColumnConfig { state: string; visible: boolean; }
 
 @Component({
   selector: 'app-devops-boards',
-  imports: [FormsModule, WorkItemPanelComponent],
+  imports: [FormsModule, WorkItemPanelComponent, TranslateModule],
   templateUrl: './devops-boards.component.html',
   styleUrl: './devops-boards.component.scss',
 })

@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { Chain, ChainStep, ChainStepRun } from '../../core/models/chain.model';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
@@ -12,15 +13,15 @@ interface StepInput { key: string; value: string; }
 @Component({
   selector: 'app-chain-builder',
   standalone: true,
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './chain-builder.component.html',
   styleUrl: './chain-builder.component.scss',
 })
 export class ChainBuilderComponent {
-  private gh       = inject(GitHubApiService);
-  private chainSvc = inject(ChainService);
-  private executor = inject(ChainExecutorService);
-  private toasts   = inject(ToastService);
+  private readonly gh       = inject(GitHubApiService);
+  private readonly chainSvc = inject(ChainService);
+  private readonly executor = inject(ChainExecutorService);
+  private readonly toasts   = inject(ToastService);
 
   // ── Data ──────────────────────────────────────────────────────────────────────
   readonly chains = this.chainSvc.chains;
@@ -70,7 +71,7 @@ export class ChainBuilderComponent {
 
   readonly canRun = computed(() => {
     const run = this.activeRun();
-    return this.editSteps().length > 0 && !this.running() && (!run || run.status !== 'running');
+    return this.editSteps().length > 0 && !this.running() && run?.status !== 'running';
   });
 
   readonly showRepoDropdown = computed(() => {
@@ -102,7 +103,7 @@ export class ChainBuilderComponent {
     const name = this.chainName().trim();
     if (!name) { this.toasts.show('Chain name is required', 'danger'); return; }
     if (!this.editSteps().length) { this.toasts.show('Add at least one step', 'danger'); return; }
-    const id = this.selectedId() !== 'new' ? this.selectedId()! : crypto.randomUUID();
+    const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
       id,
       name,
@@ -250,10 +251,10 @@ export class ChainBuilderComponent {
     const editingId = this.editingStepId();
 
     if (editingId) {
-      this.editSteps.update(list => list.map(s => s.id !== editingId ? s : {
+      this.editSteps.update(list => list.map(s => s.id === editingId ? {
         ...s, repoFullName: repo.full_name, repoName: repo.name,
         workflowId: wf.id, workflowName: wf.name, ref, inputs,
-      }));
+      } : s));
       this.toasts.show(`Step "${wf.name}" updated`, 'success');
     } else {
       const step: ChainStep = {
@@ -291,7 +292,7 @@ export class ChainBuilderComponent {
     const name  = this.chainName().trim();
     const steps = this.editSteps();
     if (!name || !steps.length) return;
-    const id = this.selectedId() !== 'new' ? this.selectedId()! : crypto.randomUUID();
+    const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
       id,
       name,
@@ -319,7 +320,7 @@ export class ChainBuilderComponent {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `chain-${chain.name.replace(/\s+/g, '-').toLowerCase()}.json`;
+    a.download = `chain-${chain.name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -327,10 +328,9 @@ export class ChainBuilderComponent {
   importChain(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
+    file.text().then(text => {
       try {
-        const data = JSON.parse(reader.result as string);
+        const data = JSON.parse(text);
         if (!data?.name || !Array.isArray(data?.steps)) {
           this.toasts.show('Invalid chain file', 'danger');
           return;
@@ -349,15 +349,14 @@ export class ChainBuilderComponent {
         this.toasts.show('Could not read file', 'danger');
       }
       (event.target as HTMLInputElement).value = '';
-    };
-    reader.readAsText(file);
+    });
   }
 
   private buildChainSnapshot(): Chain | null {
     const name = this.chainName().trim();
     if (!name) { this.toasts.show('Save the chain first', 'danger'); return null; }
     return {
-      id:        this.selectedId() !== 'new' ? this.selectedId()! : crypto.randomUUID(),
+      id:        this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!,
       name,
       ref:       this.chainRef().trim(),
       steps:     this.editSteps(),

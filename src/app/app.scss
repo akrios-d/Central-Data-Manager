@@ -51,6 +51,28 @@
 
 .nav-icon { font-size: 1rem; width: 1.2rem; text-align: center; }
 
+.lang-switcher {
+  margin-top: auto;
+  padding: 1rem 1.25rem 0;
+  display: flex;
+  gap: 0.35rem;
+
+  button {
+    flex: 1;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.3rem 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover { color: var(--text); border-color: var(--text-muted); }
+    &.active { color: var(--accent); border-color: var(--accent); background: var(--accent-muted, rgba(88,166,255,0.1)); font-weight: 600; }
+  }
+}
+
 .main-content {
   flex: 1;
   overflow-y: auto;

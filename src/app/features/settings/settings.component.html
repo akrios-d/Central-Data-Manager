@@ -1,22 +1,22 @@
 <div class="page-header">
-  <h1>Settings</h1>
-  <p>Manage your API tokens. All data is stored locally in your browser.</p>
+  <h1>{{ 'settings.title' | translate }}</h1>
+  <p>{{ 'settings.subtitle' | translate }}</p>
 </div>
 
 <div class="settings-grid">
   <!-- ── GitHub ─────────────────────────────────────────────────────────── -->
   <div class="card">
     <div class="flex-between">
-      <h2 class="section-title">GitHub</h2>
+      <h2 class="section-title">{{ 'settings.github' | translate }}</h2>
       @if (hasGh()) {
-        <span class="badge badge-success">Connected</span>
+        <span class="badge badge-success">{{ 'settings.connected' | translate }}</span>
       } @else {
-        <span class="badge badge-muted">Not configured</span>
+        <span class="badge badge-muted">{{ 'settings.notConfigured' | translate }}</span>
       }
     </div>
 
     @if (hasGh()) {
-      <p class="text-muted text-sm mt-1">Owner: <strong>{{ ghOwner() }}</strong></p>
+      <p class="text-muted text-sm mt-1">{{ 'settings.owner' | translate }} <strong>{{ ghOwner() }}</strong></p>
 
       @if (ghTest()) {
         <p class="test-result mt-1" [class.ok]="ghTest()!.status === 'ok'" [class.err]="ghTest()!.status === 'error'">
@@ -26,23 +26,23 @@
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testGitHub()" [disabled]="ghTest()?.status === 'testing'">Test</button>
-        <button class="btn btn-sm" (click)="showGhForm.set(!showGhForm())">Update token</button>
-        <button class="btn btn-sm btn-danger" (click)="clearGh()">Remove</button>
+        <button class="btn btn-sm" (click)="testGitHub()" [disabled]="ghTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
+        <button class="btn btn-sm" (click)="showGhForm.set(!showGhForm())">{{ 'settings.updateToken' | translate }}</button>
+        <button class="btn btn-sm btn-danger" (click)="clearGh()">{{ 'settings.remove' | translate }}</button>
       </div>
     }
 
     @if (!hasGh() || showGhForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>Username / Organisation</label>
-          <input class="form-control" type="text" [ngModel]="ghOwner2()" (ngModelChange)="ghOwner2.set($event)" placeholder="my-org" />
+          <label>{{ 'settings.username' | translate }}</label>
+          <input class="form-control" type="text" [ngModel]="ghOwner2()" (ngModelChange)="ghOwner2.set($event)" [placeholder]="'settings.orgPlaceholder' | translate" />
         </div>
         <div class="form-group mt-1">
-          <label>Personal Access Token</label>
-          <input class="form-control" type="password" [ngModel]="ghToken()" (ngModelChange)="ghToken.set($event)" placeholder="ghp_..." />
+          <label>{{ 'settings.pat' | translate }}</label>
+          <input class="form-control" type="password" [ngModel]="ghToken()" (ngModelChange)="ghToken.set($event)" [placeholder]="'settings.githubTokenHint' | translate" />
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveGh()" [disabled]="!ghToken().trim() || !ghOwner2().trim()">Save</button>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveGh()" [disabled]="!ghToken().trim() || !ghOwner2().trim()">{{ 'settings.save' | translate }}</button>
       </div>
     }
   </div>
@@ -50,23 +50,23 @@
   <!-- ── Azure DevOps ───────────────────────────────────────────────────── -->
   <div class="card">
     <div class="flex-between">
-      <h2 class="section-title">Azure DevOps</h2>
+      <h2 class="section-title">{{ 'settings.azureDevOps' | translate }}</h2>
       @if (hasAdo()) {
-        <span class="badge badge-success">Connected</span>
+        <span class="badge badge-success">{{ 'settings.connected' | translate }}</span>
       } @else {
-        <span class="badge badge-muted">Not configured</span>
+        <span class="badge badge-muted">{{ 'settings.notConfigured' | translate }}</span>
       }
     </div>
 
     @if (hasAdo()) {
       <div class="org-row mt-1">
         @if (!showAdoOrgEdit()) {
-          <span class="text-muted text-sm">Organisation: <strong>{{ adoOrg() }}</strong></span>
-          <button class="btn btn-sm" (click)="openAdoOrgEdit()">Edit org</button>
+          <span class="text-muted text-sm">{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span>
+          <button class="btn btn-sm" (click)="openAdoOrgEdit()">{{ 'settings.editOrg' | translate }}</button>
         } @else {
           <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
-          <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">Save</button>
-          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">Cancel</button>
+          <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">{{ 'settings.save' | translate }}</button>
+          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
         }
       </div>
 
@@ -78,23 +78,23 @@
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">Test</button>
-        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">Update token</button>
-        <button class="btn btn-sm btn-danger" (click)="clearAdo()">Remove</button>
+        <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
+        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">{{ 'settings.updateToken' | translate }}</button>
+        <button class="btn btn-sm btn-danger" (click)="clearAdo()">{{ 'settings.remove' | translate }}</button>
       </div>
     }
 
     @if (!hasAdo() || showAdoForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>Organisation name</label>
-          <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" placeholder="my-company" />
+          <label>{{ 'settings.orgName' | translate }}</label>
+          <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" [placeholder]="'settings.companyPlaceholder' | translate" />
         </div>
         <div class="form-group mt-1">
-          <label>Personal Access Token</label>
-          <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" placeholder="PAT..." />
+          <label>{{ 'settings.pat' | translate }}</label>
+          <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" [placeholder]="'settings.patPlaceholder' | translate" />
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">Save</button>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
       </div>
     }
   </div>
@@ -105,39 +105,38 @@
   <div class="card mt-3">
     <div class="flex-between">
       <div>
-        <h2 class="section-title">Sprint (Dashboard widget)</h2>
+        <h2 class="section-title">{{ 'settings.sprintWidget' | translate }}</h2>
         @if (adoProject() && adoTeam()) {
           <p class="text-muted text-sm mt-1">
-            Projecto: <strong>{{ adoProject() }}</strong> · Team: <strong>{{ adoTeam() }}</strong>
+            {{ 'settings.project' | translate }} <strong>{{ adoProject() }}</strong> · {{ 'settings.team' | translate }} <strong>{{ adoTeam() }}</strong>
           </p>
         } @else {
-          <p class="text-muted text-sm mt-1">Não configurado — o widget de sprint não aparece no Dashboard.</p>
+          <p class="text-muted text-sm mt-1">{{ 'settings.sprintNotConfigured' | translate }}</p>
         }
       </div>
       <button class="btn btn-sm" (click)="openSprintEdit()">
-        {{ adoProject() ? 'Edit' : 'Configure' }}
+        {{ adoProject() ? ('settings.editBtn' | translate) : ('settings.configureBtn' | translate) }}
       </button>
     </div>
 
     @if (showSprintEdit()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>Projecto</label>
+          <label>{{ 'settings.projectLabel' | translate }}</label>
           <div class="inline-row">
             <input class="form-control" type="text"
-              [ngModel]="editAdoProject()" (ngModelChange)="editAdoProject.set($event)"
-              placeholder="Migração Pré-pagos" />
+              [ngModel]="editAdoProject()" (ngModelChange)="editAdoProject.set($event)" />
             <button class="btn btn-sm" (click)="loadTeams()" [disabled]="!editAdoProject().trim() || teamsLoading()">
-              @if (teamsLoading()) { <span class="spinner"></span> } @else { Load teams }
+              @if (teamsLoading()) { <span class="spinner"></span> } @else { {{ 'settings.loadTeams' | translate }} }
             </button>
           </div>
         </div>
 
         @if (availableTeams().length > 0) {
           <div class="form-group mt-1">
-            <label>Team</label>
+            <label>{{ 'settings.teamLabel' | translate }}</label>
             <select class="form-control" [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)">
-              <option value="">-- select team --</option>
+              <option value="">{{ 'settings.selectTeam' | translate }}</option>
               @for (t of availableTeams(); track t.id) {
                 <option [value]="t.name">{{ t.name }}</option>
               }
@@ -145,17 +144,16 @@
           </div>
         } @else if (!teamsLoading()) {
           <div class="form-group mt-1">
-            <label>Team (manual)</label>
+            <label>{{ 'settings.teamManual' | translate }}</label>
             <input class="form-control" type="text"
-              [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)"
-              placeholder="Migração Pré-pagos Team" />
+              [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)" />
           </div>
         }
 
         <div class="settings-actions mt-2">
           <button class="btn btn-primary btn-sm" (click)="saveSprintConfig()"
-            [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()">Save</button>
-          <button class="btn btn-sm" (click)="showSprintEdit.set(false)">Cancel</button>
+            [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()">{{ 'settings.save' | translate }}</button>
+          <button class="btn btn-sm" (click)="showSprintEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
         </div>
       </div>
     }
@@ -164,7 +162,7 @@
 
 <!-- ── Danger zone ─────────────────────────────────────────────────────────── -->
 <div class="danger-zone card mt-3">
-  <h2 class="section-title">Danger zone</h2>
-  <p class="text-muted text-sm">This will remove all tokens from your browser and redirect you to Onboarding.</p>
-  <button class="btn btn-danger mt-2" (click)="clearAll()">Clear all tokens</button>
+  <h2 class="section-title">{{ 'settings.dangerZone' | translate }}</h2>
+  <p class="text-muted text-sm">{{ 'settings.dangerWarning' | translate }}</p>
+  <button class="btn btn-danger mt-2" (click)="clearAll()">{{ 'settings.clearAll' | translate }}</button>
 </div>

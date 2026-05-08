@@ -1,11 +1,11 @@
 <div class="page-header">
-  <h1>Dashboard</h1>
-  <p>Overview of your pipelines and work items.</p>
+  <h1>{{ 'dashboard.title' | translate }}</h1>
+  <p>{{ 'dashboard.subtitle' | translate }}</p>
 </div>
 
 @if (hasAdo()) {
   <section class="sprint-section">
-    <h2 class="section-title">Sprint actual</h2>
+    <h2 class="section-title">{{ 'dashboard.currentSprint' | translate }}</h2>
     <app-sprint-widget />
   </section>
 }
@@ -14,14 +14,14 @@
   @if (hasGh()) {
     <section class="card">
       <div class="section-header">
-        <h2 class="section-title">Pipelines</h2>
+        <h2 class="section-title">{{ 'dashboard.pipelines' | translate }}</h2>
         @if (!ghLoading()) {
-          <span class="text-muted text-sm">{{ filteredRepos().length }} / {{ allRepos().length }} repos</span>
+          <span class="text-muted text-sm">{{ filteredRepos().length }} / {{ allRepos().length }} {{ 'actions.repos' | translate }}</span>
         }
       </div>
 
       <input class="form-control filter-input" type="text"
-        placeholder="Search pipeline or repo…"
+        [placeholder]="'dashboard.searchPlaceholder' | translate"
         [ngModel]="pipelineSearch()" (ngModelChange)="pipelineSearch.set($event)" />
 
       @if (ghLoading()) {
@@ -29,7 +29,7 @@
       } @else if (ghError()) {
         <p class="text-muted text-sm mt-2">{{ ghError() }}</p>
       } @else if (repoGroups().length === 0) {
-        <div class="empty-state mt-2"><p>No pipelines match.</p></div>
+        <div class="empty-state mt-2"><p>{{ 'dashboard.noPipelines' | translate }}</p></div>
       } @else {
         <div class="repo-groups">
           @for (group of repoGroups(); track group.repoFullName) {
@@ -37,7 +37,7 @@
               <button class="repo-group-header" (click)="toggleRepo(group.repoFullName)">
                 <span class="run-dot" [class]="group.worstStatus"></span>
                 <span class="repo-group-name">{{ group.repoFullName }}</span>
-                <span class="repo-group-meta text-muted text-sm">{{ group.pipelines.length }} workflow{{ group.pipelines.length === 1 ? '' : 's' }}</span>
+                <span class="repo-group-meta text-muted text-sm">{{ group.pipelines.length }} {{ group.pipelines.length === 1 ? ('dashboard.workflowOne' | translate) : ('dashboard.workflowMany' | translate) }}</span>
                 <span class="expand-icon">{{ isExpanded(group.repoFullName) ? '▾' : '▸' }}</span>
               </button>
               @if (isExpanded(group.repoFullName)) {
@@ -68,13 +68,13 @@
 
   @if (hasAdo()) {
     <section class="card">
-      <h2 class="section-title">Recent Work Items</h2>
+      <h2 class="section-title">{{ 'dashboard.recentWorkItems' | translate }}</h2>
       @if (adoLoading()) {
         <div class="empty-state"><div class="spinner"></div></div>
       } @else if (adoError()) {
         <p class="text-muted text-sm">{{ adoError() }}</p>
       } @else if (workItems().length === 0) {
-        <div class="empty-state"><p>No work items found.</p></div>
+        <div class="empty-state"><p>{{ 'dashboard.noWorkItems' | translate }}</p></div>
       } @else {
         <div class="wi-filters">
           @for (state of availableWiStates(); track state) {
@@ -102,7 +102,7 @@
 
   @if (!hasGh() && !hasAdo()) {
     <div class="card">
-      <p>No integrations configured. Go to <a routerLink="/settings">Settings</a> to add tokens.</p>
+      <p>{{ 'dashboard.noIntegrations' | translate }} <a routerLink="/settings">{{ 'nav.settings' | translate }}</a> {{ 'dashboard.noIntegrationsSuffix' | translate }}</p>
     </div>
   }
 </div>

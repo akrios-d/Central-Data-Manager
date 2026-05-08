@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { GitHubApiService, GhRepo, GhWorkflow, GhRun } from '../../core/services/github-api.service';
 import { RunStatusPipe } from '../../shared/pipes/run-status.pipe';
 import { ToastService } from '../../shared/services/toast.service';
@@ -9,7 +10,7 @@ interface InputPair { key: string; value: string; }
 
 @Component({
   selector: 'app-pipeline-runner',
-  imports: [FormsModule, DatePipe, RunStatusPipe],
+  imports: [FormsModule, DatePipe, RunStatusPipe, TranslateModule],
   templateUrl: './pipeline-runner.component.html',
   styleUrl: './pipeline-runner.component.scss',
 })

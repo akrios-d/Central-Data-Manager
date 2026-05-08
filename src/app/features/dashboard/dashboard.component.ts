@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { TokenService } from '../../core/services/token.service';
 import { GitHubApiService, GhRepo, GhRun } from '../../core/services/github-api.service';
 import { DevOpsApiService, DevOpsWorkItem } from '../../core/services/devops-api.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { SprintWidgetComponent } from '../../shared/components/sprint-widget/sprint-widget.component';
 import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
 
@@ -29,7 +30,7 @@ const MAX_REPOS_FOR_RUNS = 15;
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, RouterLink, FormsModule, SprintWidgetComponent, WorkItemPanelComponent],
+  imports: [DatePipe, RouterLink, FormsModule, SprintWidgetComponent, WorkItemPanelComponent, TranslateModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })

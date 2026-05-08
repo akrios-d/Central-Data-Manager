@@ -9,9 +9,9 @@
       </div>
       <div class="panel-actions">
         @if (devopsUrl()) {
-          <a [href]="devopsUrl()!" target="_blank" rel="noopener" class="btn btn-sm" title="Abrir no Azure DevOps">↗ DevOps</a>
+          <a [href]="devopsUrl()!" target="_blank" rel="noopener" class="btn btn-sm" [title]="'panel.openTitle' | translate">{{ 'panel.openBtn' | translate }}</a>
         }
-        <button class="btn btn-sm" (click)="close()" title="Fechar">✕</button>
+        <button class="btn btn-sm" (click)="close()" [title]="'panel.closeTitle' | translate">✕</button>
       </div>
     </div>
 
@@ -24,32 +24,32 @@
 
       <dl class="wi-meta-grid">
         @if (wi.fields['System.AssignedTo']) {
-          <dt>Assigned to</dt>
+          <dt>{{ 'panel.assignedTo' | translate }}</dt>
           <dd>{{ wi.fields['System.AssignedTo']!.displayName }}</dd>
         }
         @if (wi.fields['System.CreatedBy']) {
-          <dt>Created by</dt>
+          <dt>{{ 'panel.createdBy' | translate }}</dt>
           <dd>{{ wi.fields['System.CreatedBy']!.displayName }}</dd>
         }
         @if (priorityLabel()) {
-          <dt>Priority</dt>
+          <dt>{{ 'panel.priority' | translate }}</dt>
           <dd>{{ priorityLabel() }}</dd>
         }
         @if (wi.fields['Microsoft.VSTS.Common.Severity']) {
-          <dt>Severity</dt>
+          <dt>{{ 'panel.severity' | translate }}</dt>
           <dd>{{ wi.fields['Microsoft.VSTS.Common.Severity'] }}</dd>
         }
         @if (wi.fields['System.IterationPath']) {
-          <dt>Sprint</dt>
+          <dt>{{ 'panel.sprint' | translate }}</dt>
           <dd>{{ wi.fields['System.IterationPath'] }}</dd>
         }
         @if (wi.fields['System.AreaPath']) {
-          <dt>Area</dt>
+          <dt>{{ 'panel.area' | translate }}</dt>
           <dd>{{ wi.fields['System.AreaPath'] }}</dd>
         }
-        <dt>Created</dt>
+        <dt>{{ 'panel.created' | translate }}</dt>
         <dd>{{ wi.fields['System.CreatedDate'] | date:'dd MMM yyyy HH:mm' }}</dd>
-        <dt>Last updated</dt>
+        <dt>{{ 'panel.lastUpdated' | translate }}</dt>
         <dd>{{ wi.fields['System.ChangedDate'] | date:'dd MMM yyyy HH:mm' }}</dd>
       </dl>
 
@@ -63,11 +63,11 @@
 
       @if (wi.fields['System.Description']) {
         <div class="wi-description">
-          <h3>Description</h3>
+          <h3>{{ 'panel.description' | translate }}</h3>
           <div class="description-body" [innerHTML]="wi.fields['System.Description'] | markdown"></div>
         </div>
       } @else {
-        <p class="text-muted text-sm wi-no-desc">No description.</p>
+        <p class="text-muted text-sm wi-no-desc">{{ 'panel.noDescription' | translate }}</p>
       }
     </div>
   }

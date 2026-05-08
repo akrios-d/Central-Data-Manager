@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DevOpsApiService, DevOpsTeam } from '../../core/services/devops-api.service';
@@ -15,7 +16,7 @@ interface ConnectionTest {
 
 @Component({
   selector: 'app-settings',
-  imports: [FormsModule],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })

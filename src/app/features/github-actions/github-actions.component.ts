@@ -1,12 +1,13 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { GitHubApiService, GhRepo, GhRun, GhWorkflow } from '../../core/services/github-api.service';
 import { RunStatusPipe } from '../../shared/pipes/run-status.pipe';
 
 @Component({
   selector: 'app-github-actions',
-  imports: [FormsModule, DatePipe, RunStatusPipe],
+  imports: [FormsModule, DatePipe, RunStatusPipe, TranslateModule],
   templateUrl: './github-actions.component.html',
   styleUrl: './github-actions.component.scss',
 })

@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { switchMap, of } from 'rxjs';
 import { TokenService } from '../../../core/services/token.service';
 import { DevOpsApiService, DevOpsIteration, DevOpsWorkItem } from '../../../core/services/devops-api.service';
@@ -14,7 +15,7 @@ interface StateGroup {
 
 @Component({
   selector: 'app-sprint-widget',
-  imports: [DatePipe, RouterLink, WorkItemPanelComponent],
+  imports: [DatePipe, RouterLink, WorkItemPanelComponent, TranslateModule],
   templateUrl: './sprint-widget.component.html',
   styleUrl: './sprint-widget.component.scss',
 })

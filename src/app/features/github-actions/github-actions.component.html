@@ -1,17 +1,17 @@
 <div class="page-header flex-between">
   <div>
-    <h1>GitHub Actions</h1>
-    <p>Browse workflows and manage runs.</p>
+    <h1>{{ 'actions.title' | translate }}</h1>
+    <p>{{ 'actions.subtitle' | translate }}</p>
   </div>
   @if (selectedRepo()) {
     <a [href]="'https://github.com/' + selectedRepo()!.full_name + '/actions'" target="_blank" rel="noopener" class="btn btn-sm">
-      Open in GitHub ↗
+      {{ 'actions.openInGithub' | translate }}
     </a>
   }
 </div>
 
 @if (loading()) {
-  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading repositories…</p></div>
+  <div class="empty-state"><div class="spinner"></div><p class="mt-2">{{ 'actions.loadingRepos' | translate }}</p></div>
 } @else if (error()) {
   <div class="card"><p class="text-muted">{{ error() }}</p></div>
 } @else {
@@ -21,14 +21,14 @@
         <input
           class="form-control repo-search"
           type="text"
-          placeholder="Search repos…"
+          [placeholder]="'actions.searchRepos' | translate"
           [ngModel]="repoSearch()"
           (ngModelChange)="repoSearch.set($event)"
         />
       </div>
 
       <p class="repo-list-label">
-        {{ filteredRepos().length }} / {{ repos().length }} repos
+        {{ filteredRepos().length }} / {{ repos().length }} {{ 'actions.repos' | translate }}
       </p>
 
       @for (repo of filteredRepos(); track repo.id) {
@@ -43,7 +43,7 @@
       }
 
       @if (filteredRepos().length === 0) {
-        <p class="text-muted text-sm" style="padding: 0.5rem">No repos match.</p>
+        <p class="text-muted text-sm" style="padding: 0.5rem">{{ 'actions.noReposMatch' | translate }}</p>
       }
     </aside>
 
@@ -57,7 +57,7 @@
       @if (runsLoading()) {
         <div class="empty-state"><div class="spinner"></div></div>
       } @else if (runs().length === 0) {
-        <div class="empty-state"><p>No runs found for this repository.</p></div>
+        <div class="empty-state"><p>{{ 'actions.noRunsFound' | translate }}</p></div>
       } @else {
         <ul class="runs-list">
           @for (run of runs(); track run.id) {
@@ -76,11 +76,11 @@
                 @if (actionFeedback()?.id === run.id) {
                   <span class="text-muted text-sm">{{ actionFeedback()?.msg }}</span>
                 } @else {
-                  <button class="btn btn-sm" (click)="rerun(run)" title="Re-run">↺ Re-run</button>
+                  <button class="btn btn-sm" (click)="rerun(run)" [title]="'actions.rerun' | translate">{{ 'actions.rerun' | translate }}</button>
                   @if (run.status === 'in_progress' || run.status === 'queued') {
-                    <button class="btn btn-sm btn-danger" (click)="cancel(run)">✕ Cancel</button>
+                    <button class="btn btn-sm btn-danger" (click)="cancel(run)">{{ 'actions.cancel' | translate }}</button>
                   }
-                  <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">↗ View</a>
+                  <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">{{ 'actions.view' | translate }}</a>
                 }
               </div>
             </li>

@@ -1,6 +1,6 @@
 <div class="page-header">
-  <h1>Pipeline Runner</h1>
-  <p>Dispara workflows GitHub Actions com parâmetros personalizados e acompanha a execução.</p>
+  <h1>{{ 'runner.title' | translate }}</h1>
+  <p>{{ 'runner.subtitle' | translate }}</p>
 </div>
 
 <div class="runner-layout">
@@ -9,14 +9,14 @@
 
     <!-- Repo -->
     <div class="form-section">
-      <label class="form-section-label">1 · Repositório</label>
+      <label class="form-section-label">{{ 'runner.step1' | translate }}</label>
       @if (selectedRepo()) {
         <div class="selected-item">
           <span>{{ selectedRepo()!.full_name }}</span>
-          <button class="btn btn-sm" (click)="selectedRepo.set(null); workflows.set([]); selectedWf.set(null)">Change</button>
+          <button class="btn btn-sm" (click)="selectedRepo.set(null); workflows.set([]); selectedWf.set(null)">{{ 'runner.change' | translate }}</button>
         </div>
       } @else {
-        <input class="form-control" type="text" placeholder="Search repos…"
+        <input class="form-control" type="text" [placeholder]="'runner.searchRepos' | translate"
           [ngModel]="repoSearch()" (ngModelChange)="repoSearch.set($event); loadRepos()" />
         @if (reposLoading()) {
           <div class="mini-spinner"><div class="spinner"></div></div>
@@ -37,11 +37,11 @@
     <!-- Workflow -->
     @if (selectedRepo()) {
       <div class="form-section">
-        <label class="form-section-label">2 · Workflow</label>
+        <label class="form-section-label">{{ 'runner.step2' | translate }}</label>
         @if (wfLoading()) {
           <div class="mini-spinner"><div class="spinner"></div></div>
         } @else if (workflows().length === 0) {
-          <p class="text-muted text-sm">Nenhum workflow encontrado.</p>
+          <p class="text-muted text-sm">{{ 'runner.noWorkflows' | translate }}</p>
         } @else {
           <ul class="picker-list">
             @for (wf of workflows(); track wf.id) {
@@ -61,7 +61,7 @@
     <!-- Branch / Ref -->
     @if (selectedWf()) {
       <div class="form-section">
-        <label class="form-section-label">3 · Branch / Ref</label>
+        <label class="form-section-label">{{ 'runner.step3' | translate }}</label>
         <input class="form-control" type="text"
           [ngModel]="ref()" (ngModelChange)="ref.set($event)" placeholder="main" />
       </div>
@@ -69,14 +69,14 @@
       <!-- Inputs -->
       <div class="form-section">
         <div class="flex-between">
-          <label class="form-section-label">4 · Inputs (opcional)</label>
-          <button class="btn btn-sm" (click)="addInput()">+ Add</button>
+          <label class="form-section-label">{{ 'runner.step4' | translate }} {{ 'runner.optional' | translate }}</label>
+          <button class="btn btn-sm" (click)="addInput()">{{ 'runner.addInput' | translate }}</button>
         </div>
         <div class="inputs-grid">
           @for (pair of inputs(); track $index) {
-            <input class="form-control" type="text" placeholder="key"
+            <input class="form-control" type="text" [placeholder]="'runner.inputKey' | translate"
               [ngModel]="pair.key" (ngModelChange)="pair.key = $event" />
-            <input class="form-control" type="text" placeholder="value"
+            <input class="form-control" type="text" [placeholder]="'runner.inputValue' | translate"
               [ngModel]="pair.value" (ngModelChange)="pair.value = $event" />
             <button class="btn btn-sm" (click)="removeInput($index)" [disabled]="inputs().length === 1">✕</button>
           }
@@ -85,8 +85,8 @@
 
       <!-- Trigger button -->
       <button class="btn btn-primary w-full" [disabled]="!canTrigger()" (click)="trigger()">
-        @if (triggering()) { <span class="spinner"></span> Triggering… }
-        @else { ▷ Run {{ selectedWf()!.name }} }
+        @if (triggering()) { <span class="spinner"></span> {{ 'runner.triggering' | translate }} }
+        @else { {{ 'runner.run' | translate }} {{ selectedWf()!.name }} }
       </button>
     }
   </div>
@@ -94,16 +94,16 @@
   <!-- ── Tracked runs ───────────────────────────────────────────────────────── -->
   <div class="tracker">
     <div class="flex-between tracker-header">
-      <h2 class="tracker-title">Execuções recentes</h2>
+      <h2 class="tracker-title">{{ 'runner.recentRuns' | translate }}</h2>
       @if (polling()) {
-        <span class="polling-badge"><span class="pulse"></span> A monitorizar…</span>
+        <span class="polling-badge"><span class="pulse"></span> {{ 'runner.monitoring' | translate }}</span>
       }
     </div>
 
     @if (trackedRuns().length === 0) {
       <div class="empty-state">
         <div class="empty-icon">▷</div>
-        <p>Dispara um workflow para acompanhar aqui.</p>
+        <p>{{ 'runner.emptyState' | translate }}</p>
       </div>
     } @else {
       <ul class="tracked-list">
@@ -125,7 +125,7 @@
               </div>
             }
             <div class="tracked-actions">
-              <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">↗ View logs</a>
+              <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">{{ 'runner.viewLogs' | translate }}</a>
             </div>
           </li>
         }

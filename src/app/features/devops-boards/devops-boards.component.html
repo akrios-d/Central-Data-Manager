@@ -1,7 +1,7 @@
 <div class="page-header flex-between">
   <div>
-    <h1>DevOps Boards</h1>
-    <p>Kanban view of your work items. Arrasta os cards entre colunas para mudar o estado.</p>
+    <h1>{{ 'boards.title' | translate }}</h1>
+    <p>{{ 'boards.subtitle' | translate }}</p>
   </div>
   @if (projects().length > 1) {
     <select class="form-control" style="width:auto"
@@ -14,7 +14,7 @@
 </div>
 
 @if (loading()) {
-  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading projects…</p></div>
+  <div class="empty-state"><div class="spinner"></div><p class="mt-2">{{ 'boards.loadingProjects' | translate }}</p></div>
 } @else if (error()) {
   <div class="card"><p class="text-muted">{{ error() }}</p></div>
 } @else {
@@ -22,8 +22,8 @@
   <div class="card filter-card">
     <div class="filter-row">
       <div class="sprint-toggle">
-        <button class="toggle-btn" [class.active]="filterSprint() === 'all'" (click)="filterSprint.set('all')">Tudo</button>
-        <button class="toggle-btn" [class.active]="filterSprint() === 'current'" (click)="filterSprint.set('current')">Sprint actual</button>
+        <button class="toggle-btn" [class.active]="filterSprint() === 'all'" (click)="filterSprint.set('all')">{{ 'boards.all' | translate }}</button>
+        <button class="toggle-btn" [class.active]="filterSprint() === 'current'" (click)="filterSprint.set('current')">{{ 'boards.currentSprint' | translate }}</button>
       </div>
       <div class="filter-divider"></div>
       <div class="type-chips">
@@ -35,7 +35,7 @@
       </div>
       <div class="assignee-wrap">
         <input class="form-control filter-assignee"
-          placeholder="Atribuído a…"
+          [placeholder]="'boards.assigneePlaceholder' | translate"
           autocomplete="off"
           [ngModel]="filterAssignee()"
           (ngModelChange)="filterAssignee.set($event); showAssigneeDrop.set(true)"
@@ -55,7 +55,7 @@
       <div class="col-manager-wrap">
         <button class="btn-col-manager" (click)="showColManager.set(!showColManager())"
           [class.active]="showColManager()">
-          ⚙ Colunas
+          {{ 'boards.columnsBtn' | translate }}
           @if (columnConfigs().length) {
             <span class="col-count">{{ columnConfigs().length }}</span>
           }
@@ -63,7 +63,7 @@
         @if (showColManager()) {
           <div class="col-manager-panel">
             @if (!columnConfigs().length) {
-              <p class="col-manager-empty">Carrega o board primeiro para configurar as colunas.</p>
+              <p class="col-manager-empty">{{ 'boards.columnsEmpty' | translate }}</p>
             } @else {
               @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
                 <div class="col-manager-row"
@@ -86,19 +86,18 @@
       </div>
       <button class="btn btn-primary" [disabled]="boardLoading()" (click)="loadBoard()">
         @if (boardLoading()) { <span class="spinner-inline"></span> }
-        @else { ▷ }
-        Carregar
+        {{ 'boards.load' | translate }}
       </button>
     </div>
   </div>
 
   @if (boardLoading()) {
-    <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading board…</p></div>
+    <div class="empty-state"><div class="spinner"></div><p class="mt-2">{{ 'boards.loadingBoard' | translate }}</p></div>
   }
 
   @if (boardReady() && !boardLoading()) {
     <div class="board-meta text-muted text-sm">
-      {{ totalItems() }} itens · {{ visibleColumns().length }} de {{ columns().length }} colunas visíveis
+      {{ totalItems() }} {{ 'boards.items' | translate }} · {{ visibleColumns().length }} {{ 'boards.of' | translate }} {{ columns().length }} {{ 'boards.visibleColumns' | translate }}
     </div>
     <div class="kanban-board">
       @for (col of visibleColumns(); track col.state) {
@@ -145,7 +144,7 @@
             }
             @if (col.items.length === 0) {
               <div class="kanban-empty" [class.drop-target]="dragOverState() === col.state">
-                Drop here
+                {{ 'boards.dropHere' | translate }}
               </div>
             }
           </div>

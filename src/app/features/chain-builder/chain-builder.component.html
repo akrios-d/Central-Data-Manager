@@ -1,6 +1,6 @@
 <div class="page-header">
-  <h1>Chain Builder</h1>
-  <p>Create and run sequences of GitHub Actions workflows.</p>
+  <h1>{{ 'builder.title' | translate }}</h1>
+  <p>{{ 'builder.subtitle' | translate }}</p>
 </div>
 
 <div class="chain-layout">
@@ -8,24 +8,24 @@
   <!-- ── Sidebar: chain list ─────────────────────────────────────────────────── -->
   <aside class="card chain-sidebar">
     <div class="sidebar-top">
-      <h2 class="section-title">My Chains</h2>
+      <h2 class="section-title">{{ 'builder.myChains' | translate }}</h2>
       <div class="sidebar-actions">
-        <label class="btn btn-sm btn-outline" title="Import chain from JSON">
-          ↑ Import
+        <label class="btn btn-sm btn-outline" [title]="'builder.import' | translate">
+          {{ 'builder.import' | translate }}
           <input type="file" accept=".json" style="display:none" (change)="importChain($event)" />
         </label>
-        <button class="btn btn-sm btn-primary" (click)="newChain()">+ New</button>
+        <button class="btn btn-sm btn-primary" (click)="newChain()">{{ 'builder.new' | translate }}</button>
       </div>
     </div>
 
     @if (chains().length === 0) {
-      <p class="text-muted text-sm mt-2">No chains yet.</p>
+      <p class="text-muted text-sm mt-2">{{ 'builder.noChains' | translate }}</p>
     } @else {
       <ul class="chain-list">
         @for (c of chains(); track c.id) {
           <li class="chain-item" [class.selected]="selectedId() === c.id" (click)="selectChain(c)">
             <span class="chain-item-name">{{ c.name }}</span>
-            <span class="chain-item-meta text-muted text-sm">{{ c.steps.length }} step{{ c.steps.length === 1 ? '' : 's' }}</span>
+            <span class="chain-item-meta text-muted text-sm">{{ c.steps.length }} {{ c.steps.length === 1 ? ('builder.stepOne' | translate) : ('builder.stepMany' | translate) }}</span>
           </li>
         }
       </ul>
@@ -34,7 +34,7 @@
     @if (activeRun() && activeRun()!.status === 'running') {
       <div class="running-notice text-sm">
         <span class="pulse-dot"></span>
-        <span class="text-info">{{ activeRun()!.chainName }} running…</span>
+        <span class="text-info">{{ activeRun()!.chainName }} {{ 'builder.running' | translate }}</span>
       </div>
     }
   </aside>
@@ -47,24 +47,24 @@
       <div class="card editor-card">
         <div class="editor-header">
           <input class="form-control chain-name-input"
-            placeholder="Chain name…"
+            [placeholder]="'builder.chainName' | translate"
             [ngModel]="chainName()"
             (ngModelChange)="chainName.set($event)" />
           <input class="form-control chain-ref-input"
-            placeholder="Default branch / ref (e.g. main)"
+            [placeholder]="'builder.defaultRef' | translate"
             [ngModel]="chainRef()"
             (ngModelChange)="chainRef.set($event)" />
           <div class="editor-actions">
-            <button class="btn btn-sm btn-outline" (click)="exportChain()" title="Export chain as JSON">↓ Export</button>
-            <button class="btn btn-sm btn-outline" (click)="saveChain()">Save</button>
+            <button class="btn btn-sm btn-outline" (click)="exportChain()" [title]="'builder.export' | translate">{{ 'builder.export' | translate }}</button>
+            <button class="btn btn-sm btn-outline" (click)="saveChain()">{{ 'builder.save' | translate }}</button>
             @if (selectedId() !== 'new') {
-              <button class="btn btn-sm btn-danger" (click)="deleteChain()">Delete</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteChain()">{{ 'builder.delete' | translate }}</button>
             }
             @if (isActiveChain() && activeRun()?.status === 'running') {
-              <button class="btn btn-sm btn-danger" (click)="stopChain()">■ Stop</button>
+              <button class="btn btn-sm btn-danger" (click)="stopChain()">{{ 'builder.stop' | translate }}</button>
             } @else {
               <button class="btn btn-sm btn-success" [disabled]="!canRun()" (click)="runChain()">
-                ▷ Run
+                {{ 'builder.run' | translate }}
               </button>
             }
           </div>
@@ -72,7 +72,7 @@
 
         <!-- Step list -->
         @if (editSteps().length === 0) {
-          <p class="text-muted text-sm empty-steps">No steps yet — add one below.</p>
+          <p class="text-muted text-sm empty-steps">{{ 'builder.noSteps' | translate }}</p>
         } @else {
           <ol class="step-list">
             @for (step of editSteps(); track step.id; let i = $index; let last = $last) {
@@ -86,10 +86,10 @@
                   }
                 </div>
                 <div class="step-controls">
-                  <button class="icon-btn" title="Move up"   [disabled]="i === 0"  (click)="moveStep(i, -1)">↑</button>
-                  <button class="icon-btn" title="Move down" [disabled]="last"     (click)="moveStep(i,  1)">↓</button>
-                  <button class="icon-btn" title="Edit"                             (click)="editStep(step)">✎</button>
-                  <button class="icon-btn icon-btn-danger" title="Remove"           (click)="removeStep(i)">✕</button>
+                  <button class="icon-btn" [title]="'builder.moveUp' | translate"   [disabled]="i === 0"  (click)="moveStep(i, -1)">↑</button>
+                  <button class="icon-btn" [title]="'builder.moveDown' | translate" [disabled]="last"     (click)="moveStep(i,  1)">↓</button>
+                  <button class="icon-btn" [title]="'builder.edit' | translate"                           (click)="editStep(step)">✎</button>
+                  <button class="icon-btn icon-btn-danger" [title]="'builder.remove' | translate"         (click)="removeStep(i)">✕</button>
                 </div>
               </li>
             }
@@ -98,20 +98,20 @@
 
         <!-- Add Step button / form -->
         @if (!showAddStep()) {
-          <button class="btn btn-sm btn-outline add-step-btn" (click)="openAddStep()">+ Add Step</button>
+          <button class="btn btn-sm btn-outline add-step-btn" (click)="openAddStep()">{{ 'builder.addStep' | translate }}</button>
         } @else {
           <div class="add-step-form">
             <div class="add-step-header">
-              <h3 class="add-step-title">{{ editingStepId() ? 'Edit Step' : 'Add Step' }}</h3>
-              <button class="btn btn-sm btn-outline" (click)="cancelAddStep()">Cancel</button>
+              <h3 class="add-step-title">{{ editingStepId() ? ('builder.editStepTitle' | translate) : ('builder.addStepTitle' | translate) }}</h3>
+              <button class="btn btn-sm btn-outline" (click)="cancelAddStep()">{{ 'builder.cancel' | translate }}</button>
             </div>
 
             <!-- Repo search -->
             <div class="form-group">
-              <label class="form-label">Repository</label>
+              <label class="form-label">{{ 'builder.repository' | translate }}</label>
               <div class="repo-search-wrap">
                 <input class="form-control"
-                  placeholder="Search repos…"
+                  [placeholder]="'builder.searchRepos' | translate"
                   [ngModel]="repoSearch()"
                   (ngModelChange)="onRepoSearchChange($event)" />
                 @if (reposLoading()) {
@@ -130,14 +130,14 @@
             @if (stepRepo()) {
               <!-- Workflow select -->
               <div class="form-group">
-                <label class="form-label">Workflow</label>
+                <label class="form-label">{{ 'builder.workflow' | translate }}</label>
                 @if (stepWfLoad()) {
                   <div class="spinner-sm"></div>
                 } @else {
                   <select class="form-control"
                     [ngModel]="stepWf()"
                     (ngModelChange)="stepWf.set($event)">
-                    <option [ngValue]="null" disabled>Select workflow…</option>
+                    <option [ngValue]="null" disabled>{{ 'builder.selectWorkflow' | translate }}</option>
                     @for (wf of stepWfs(); track wf.id) {
                       <option [ngValue]="wf">{{ wf.name }}</option>
                     }
@@ -151,7 +151,7 @@
                   <input type="checkbox"
                     [ngModel]="stepOverrideRef()"
                     (ngModelChange)="onOverrideChange($event)" />
-                  Override branch / ref
+                  {{ 'builder.overrideBranch' | translate }}
                 </label>
                 @if (stepOverrideRef()) {
                   <input class="form-control mt-1"
@@ -164,26 +164,26 @@
                     }
                   </datalist>
                 } @else {
-                  <p class="text-muted text-sm mt-1">Uses chain default: <strong>{{ chainRef() || '(not set)' }}</strong></p>
+                  <p class="text-muted text-sm mt-1">{{ 'builder.usesDefault' | translate }} <strong>{{ chainRef() || ('builder.notSet' | translate) }}</strong></p>
                 }
               </div>
 
               <!-- Inputs -->
               <div class="form-group">
-                <label class="form-label">Inputs <span class="text-muted">(optional)</span></label>
+                <label class="form-label">{{ 'builder.inputs' | translate }} <span class="text-muted">{{ 'builder.optional' | translate }}</span></label>
                 @for (inp of stepInputs; track $index; let i = $index) {
                   <div class="input-row">
-                    <input class="form-control" placeholder="key"   [(ngModel)]="inp.key" />
-                    <input class="form-control" placeholder="value" [(ngModel)]="inp.value" />
+                    <input class="form-control" [placeholder]="'builder.inputKey' | translate"   [(ngModel)]="inp.key" />
+                    <input class="form-control" [placeholder]="'builder.inputValue' | translate" [(ngModel)]="inp.value" />
                     <button class="icon-btn icon-btn-danger" (click)="removeStepInput(i)">✕</button>
                   </div>
                 }
-                <button class="btn btn-xs btn-outline" (click)="addStepInput()">+ Input</button>
+                <button class="btn btn-xs btn-outline" (click)="addStepInput()">{{ 'builder.addInput' | translate }}</button>
               </div>
 
               <div class="add-step-actions">
                 <button class="btn btn-sm btn-primary" [disabled]="!stepWf()" (click)="addStep()">
-                  {{ editingStepId() ? 'Update Step' : 'Add Step' }}
+                  {{ editingStepId() ? ('builder.updateStep' | translate) : ('builder.addStepTitle' | translate) }}
                 </button>
               </div>
             }
@@ -214,7 +214,7 @@
                   <span class="run-step-name">{{ step.workflowName }}</span>
                   <span class="text-muted text-sm">{{ step.repoFullName }}</span>
                   @if (sr?.runUrl) {
-                    <a [href]="sr!.runUrl" target="_blank" rel="noopener" class="text-sm run-link">View on GitHub ↗</a>
+                    <a [href]="sr!.runUrl" target="_blank" rel="noopener" class="text-sm run-link">{{ 'builder.viewOnGithub' | translate }}</a>
                   }
                   @if (sr?.error) {
                     <span class="text-danger text-sm">{{ sr!.error }}</span>
@@ -232,7 +232,7 @@
       <!-- Run history -->
       @if (chainRuns().length > 0) {
         <div class="card">
-          <h2 class="section-title">Run History</h2>
+          <h2 class="section-title">{{ 'builder.runHistory' | translate }}</h2>
           <ul class="history-list">
             @for (r of chainRuns(); track r.id) {
               <li class="history-item">
@@ -249,7 +249,7 @@
 
   } @else {
     <div class="card empty-card">
-      <p class="text-muted">Select a chain from the left, or create a new one.</p>
+      <p class="text-muted">{{ 'builder.emptyState' | translate }}</p>
     </div>
   }
 </div>

@@ -7,7 +7,11 @@
       "Bash(npx tsc *)",
       "Bash(npx ng *)",
       "Bash(npm install *)",
-      "Bash(node -e \"console.log\\(require\\('./node_modules/@ngx-translate/core/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\('./node_modules/@ngx-translate/core/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/@ngx-translate/http-loader/package.json'\\).version\\)\")",
+      "Bash(node -e \"const m = require\\('./node_modules/@ngx-translate/http-loader'\\); console.log\\(Object.keys\\(m\\)\\)\")",
+      "Bash(cat node_modules/@ngx-translate/http-loader/lib/translate-http-loader.d.ts)",
+      "Bash(cat node_modules/@ngx-translate/http-loader/public-api.d.ts)"
     ]
   }
 }
