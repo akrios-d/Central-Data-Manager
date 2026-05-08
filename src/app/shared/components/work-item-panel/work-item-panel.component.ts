@@ -1,10 +1,11 @@
 import { Component, input, output, computed, HostListener } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { DevOpsWorkItem } from '../../../core/services/devops-api.service';
+import { MarkdownPipe } from '../../pipes/markdown.pipe';
 
 @Component({
   selector: 'app-work-item-panel',
-  imports: [DatePipe],
+  imports: [DatePipe, MarkdownPipe],
   templateUrl: './work-item-panel.component.html',
   styleUrl: './work-item-panel.component.scss',
 })

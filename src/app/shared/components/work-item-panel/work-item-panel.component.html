@@ -64,7 +64,7 @@
       @if (wi.fields['System.Description']) {
         <div class="wi-description">
           <h3>Description</h3>
-          <div class="description-body" [innerHTML]="wi.fields['System.Description']"></div>
+          <div class="description-body" [innerHTML]="wi.fields['System.Description'] | markdown"></div>
         </div>
       } @else {
         <p class="text-muted text-sm wi-no-desc">No description.</p>

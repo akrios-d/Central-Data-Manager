@@ -159,6 +159,44 @@
     font-size: 0.85em;
   }
   img { max-width: 100%; border-radius: var(--radius); }
+
+  h1, h2, h3, h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.25rem;
+  }
+  pre {
+    background: var(--surface-2);
+    padding: 0.6rem 0.75rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    code { background: none; padding: 0; }
+  }
+  blockquote {
+    border-left: 3px solid var(--border);
+    margin: 0 0 0.5rem;
+    padding-left: 0.75rem;
+    color: var(--text-muted);
+  }
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.75rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-bottom: 0.5rem;
+    th, td {
+      padding: 0.3rem 0.5rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    th { background: var(--surface-2); font-weight: 600; }
+  }
 }
 
 .wi-no-desc { margin-top: 0.25rem; }
