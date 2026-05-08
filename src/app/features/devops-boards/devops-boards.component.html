@@ -58,15 +58,18 @@
               <p class="col-manager-empty">Carrega o board primeiro para configurar as colunas.</p>
             } @else {
               @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
-                <div class="col-manager-row">
+                <div class="col-manager-row"
+                  draggable="true"
+                  [class.col-dragging]="dragColIndex() === i"
+                  (dragstart)="onColDragStart(i)"
+                  (dragenter)="onColDragEnter(i); $event.preventDefault()"
+                  (dragover)="$event.preventDefault()"
+                  (dragend)="onColDragEnd()">
+                  <span class="col-drag-handle">⠿</span>
                   <label class="col-manager-label">
                     <input type="checkbox" [checked]="cfg.visible" (change)="toggleColVisibility(cfg.state)" />
                     {{ cfg.state }}
                   </label>
-                  <div class="col-manager-arrows">
-                    <button [disabled]="i === 0" (click)="moveCol(i, -1)">↑</button>
-                    <button [disabled]="i === columnConfigs().length - 1" (click)="moveCol(i, 1)">↓</button>
-                  </div>
                 </div>
               }
             }

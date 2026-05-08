@@ -168,9 +168,9 @@ export class DevopsBoardsComponent implements OnInit {
       const saved: ColumnConfig[] = JSON.parse(localStorage.getItem(this.colConfigKey) ?? 'null');
       if (!saved) return states.map(state => ({ state, visible: true }));
       const savedStates = new Set(saved.map(c => c.state));
-      const merged = saved.filter(c => states.includes(c.state));
+      // Keep ALL saved states (hidden ones weren't queried so they're absent from states)
       const newOnes = states.filter(s => !savedStates.has(s)).map(state => ({ state, visible: true }));
-      return [...merged, ...newOnes];
+      return [...saved, ...newOnes];
     } catch {
       return states.map(state => ({ state, visible: true }));
     }
@@ -204,6 +204,8 @@ export class DevopsBoardsComponent implements OnInit {
     );
   }
 
+  dragColIndex = signal<number | null>(null);
+
   toggleColVisibility(state: string): void {
     this.columnConfigs.update(cfgs =>
       cfgs.map(c => c.state === state ? { ...c, visible: !c.visible } : c)
@@ -218,6 +220,27 @@ export class DevopsBoardsComponent implements OnInit {
       [next[index], next[target]] = [next[target], next[index]];
       return next;
     });
+    this.saveColConfig();
+  }
+
+  onColDragStart(index: number): void {
+    this.dragColIndex.set(index);
+  }
+
+  onColDragEnter(index: number): void {
+    const from = this.dragColIndex();
+    if (from === null || from === index) return;
+    this.columnConfigs.update(cfgs => {
+      const next = [...cfgs];
+      const [item] = next.splice(from, 1);
+      next.splice(index, 0, item);
+      return next;
+    });
+    this.dragColIndex.set(index);
+  }
+
+  onColDragEnd(): void {
+    this.dragColIndex.set(null);
     this.saveColConfig();
   }
 
