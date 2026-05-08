@@ -35,7 +35,8 @@
     "items": "itens",
     "of": "de",
     "visibleColumns": "colunas visíveis",
-    "dropHere": "Largar aqui"
+    "dropHere": "Largar aqui",
+    "resetColumns": "Repor"
   },
   "sprint": {
     "configureIntro": "Configura o Projecto e o Team do Azure DevOps nas",

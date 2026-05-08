@@ -35,7 +35,8 @@
     "items": "items",
     "of": "of",
     "visibleColumns": "columns visible",
-    "dropHere": "Drop here"
+    "dropHere": "Drop here",
+    "resetColumns": "Reset"
   },
   "sprint": {
     "configureIntro": "Configure the Project and Team for Azure DevOps in",

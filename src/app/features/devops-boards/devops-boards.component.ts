@@ -282,6 +282,16 @@ export class DevopsBoardsComponent implements OnInit {
     this.saveColConfig();
   }
 
+  resetColConfig(): void {
+    localStorage.removeItem(this.colConfigKey);
+    const allStates = this.columnConfigs().map(c => c.state);
+    const ordered = [
+      ...PREFERRED_STATES.filter(s => allStates.includes(s)),
+      ...allStates.filter(s => !PREFERRED_STATES.includes(s)),
+    ];
+    this.columnConfigs.set(ordered.map(state => ({ state, visible: true })));
+  }
+
   openItem(wi: DevOpsWorkItem): void {
     if (this.wasDragging) return;
     this.selectedItem.set(wi);
