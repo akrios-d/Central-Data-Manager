@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
 import { DevOpsApiService, DevOpsProject, DevOpsWorkItem } from '../../core/services/devops-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
@@ -28,16 +28,18 @@ export class DevopsBoardsComponent implements OnInit {
   loading         = signal(true);
   boardLoading    = signal(false);
   boardReady      = signal(false);
-  showFilters     = signal(true);
   error           = signal<string | null>(null);
   dragItem        = signal<DevOpsWorkItem | null>(null);
   dragOverState   = signal<string | null>(null);
   saving          = signal<number | null>(null);
   selectedItem    = signal<DevOpsWorkItem | null>(null);
 
+  teamMembers     = signal<string[]>([]);
+
   // ── Filters ───────────────────────────────────────────────────────────────────
   filterTypes    = signal<Set<string>>(new Set());
   filterAssignee = signal('');
+  filterSprint   = signal<'current' | 'all'>('all');
 
   readonly totalItems = computed(() => this.columns().reduce((s, c) => s + c.items.length, 0));
 
@@ -48,9 +50,27 @@ export class DevopsBoardsComponent implements OnInit {
       next: (res) => {
         this.projects.set(res.value);
         this.loading.set(false);
-        if (res.value.length) this.selectedProject.set(res.value[0].name);
+        if (res.value.length) {
+          this.selectedProject.set(res.value[0].name);
+          this.loadTeamMembers(res.value[0].name);
+        }
       },
       error: (e) => { this.error.set(e?.message); this.loading.set(false); },
+    });
+  }
+
+  loadTeamMembers(project: string): void {
+    this.ado.listTeams(project).pipe(
+      switchMap(teams => forkJoin(
+        teams.value.map(t => this.ado.listTeamMembers(project, t.id))
+      ))
+    ).subscribe({
+      next: (results) => {
+        const names = [...new Set(
+          results.flatMap(r => r.value.map(m => m.identity.displayName))
+        )].sort();
+        this.teamMembers.set(names);
+      },
     });
   }
 
@@ -82,7 +102,7 @@ export class DevopsBoardsComponent implements OnInit {
         const batches: number[][] = [];
         for (let i = 0; i < ids.length; i += 200) batches.push(ids.slice(i, i + 200));
         forkJoin(batches.map(b => this.ado.listWorkItems(name, b))).subscribe({
-          next: (results) => { this.buildColumns(results.flatMap(r => r.value)); this.showFilters.set(false); },
+          next: (results) => { this.buildColumns(results.flatMap(r => r.value)); },
           error: () => this.boardLoading.set(false),
         });
       },
@@ -92,6 +112,10 @@ export class DevopsBoardsComponent implements OnInit {
 
   private buildWiql(project: string): string {
     const conditions: string[] = [`[System.TeamProject] = '${project}'`];
+
+    if (this.filterSprint() === 'current') {
+      conditions.push(`[System.IterationPath] = @CurrentIteration`);
+    }
 
     const types = [...this.filterTypes()];
     if (types.length) {

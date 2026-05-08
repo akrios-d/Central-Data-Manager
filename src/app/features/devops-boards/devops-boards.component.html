@@ -5,7 +5,7 @@
   </div>
   @if (projects().length > 1) {
     <select class="form-control" style="width:auto"
-      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event)">
+      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event); loadTeamMembers($event)">
       @for (p of projects(); track p.id) {
         <option [value]="p.name">{{ p.name }}</option>
       }
@@ -19,42 +19,43 @@
   <div class="card"><p class="text-muted">{{ error() }}</p></div>
 } @else {
 
-  @if (showFilters()) {
-    <div class="card filter-card">
-      <h2 class="section-title">O que queres ver?</h2>
-
-      <div class="form-group">
-        <label class="form-label">Tipo de item</label>
-        <div class="type-chips">
-          @for (t of typeOptions; track t) {
-            <button class="type-chip" [class.active]="isTypeSelected(t)" (click)="toggleType(t)">
-              {{ t }}
-            </button>
-          }
-        </div>
-        <p class="text-muted text-sm mt-1">Sem selecção = todos os tipos</p>
+  <div class="card filter-card">
+    <div class="filter-row">
+      <div class="sprint-toggle">
+        <button class="toggle-btn" [class.active]="filterSprint() === 'all'" (click)="filterSprint.set('all')">Tudo</button>
+        <button class="toggle-btn" [class.active]="filterSprint() === 'current'" (click)="filterSprint.set('current')">Sprint actual</button>
       </div>
-
-      <div class="form-group">
-        <label class="form-label">Atribuído a</label>
-        <input class="form-control filter-assignee"
-          placeholder="Nome ou email… (parcial)"
-          [ngModel]="filterAssignee()"
-          (ngModelChange)="filterAssignee.set($event)" />
+      <div class="filter-divider"></div>
+      <div class="type-chips">
+        @for (t of typeOptions; track t) {
+          <button class="type-chip" [class.active]="isTypeSelected(t)" (click)="toggleType(t)">
+            {{ t }}
+          </button>
+        }
       </div>
-
+      <input class="form-control filter-assignee"
+        placeholder="Atribuído a…"
+        list="assignee-list"
+        [ngModel]="filterAssignee()"
+        (ngModelChange)="filterAssignee.set($event)" />
+      <datalist id="assignee-list">
+        @for (m of teamMembers(); track m) {
+          <option [value]="m"></option>
+        }
+      </datalist>
       <button class="btn btn-primary" [disabled]="boardLoading()" (click)="loadBoard()">
-        @if (boardLoading()) { <span class="spinner-inline"></span> A carregar… }
-        @else { ▷ Carregar Board }
+        @if (boardLoading()) { <span class="spinner-inline"></span> }
+        @else { ▷ }
+        Carregar
       </button>
     </div>
-  }
+  </div>
 
-  @if (boardLoading() && !showFilters()) {
+  @if (boardLoading()) {
     <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading board…</p></div>
   }
 
-  @if (boardReady() && !showFilters()) {
+  @if (boardReady() && !boardLoading()) {
     <div class="board-meta text-muted text-sm">
       {{ totalItems() }} itens em {{ columns().length }} estados
     </div>

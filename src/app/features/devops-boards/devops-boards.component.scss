@@ -7,11 +7,15 @@
 // ── Filter card ───────────────────────────────────────────────────────────────
 
 .filter-card {
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
   margin-bottom: 1.25rem;
+  padding: 0.65rem 1rem;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .type-chips {
@@ -38,7 +42,38 @@
   &:hover:not(.active) { border-color: var(--text-muted); color: var(--text); }
 }
 
-.filter-assignee { max-width: 300px; }
+.sprint-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+
+  &.active {
+    background: var(--accent-muted, rgba(88,166,255,0.12));
+    color: var(--accent, #58a6ff);
+  }
+  &:hover:not(.active) { color: var(--text); background: var(--surface-2); }
+}
+
+.filter-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.filter-assignee { width: 180px; flex-shrink: 0; }
 
 .spinner-inline {
   display: inline-block;

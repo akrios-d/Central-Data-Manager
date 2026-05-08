@@ -56,6 +56,13 @@ export class DevOpsApiService {
     );
   }
 
+  listTeamMembers(project: string, teamId: string): Observable<DevOpsPagedResult<DevOpsTeamMember>> {
+    return this.http.get<DevOpsPagedResult<DevOpsTeamMember>>(
+      `${this.base()}/projects/${encodeURIComponent(project)}/teams/${teamId}/members?api-version=7.1`,
+      { headers: this.headers }
+    );
+  }
+
   // ── Iterations / Sprint ─────────────────────────────────────────────────────
 
   getCurrentIteration(project: string, team: string): Observable<DevOpsPagedResult<DevOpsIteration>> {
@@ -117,6 +124,15 @@ export interface DevOpsTeam {
   id: string;
   name: string;
   description: string;
+}
+
+export interface DevOpsTeamMember {
+  identity: {
+    displayName: string;
+    uniqueName: string;
+    id: string;
+  };
+  isTeamAdmin?: boolean;
 }
 
 export interface DevOpsIteration {
