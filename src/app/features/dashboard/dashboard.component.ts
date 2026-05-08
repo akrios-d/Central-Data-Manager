@@ -50,6 +50,30 @@ export class DashboardComponent implements OnInit {
 
   pipelineSearch  = signal('');
   expandedRepos   = signal<Set<string>>(new Set());
+  wiStateFilter   = signal<Set<string>>(new Set());
+
+  readonly availableWiStates = computed(() =>
+    [...new Set(this.workItems().map(wi => wi.fields['System.State'] as string))].sort()
+  );
+
+  readonly filteredWorkItems = computed(() => {
+    const filter = this.wiStateFilter();
+    if (!filter.size) return this.workItems();
+    return this.workItems().filter(wi => filter.has(wi.fields['System.State'] as string));
+  });
+
+  toggleWiState(state: string): void {
+    this.wiStateFilter.update(s => {
+      const next = new Set(s);
+      next.has(state) ? next.delete(state) : next.add(state);
+      return next;
+    });
+  }
+
+  isWiStateActive(state: string): boolean {
+    const f = this.wiStateFilter();
+    return f.size === 0 || f.has(state);
+  }
 
   toggleRepo(fullName: string): void {
     this.expandedRepos.update(s => {

@@ -23,6 +23,12 @@
   margin-bottom: 0.25rem;
 }
 
+.sidebar-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
 .chain-list {
   list-style: none;
   display: flex;

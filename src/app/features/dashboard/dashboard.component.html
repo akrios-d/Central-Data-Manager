@@ -76,8 +76,15 @@
       } @else if (workItems().length === 0) {
         <div class="empty-state"><p>No work items found.</p></div>
       } @else {
+        <div class="wi-filters">
+          @for (state of availableWiStates(); track state) {
+            <button class="wi-chip" [class.active]="isWiStateActive(state)" (click)="toggleWiState(state)">
+              {{ state }}
+            </button>
+          }
+        </div>
         <ul class="wi-list">
-          @for (wi of workItems(); track wi.id) {
+          @for (wi of filteredWorkItems(); track wi.id) {
             <li class="wi-item">
               <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
               <div class="wi-info">

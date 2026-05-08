@@ -311,6 +311,60 @@ export class ChainBuilderComponent {
 
   stopChain(): void { this.executor.stop(); }
 
+  // ── Export / Import ───────────────────────────────────────────────────────────
+  exportChain(): void {
+    const chain = this.buildChainSnapshot();
+    if (!chain) return;
+    const blob = new Blob([JSON.stringify(chain, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `chain-${chain.name.replace(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  importChain(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if (!data?.name || !Array.isArray(data?.steps)) {
+          this.toasts.show('Invalid chain file', 'danger');
+          return;
+        }
+        const chain: Chain = {
+          id:        crypto.randomUUID(),
+          name:      data.name,
+          ref:       data.ref ?? '',
+          steps:     data.steps.map((s: ChainStep) => ({ ...s, id: crypto.randomUUID() })),
+          createdAt: new Date().toISOString(),
+        };
+        this.chainSvc.saveChain(chain);
+        this.selectChain(chain);
+        this.toasts.show(`Chain "${chain.name}" imported`, 'success');
+      } catch {
+        this.toasts.show('Could not read file', 'danger');
+      }
+      (event.target as HTMLInputElement).value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  private buildChainSnapshot(): Chain | null {
+    const name = this.chainName().trim();
+    if (!name) { this.toasts.show('Save the chain first', 'danger'); return null; }
+    return {
+      id:        this.selectedId() !== 'new' ? this.selectedId()! : crypto.randomUUID(),
+      name,
+      ref:       this.chainRef().trim(),
+      steps:     this.editSteps(),
+      createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
+    };
+  }
+
   // ── Template helpers ──────────────────────────────────────────────────────────
   stepIcon(status: string): string {
     return ({ pending: '○', running: '◌', success: '✓', failure: '✕', skipped: '–' } as Record<string, string>)[status] ?? '○';

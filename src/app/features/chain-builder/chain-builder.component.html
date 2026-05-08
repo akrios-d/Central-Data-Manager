@@ -9,7 +9,13 @@
   <aside class="card chain-sidebar">
     <div class="sidebar-top">
       <h2 class="section-title">My Chains</h2>
-      <button class="btn btn-sm btn-primary" (click)="newChain()">+ New</button>
+      <div class="sidebar-actions">
+        <label class="btn btn-sm btn-outline" title="Import chain from JSON">
+          ↑ Import
+          <input type="file" accept=".json" style="display:none" (change)="importChain($event)" />
+        </label>
+        <button class="btn btn-sm btn-primary" (click)="newChain()">+ New</button>
+      </div>
     </div>
 
     @if (chains().length === 0) {
@@ -49,6 +55,7 @@
             [ngModel]="chainRef()"
             (ngModelChange)="chainRef.set($event)" />
           <div class="editor-actions">
+            <button class="btn btn-sm btn-outline" (click)="exportChain()" title="Export chain as JSON">↓ Export</button>
             <button class="btn btn-sm btn-outline" (click)="saveChain()">Save</button>
             @if (selectedId() !== 'new') {
               <button class="btn btn-sm btn-danger" (click)="deleteChain()">Delete</button>
