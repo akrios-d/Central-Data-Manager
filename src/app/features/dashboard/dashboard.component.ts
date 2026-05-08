@@ -8,6 +8,7 @@ import { TokenService } from '../../core/services/token.service';
 import { GitHubApiService, GhRepo, GhRun } from '../../core/services/github-api.service';
 import { DevOpsApiService, DevOpsWorkItem } from '../../core/services/devops-api.service';
 import { SprintWidgetComponent } from '../../shared/components/sprint-widget/sprint-widget.component';
+import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
 
 export interface Pipeline {
   workflowId: number;
@@ -28,7 +29,7 @@ const MAX_REPOS_FOR_RUNS = 15;
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, RouterLink, FormsModule, SprintWidgetComponent],
+  imports: [DatePipe, RouterLink, FormsModule, SprintWidgetComponent, WorkItemPanelComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -47,6 +48,8 @@ export class DashboardComponent implements OnInit {
   adoLoading = signal(false);
   ghError    = signal<string | null>(null);
   adoError   = signal<string | null>(null);
+
+  selectedItem    = signal<DevOpsWorkItem | null>(null);
 
   pipelineSearch  = signal('');
   expandedRepos   = signal<Set<string>>(new Set());

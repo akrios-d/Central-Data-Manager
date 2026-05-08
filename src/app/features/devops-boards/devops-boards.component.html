@@ -33,16 +33,24 @@
           </button>
         }
       </div>
-      <input class="form-control filter-assignee"
-        placeholder="Atribuído a…"
-        list="assignee-list"
-        [ngModel]="filterAssignee()"
-        (ngModelChange)="filterAssignee.set($event)" />
-      <datalist id="assignee-list">
-        @for (m of teamMembers(); track m) {
-          <option [value]="m"></option>
+      <div class="assignee-wrap">
+        <input class="form-control filter-assignee"
+          placeholder="Atribuído a…"
+          autocomplete="off"
+          [ngModel]="filterAssignee()"
+          (ngModelChange)="filterAssignee.set($event); showAssigneeDrop.set(true)"
+          (focus)="showAssigneeDrop.set(true)"
+          (blur)="$any($event.relatedTarget)?.closest('.assignee-drop') ? null : showAssigneeDrop.set(false)" />
+        @if (showAssigneeDrop() && assigneeSuggestions().length) {
+          <div class="assignee-drop">
+            @for (m of assigneeSuggestions(); track m) {
+              <div class="assignee-option" (mousedown)="filterAssignee.set(m); showAssigneeDrop.set(false)">
+                {{ m }}
+              </div>
+            }
+          </div>
         }
-      </datalist>
+      </div>
       <div class="filter-divider"></div>
       <div class="col-manager-wrap">
         <button class="btn-col-manager" (click)="showColManager.set(!showColManager())"

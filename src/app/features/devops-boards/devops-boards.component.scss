@@ -73,7 +73,37 @@
   flex-shrink: 0;
 }
 
-.filter-assignee { width: 180px; flex-shrink: 0; }
+.assignee-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.filter-assignee { width: 180px; }
+
+.assignee-drop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  z-index: 60;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.assignee-option {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover { background: var(--surface-2); }
+}
 
 .spinner-inline {
   display: inline-block;

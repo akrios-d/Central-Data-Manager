@@ -35,9 +35,20 @@ export class DevopsBoardsComponent implements OnInit {
   saving          = signal<number | null>(null);
   selectedItem    = signal<DevOpsWorkItem | null>(null);
 
-  teamMembers     = signal<string[]>([]);
-  columnConfigs   = signal<ColumnConfig[]>([]);
-  showColManager  = signal(false);
+  teamMembers          = signal<string[]>([]);
+  showAssigneeDrop     = signal(false);
+  columnConfigs        = signal<ColumnConfig[]>([]);
+  showColManager       = signal(false);
+
+  readonly assigneeSuggestions = computed(() => {
+    const q = this.normalize(this.filterAssignee());
+    if (!q) return this.teamMembers();
+    return this.teamMembers().filter(m => this.normalize(m).includes(q));
+  });
+
+  private normalize(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
 
   readonly visibleColumns = computed(() =>
     this.columnConfigs()

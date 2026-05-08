@@ -159,7 +159,18 @@
   gap: 0.6rem;
 }
 
-.wi-item { display: flex; align-items: flex-start; gap: 0.75rem; }
+.wi-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  border-radius: var(--radius);
+  padding: 0.25rem 0.4rem;
+  margin: 0 -0.4rem;
+  transition: background 0.12s;
+
+  &:hover { background: var(--surface-2); }
+}
 .wi-id   { flex-shrink: 0; padding-top: 0.1rem; font-size: 0.75rem; }
 
 .wi-info {
