@@ -1,0 +1,15 @@
+<div class="toast-stack">
+  @for (t of toast.toasts(); track t.id) {
+    <div class="toast" [class]="'toast-' + t.type" role="alert">
+      <p class="toast-msg">{{ t.message }}</p>
+      <div class="toast-actions">
+        @if (t.confirm) {
+          <button class="toast-btn toast-btn-confirm" (click)="confirm(t)">{{ t.confirm.label }}</button>
+          <button class="toast-btn toast-btn-cancel" (click)="toast.dismiss(t.id)">{{ t.cancelLabel }}</button>
+        } @else {
+          <button class="toast-btn toast-btn-cancel" (click)="toast.dismiss(t.id)">✕</button>
+        }
+      </div>
+    </div>
+  }
+</div>

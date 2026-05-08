@@ -1,0 +1,55 @@
+<div class="page-header flex-between">
+  <div>
+    <h1>DevOps Boards</h1>
+    <p>Kanban view of your work items.</p>
+  </div>
+  @if (projects().length > 1) {
+    <select class="form-control" style="width:auto"
+      [ngModel]="selectedProject()" (ngModelChange)="selectProject($event)">
+      @for (p of projects(); track p.id) {
+        <option [value]="p.name">{{ p.name }}</option>
+      }
+    </select>
+  }
+</div>
+
+@if (loading()) {
+  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading projects…</p></div>
+} @else if (error()) {
+  <div class="card"><p class="text-muted">{{ error() }}</p></div>
+} @else if (boardLoading()) {
+  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading board…</p></div>
+} @else {
+  <div class="kanban-board">
+    @for (col of columns(); track col.state) {
+      <div class="kanban-col"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop(col.state)">
+        <div class="kanban-col-header">
+          <span>{{ col.state }}</span>
+          <span class="badge badge-muted">{{ col.items.length }}</span>
+        </div>
+        <div class="kanban-items">
+          @for (wi of col.items; track wi.id) {
+            <div class="wi-card" draggable="true" (dragstart)="onDragStart(wi)">
+              <div class="wi-card-top">
+                <span class="wi-type badge badge-muted">{{ wi.fields['System.WorkItemType'] }}</span>
+                <span class="wi-priority">{{ priority(wi) }}</span>
+              </div>
+              <p class="wi-card-title">{{ wi.fields['System.Title'] }}</p>
+              @if (wi.fields['System.AssignedTo']) {
+                <span class="wi-assignee text-muted text-sm">
+                  {{ wi.fields['System.AssignedTo']?.displayName }}
+                </span>
+              }
+              <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
+            </div>
+          }
+          @if (col.items.length === 0) {
+            <div class="kanban-empty">No items</div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

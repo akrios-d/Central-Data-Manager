@@ -1,0 +1,68 @@
+@if (!project() || !team()) {
+  <div class="sprint-setup card">
+    <p class="text-muted text-sm">
+      Configure o <strong>Projecto</strong> e o <strong>Team</strong> do Azure DevOps nas
+      <a routerLink="/settings">Settings</a> para ver a sprint actual.
+    </p>
+  </div>
+} @else if (loading()) {
+  <div class="card sprint-card"><div class="spinner"></div></div>
+} @else if (error()) {
+  <div class="card sprint-card"><p class="text-muted text-sm">{{ error() }}</p></div>
+} @else if (!iteration()) {
+  <div class="card sprint-card"><p class="text-muted text-sm">Nenhuma sprint activa encontrada.</p></div>
+} @else {
+  <div class="card sprint-card">
+    <div class="sprint-header">
+      <div>
+        <div class="sprint-label">Sprint actual</div>
+        <div class="sprint-name">{{ iteration()!.name }}</div>
+        <div class="sprint-dates text-muted text-sm">
+          {{ iteration()!.attributes.startDate | date:'dd MMM' }} →
+          {{ iteration()!.attributes.finishDate | date:'dd MMM yyyy' }}
+          @if (daysLeft() !== null) {
+            <span class="days-left" [class.urgent]="daysLeft()! <= 2">
+              · {{ daysLeft() }}d restantes
+            </span>
+          }
+        </div>
+      </div>
+      <div class="sprint-progress-circle">
+        <svg viewBox="0 0 36 36" class="circular-chart">
+          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path class="circle" [attr.stroke-dasharray]="progress() + ', 100'"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+        <span class="progress-text">{{ progress() }}%</span>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" [style.width.%]="progress()"></div>
+    </div>
+
+    <div class="state-groups">
+      @for (group of stateGroups(); track group.state) {
+        <div class="state-chip" [class]="'state-' + group.state.toLowerCase().replace(' ', '-')">
+          <span class="state-count">{{ group.count }}</span>
+          <span class="state-name">{{ group.state }}</span>
+        </div>
+      }
+    </div>
+
+    @if (workItems().length > 0) {
+      <ul class="sprint-items">
+        @for (wi of workItems().slice(0, 8); track wi.id) {
+          <li class="sprint-item">
+            <span class="wi-state-dot" [class]="wi.fields['System.State'].toLowerCase().replace(' ', '-')"></span>
+            <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
+            <span class="wi-type text-muted text-sm">{{ wi.fields['System.WorkItemType'] }}</span>
+          </li>
+        }
+        @if (workItems().length > 8) {
+          <li class="sprint-more text-muted text-sm">+{{ workItems().length - 8 }} mais</li>
+        }
+      </ul>
+    }
+  </div>
+}

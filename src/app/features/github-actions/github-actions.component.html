@@ -1,0 +1,64 @@
+<div class="page-header flex-between">
+  <div>
+    <h1>GitHub Actions</h1>
+    <p>Browse workflows and manage runs.</p>
+  </div>
+  @if (selectedRepo()) {
+    <a [href]="'https://github.com/' + selectedRepo() + '/actions'" target="_blank" rel="noopener" class="btn btn-sm">
+      Open in GitHub ↗
+    </a>
+  }
+</div>
+
+@if (loading()) {
+  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading repositories…</p></div>
+} @else if (error()) {
+  <div class="card"><p class="text-muted">{{ error() }}</p></div>
+} @else {
+  <div class="ga-layout">
+    <aside class="repo-list card">
+      <p class="repo-list-label">Repositories</p>
+      @for (repo of repos(); track repo.id) {
+        <button class="repo-btn" [class.active]="selectedRepo() === repo.name" (click)="selectRepo(repo.name)">
+          {{ repo.name }}
+        </button>
+      }
+    </aside>
+
+    <section class="runs-panel">
+      @if (runsLoading()) {
+        <div class="empty-state"><div class="spinner"></div></div>
+      } @else if (runs().length === 0) {
+        <div class="empty-state"><p>No runs found for this repository.</p></div>
+      } @else {
+        <ul class="runs-list">
+          @for (run of runs(); track run.id) {
+            <li class="run-card card">
+              <div class="run-card-header">
+                <span class="run-dot-lg" [class]="runClass(run)"></span>
+                <div class="run-card-info">
+                  <span class="run-card-name">{{ run.name }}</span>
+                  <span class="text-muted text-sm">{{ run.head_branch }} · {{ run.created_at | date:'dd MMM yyyy HH:mm' }}</span>
+                </div>
+                <span class="badge" [class]="'badge-' + (runClass(run) === 'success' ? 'success' : runClass(run) === 'failure' ? 'danger' : runClass(run) === 'in_progress' ? 'info' : 'muted')">
+                  {{ run | runStatus }}
+                </span>
+              </div>
+              <div class="run-card-actions">
+                @if (actionFeedback()?.id === run.id) {
+                  <span class="text-muted text-sm">{{ actionFeedback()?.msg }}</span>
+                } @else {
+                  <button class="btn btn-sm" (click)="rerun(run)" title="Re-run">↺ Re-run</button>
+                  @if (run.status === 'in_progress' || run.status === 'queued') {
+                    <button class="btn btn-sm btn-danger" (click)="cancel(run)">✕ Cancel</button>
+                  }
+                  <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">↗ View</a>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+}

@@ -1,0 +1,80 @@
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  align-items: start;
+  min-height: calc(100vh - 180px);
+}
+
+.kanban-col {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+
+  &.drag-over { border-color: var(--accent); }
+}
+
+.kanban-col-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.kanban-items {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.kanban-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 1.5rem 0;
+}
+
+.wi-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: var(--text-muted); }
+  &:active { cursor: grabbing; }
+}
+
+.wi-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wi-card-title {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.wi-assignee {
+  font-size: 0.75rem;
+}
+
+.wi-id {
+  font-size: 0.72rem;
+  align-self: flex-end;
+}
+
+.wi-priority { font-size: 0.8rem; }

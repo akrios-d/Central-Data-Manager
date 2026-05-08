@@ -1,0 +1,152 @@
+<div class="page-header">
+  <h1>Settings</h1>
+  <p>Manage your API tokens. All data is stored locally in your browser.</p>
+</div>
+
+<div class="settings-grid">
+  <!-- ── GitHub ─────────────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="flex-between">
+      <h2 class="section-title">GitHub</h2>
+      @if (hasGh()) {
+        <span class="badge badge-success">Connected</span>
+      } @else {
+        <span class="badge badge-muted">Not configured</span>
+      }
+    </div>
+
+    @if (hasGh()) {
+      <p class="text-muted text-sm mt-1">Owner: <strong>{{ ghOwner() }}</strong></p>
+      <div class="settings-actions mt-2">
+        <button class="btn btn-sm" (click)="showGhForm.set(!showGhForm())">Update token</button>
+        <button class="btn btn-sm btn-danger" (click)="clearGh()">Remove</button>
+      </div>
+    }
+
+    @if (!hasGh() || showGhForm()) {
+      <div class="settings-form mt-2">
+        <div class="form-group">
+          <label>Username / Organisation</label>
+          <input class="form-control" type="text" [ngModel]="ghOwner2()" (ngModelChange)="ghOwner2.set($event)" placeholder="my-org" />
+        </div>
+        <div class="form-group mt-1">
+          <label>Personal Access Token</label>
+          <input class="form-control" type="password" [ngModel]="ghToken()" (ngModelChange)="ghToken.set($event)" placeholder="ghp_..." />
+        </div>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveGh()" [disabled]="!ghToken().trim() || !ghOwner2().trim()">Save</button>
+      </div>
+    }
+  </div>
+
+  <!-- ── Azure DevOps ───────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="flex-between">
+      <h2 class="section-title">Azure DevOps</h2>
+      @if (hasAdo()) {
+        <span class="badge badge-success">Connected</span>
+      } @else {
+        <span class="badge badge-muted">Not configured</span>
+      }
+    </div>
+
+    @if (hasAdo()) {
+      <div class="org-row mt-1">
+        @if (!showAdoOrgEdit()) {
+          <span class="text-muted text-sm">Organisation: <strong>{{ adoOrg() }}</strong></span>
+          <button class="btn btn-sm" (click)="openAdoOrgEdit()">Edit org</button>
+        } @else {
+          <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
+          <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">Save</button>
+          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">Cancel</button>
+        }
+      </div>
+      <div class="settings-actions mt-2">
+        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">Update token</button>
+        <button class="btn btn-sm btn-danger" (click)="clearAdo()">Remove</button>
+      </div>
+    }
+
+    @if (!hasAdo() || showAdoForm()) {
+      <div class="settings-form mt-2">
+        <div class="form-group">
+          <label>Organisation name</label>
+          <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" placeholder="my-company" />
+        </div>
+        <div class="form-group mt-1">
+          <label>Personal Access Token</label>
+          <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" placeholder="PAT..." />
+        </div>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">Save</button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ── Sprint config ──────────────────────────────────────────────────────── -->
+@if (hasAdo()) {
+  <div class="card mt-3">
+    <div class="flex-between">
+      <div>
+        <h2 class="section-title">Sprint (Dashboard widget)</h2>
+        @if (adoProject() && adoTeam()) {
+          <p class="text-muted text-sm mt-1">
+            Projecto: <strong>{{ adoProject() }}</strong> · Team: <strong>{{ adoTeam() }}</strong>
+          </p>
+        } @else {
+          <p class="text-muted text-sm mt-1">Não configurado — o widget de sprint não aparece no Dashboard.</p>
+        }
+      </div>
+      <button class="btn btn-sm" (click)="openSprintEdit()">
+        {{ adoProject() ? 'Edit' : 'Configure' }}
+      </button>
+    </div>
+
+    @if (showSprintEdit()) {
+      <div class="settings-form mt-2">
+        <div class="form-group">
+          <label>Projecto</label>
+          <div class="inline-row">
+            <input class="form-control" type="text"
+              [ngModel]="editAdoProject()" (ngModelChange)="editAdoProject.set($event)"
+              placeholder="Migração Pré-pagos" />
+            <button class="btn btn-sm" (click)="loadTeams()" [disabled]="!editAdoProject().trim() || teamsLoading()">
+              @if (teamsLoading()) { <span class="spinner"></span> } @else { Load teams }
+            </button>
+          </div>
+        </div>
+
+        @if (availableTeams().length > 0) {
+          <div class="form-group mt-1">
+            <label>Team</label>
+            <select class="form-control" [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)">
+              <option value="">-- select team --</option>
+              @for (t of availableTeams(); track t.id) {
+                <option [value]="t.name">{{ t.name }}</option>
+              }
+            </select>
+          </div>
+        } @else if (!teamsLoading()) {
+          <div class="form-group mt-1">
+            <label>Team (manual)</label>
+            <input class="form-control" type="text"
+              [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)"
+              placeholder="Migração Pré-pagos Team" />
+          </div>
+        }
+
+        <div class="settings-actions mt-2">
+          <button class="btn btn-primary btn-sm" (click)="saveSprintConfig()"
+            [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()">Save</button>
+          <button class="btn btn-sm" (click)="showSprintEdit.set(false)">Cancel</button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- ── Danger zone ─────────────────────────────────────────────────────────── -->
+<div class="danger-zone card mt-3">
+  <h2 class="section-title">Danger zone</h2>
+  <p class="text-muted text-sm">This will remove all tokens from your browser and redirect you to Onboarding.</p>
+  <button class="btn btn-danger mt-2" (click)="clearAll()">Clear all tokens</button>
+</div>
