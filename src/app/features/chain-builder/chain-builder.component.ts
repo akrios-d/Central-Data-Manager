@@ -118,9 +118,15 @@ export class ChainBuilderComponent {
   deleteChain(): void {
     const id = this.selectedId();
     if (!id || id === 'new') return;
-    this.chainSvc.deleteChain(id);
-    this.selectedId.set(null);
-    this.toasts.show('Chain deleted', 'success');
+    this.toasts.confirm(
+      `Delete chain "${this.chainName()}"?`,
+      'Delete',
+      () => {
+        this.chainSvc.deleteChain(id);
+        this.selectedId.set(null);
+        this.toasts.show('Chain deleted', 'success');
+      }
+    );
   }
 
   moveStep(i: number, dir: -1 | 1): void {
@@ -132,7 +138,15 @@ export class ChainBuilderComponent {
   }
 
   removeStep(i: number): void {
-    this.editSteps.update(list => list.filter((_, idx) => idx !== i));
+    const step = this.editSteps()[i];
+    this.toasts.confirm(
+      `Remove step "${step.workflowName}"?`,
+      'Remove',
+      () => {
+        this.editSteps.update(list => list.filter((_, idx) => idx !== i));
+        this.toasts.show('Step removed', 'success');
+      }
+    );
   }
 
   // ── Add-step form ─────────────────────────────────────────────────────────────
