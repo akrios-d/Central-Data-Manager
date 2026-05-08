@@ -52,21 +52,31 @@
       }
     </div>
 
+    @if (availableTypes().length > 1) {
+      <div class="type-chips">
+        @for (type of availableTypes(); track type) {
+          <button class="type-chip" [class.inactive]="!isTypeActive(type)" (click)="toggleType(type)">
+            {{ type }}
+          </button>
+        }
+      </div>
+    }
+
     @if (filteredItems().length > 0) {
       <ul class="sprint-items">
-        @for (wi of filteredItems().slice(0, stateFilter().size ? 50 : 8); track wi.id) {
+        @for (wi of filteredItems().slice(0, hasFilter() ? 50 : 8); track wi.id) {
           <li class="sprint-item">
             <span class="wi-state-dot" [class]="wi.fields['System.State'].toLowerCase().replace(' ', '-')"></span>
             <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
             <span class="wi-type text-muted text-sm">{{ wi.fields['System.WorkItemType'] }}</span>
           </li>
         }
-        @if (filteredItems().length > (stateFilter().size ? 50 : 8)) {
-          <li class="sprint-more text-muted text-sm">+{{ filteredItems().length - (stateFilter().size ? 50 : 8) }} mais</li>
+        @if (filteredItems().length > (hasFilter() ? 50 : 8)) {
+          <li class="sprint-more text-muted text-sm">+{{ filteredItems().length - (hasFilter() ? 50 : 8) }} mais</li>
         }
       </ul>
-    } @else if (stateFilter().size) {
-      <p class="text-muted text-sm mt-2">Sem itens neste estado.</p>
+    } @else if (hasFilter()) {
+      <p class="text-muted text-sm mt-2">Sem itens com este filtro.</p>
     }
   </div>
 }

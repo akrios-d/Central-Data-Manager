@@ -26,10 +26,19 @@ export class SprintWidgetComponent implements OnInit {
   loading      = signal(true);
   error        = signal<string | null>(null);
   stateFilter  = signal<Set<string>>(new Set());
+  typeFilter   = signal<Set<string>>(new Set());
+
+  readonly availableTypes = computed(() =>
+    [...new Set(this.workItems().map(wi => wi.fields['System.WorkItemType'] as string))].sort()
+  );
 
   readonly filteredItems = computed(() => {
-    const f = this.stateFilter();
-    return f.size ? this.workItems().filter(wi => f.has(wi.fields['System.State'])) : this.workItems();
+    const sf = this.stateFilter();
+    const tf = this.typeFilter();
+    return this.workItems().filter(wi =>
+      (sf.size === 0 || sf.has(wi.fields['System.State'])) &&
+      (tf.size === 0 || tf.has(wi.fields['System.WorkItemType']))
+    );
   });
 
   toggleState(state: string): void {
@@ -40,10 +49,25 @@ export class SprintWidgetComponent implements OnInit {
     });
   }
 
+  toggleType(type: string): void {
+    this.typeFilter.update(s => {
+      const next = new Set(s);
+      next.has(type) ? next.delete(type) : next.add(type);
+      return next;
+    });
+  }
+
   isStateActive(state: string): boolean {
     const f = this.stateFilter();
     return f.size === 0 || f.has(state);
   }
+
+  isTypeActive(type: string): boolean {
+    const f = this.typeFilter();
+    return f.size === 0 || f.has(type);
+  }
+
+  readonly hasFilter = computed(() => this.stateFilter().size > 0 || this.typeFilter().size > 0);
 
   readonly project = this.tokens.devopsProject;
   readonly team    = this.tokens.devopsTeam;
