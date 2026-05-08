@@ -104,11 +104,19 @@
   font-size: 0.75rem;
   background: var(--surface-2);
   color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, outline 0.15s;
+  outline: 2px solid transparent;
+
+  &:hover { opacity: 0.85; }
 
   &.state-new      { background: rgba(88,166,255,0.1);  color: var(--accent);   }
   &.state-active   { background: rgba(63,185,80,0.1);   color: var(--success);  }
   &.state-resolved { background: rgba(210,153,34,0.1);  color: var(--warning);  }
   &.state-closed   { background: var(--surface-2);      color: var(--text-muted);}
+
+  &.inactive { opacity: 0.35; }
 }
 
 .state-count { font-weight: 700; }

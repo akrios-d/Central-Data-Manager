@@ -43,26 +43,30 @@
 
     <div class="state-groups">
       @for (group of stateGroups(); track group.state) {
-        <div class="state-chip" [class]="'state-' + group.state.toLowerCase().replace(' ', '-')">
+        <button class="state-chip" [class]="'state-' + group.state.toLowerCase().replace(' ', '-')"
+          [class.inactive]="!isStateActive(group.state)"
+          (click)="toggleState(group.state)">
           <span class="state-count">{{ group.count }}</span>
           <span class="state-name">{{ group.state }}</span>
-        </div>
+        </button>
       }
     </div>
 
-    @if (workItems().length > 0) {
+    @if (filteredItems().length > 0) {
       <ul class="sprint-items">
-        @for (wi of workItems().slice(0, 8); track wi.id) {
+        @for (wi of filteredItems().slice(0, stateFilter().size ? 50 : 8); track wi.id) {
           <li class="sprint-item">
             <span class="wi-state-dot" [class]="wi.fields['System.State'].toLowerCase().replace(' ', '-')"></span>
             <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
             <span class="wi-type text-muted text-sm">{{ wi.fields['System.WorkItemType'] }}</span>
           </li>
         }
-        @if (workItems().length > 8) {
-          <li class="sprint-more text-muted text-sm">+{{ workItems().length - 8 }} mais</li>
+        @if (filteredItems().length > (stateFilter().size ? 50 : 8)) {
+          <li class="sprint-more text-muted text-sm">+{{ filteredItems().length - (stateFilter().size ? 50 : 8) }} mais</li>
         }
       </ul>
+    } @else if (stateFilter().size) {
+      <p class="text-muted text-sm mt-2">Sem itens neste estado.</p>
     }
   </div>
 }

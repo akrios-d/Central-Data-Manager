@@ -21,10 +21,29 @@ export class SprintWidgetComponent implements OnInit {
   private ado = inject(DevOpsApiService);
   private tokens = inject(TokenService);
 
-  iteration = signal<DevOpsIteration | null>(null);
-  workItems = signal<DevOpsWorkItem[]>([]);
-  loading = signal(true);
-  error = signal<string | null>(null);
+  iteration    = signal<DevOpsIteration | null>(null);
+  workItems    = signal<DevOpsWorkItem[]>([]);
+  loading      = signal(true);
+  error        = signal<string | null>(null);
+  stateFilter  = signal<Set<string>>(new Set());
+
+  readonly filteredItems = computed(() => {
+    const f = this.stateFilter();
+    return f.size ? this.workItems().filter(wi => f.has(wi.fields['System.State'])) : this.workItems();
+  });
+
+  toggleState(state: string): void {
+    this.stateFilter.update(s => {
+      const next = new Set(s);
+      next.has(state) ? next.delete(state) : next.add(state);
+      return next;
+    });
+  }
+
+  isStateActive(state: string): boolean {
+    const f = this.stateFilter();
+    return f.size === 0 || f.has(state);
+  }
 
   readonly project = this.tokens.devopsProject;
   readonly team    = this.tokens.devopsTeam;
