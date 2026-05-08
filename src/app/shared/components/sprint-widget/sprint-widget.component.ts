@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { switchMap, of } from 'rxjs';
 import { TokenService } from '../../../core/services/token.service';
 import { DevOpsApiService, DevOpsIteration, DevOpsWorkItem } from '../../../core/services/devops-api.service';
+import { WorkItemPanelComponent } from '../work-item-panel/work-item-panel.component';
 
 interface StateGroup {
   state: string;
@@ -13,7 +14,7 @@ interface StateGroup {
 
 @Component({
   selector: 'app-sprint-widget',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, WorkItemPanelComponent],
   templateUrl: './sprint-widget.component.html',
   styleUrl: './sprint-widget.component.scss',
 })
@@ -68,6 +69,8 @@ export class SprintWidgetComponent implements OnInit {
   }
 
   readonly hasFilter = computed(() => this.stateFilter().size > 0 || this.typeFilter().size > 0);
+
+  selectedItem = signal<DevOpsWorkItem | null>(null);
 
   readonly project = this.tokens.devopsProject;
   readonly team    = this.tokens.devopsTeam;

@@ -65,7 +65,7 @@
     @if (filteredItems().length > 0) {
       <ul class="sprint-items">
         @for (wi of filteredItems().slice(0, hasFilter() ? 50 : 8); track wi.id) {
-          <li class="sprint-item">
+          <li class="sprint-item" (click)="selectedItem.set(wi)">
             <span class="wi-state-dot" [class]="wi.fields['System.State'].toLowerCase().replace(' ', '-')"></span>
             <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
             <span class="wi-type text-muted text-sm">{{ wi.fields['System.WorkItemType'] }}</span>
@@ -80,3 +80,5 @@
     }
   </div>
 }
+
+<app-work-item-panel [item]="selectedItem()" (closed)="selectedItem.set(null)" />
