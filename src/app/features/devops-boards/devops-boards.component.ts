@@ -32,6 +32,9 @@ export class DevopsBoardsComponent implements OnInit {
   saving          = signal<number | null>(null);
   selectedItem    = signal<DevOpsWorkItem | null>(null);
 
+  // prevents click from firing after a drag
+  private wasDragging = false;
+
   ngOnInit(): void {
     this.ado.listProjects().subscribe({
       next: (res) => {
@@ -62,6 +65,7 @@ export class DevopsBoardsComponent implements OnInit {
   }
 
   openItem(wi: DevOpsWorkItem): void {
+    if (this.wasDragging) return;
     this.selectedItem.set(wi);
   }
 
@@ -78,6 +82,7 @@ export class DevopsBoardsComponent implements OnInit {
   }
 
   onDragStart(event: DragEvent, item: DevOpsWorkItem): void {
+    this.wasDragging = true;
     this.dragItem.set(item);
     event.dataTransfer?.setData('text/plain', String(item.id));
     (event.currentTarget as HTMLElement).classList.add('dragging');
@@ -86,6 +91,8 @@ export class DevopsBoardsComponent implements OnInit {
   onDragEnd(event: DragEvent): void {
     (event.currentTarget as HTMLElement).classList.remove('dragging');
     this.dragOverState.set(null);
+    // reset after click has had a chance to fire
+    setTimeout(() => { this.wasDragging = false; }, 0);
   }
 
   onDragEnter(state: string): void {
@@ -94,7 +101,8 @@ export class DevopsBoardsComponent implements OnInit {
 
   onDragLeave(event: DragEvent): void {
     const col = event.currentTarget as HTMLElement;
-    if (!col.contains(event.relatedTarget as Node)) {
+    const related = event.relatedTarget as Node | null;
+    if (!related || !col.contains(related)) {
       this.dragOverState.set(null);
     }
   }

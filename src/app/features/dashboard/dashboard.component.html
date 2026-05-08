@@ -10,61 +10,63 @@
   </section>
 }
 
-@if (loading()) {
-  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading…</p></div>
-} @else if (error()) {
-  <div class="card"><p class="text-muted">{{ error() }}</p></div>
-} @else {
-  <div class="dashboard-grid">
-    @if (hasGh()) {
-      <section class="card">
-        <h2 class="section-title">Recent GitHub Runs</h2>
-        @if (runs().length === 0) {
-          <div class="empty-state"><p>No recent runs found.</p></div>
-        } @else {
-          <ul class="run-list">
-            @for (run of runs(); track run.id) {
-              <li class="run-item">
-                <span class="run-dot" [class]="runClass(run)"></span>
-                <div class="run-info">
-                  <span class="run-name">{{ run.name }}</span>
-                  <span class="run-repo text-muted text-sm">{{ run.repository.name }} · {{ run.head_branch }}</span>
-                </div>
-                <span class="run-time text-muted text-sm">{{ run.created_at | date:'dd MMM HH:mm' }}</span>
-              </li>
-            }
-          </ul>
-        }
-      </section>
-    }
+<div class="dashboard-grid">
+  @if (hasGh()) {
+    <section class="card">
+      <h2 class="section-title">Recent GitHub Runs</h2>
+      @if (ghLoading()) {
+        <div class="empty-state"><div class="spinner"></div></div>
+      } @else if (ghError()) {
+        <p class="text-muted text-sm">{{ ghError() }}</p>
+      } @else if (runs().length === 0) {
+        <div class="empty-state"><p>No recent runs found.</p></div>
+      } @else {
+        <ul class="run-list">
+          @for (run of runs(); track run.id) {
+            <li class="run-item">
+              <span class="run-dot" [class]="runClass(run)"></span>
+              <div class="run-info">
+                <span class="run-name">{{ run.name }}</span>
+                <span class="run-repo text-muted text-sm">{{ run.repository.name }} · {{ run.head_branch }}</span>
+              </div>
+              <span class="run-time text-muted text-sm">{{ run.created_at | date:'dd MMM HH:mm' }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
 
-    @if (hasAdo()) {
-      <section class="card">
-        <h2 class="section-title">Recent Work Items</h2>
-        @if (workItems().length === 0) {
-          <div class="empty-state"><p>No work items found.</p></div>
-        } @else {
-          <ul class="wi-list">
-            @for (wi of workItems(); track wi.id) {
-              <li class="wi-item">
-                <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
-                <div class="wi-info">
-                  <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
-                  <span class="wi-meta text-muted text-sm">
-                    {{ wi.fields['System.WorkItemType'] }} · {{ wi.fields['System.State'] }}
-                  </span>
-                </div>
-              </li>
-            }
-          </ul>
-        }
-      </section>
-    }
+  @if (hasAdo()) {
+    <section class="card">
+      <h2 class="section-title">Recent Work Items</h2>
+      @if (adoLoading()) {
+        <div class="empty-state"><div class="spinner"></div></div>
+      } @else if (adoError()) {
+        <p class="text-muted text-sm">{{ adoError() }}</p>
+      } @else if (workItems().length === 0) {
+        <div class="empty-state"><p>No work items found.</p></div>
+      } @else {
+        <ul class="wi-list">
+          @for (wi of workItems(); track wi.id) {
+            <li class="wi-item">
+              <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
+              <div class="wi-info">
+                <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
+                <span class="wi-meta text-muted text-sm">
+                  {{ wi.fields['System.WorkItemType'] }} · {{ wi.fields['System.State'] }}
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
 
-    @if (!hasGh() && !hasAdo()) {
-      <div class="card">
-        <p>No integrations configured. Go to <a routerLink="/settings">Settings</a> to add tokens.</p>
-      </div>
-    }
-  </div>
-}
+  @if (!hasGh() && !hasAdo()) {
+    <div class="card">
+      <p>No integrations configured. Go to <a routerLink="/settings">Settings</a> to add tokens.</p>
+    </div>
+  }
+</div>
