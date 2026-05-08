@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
         if (!repos.length) return of([]);
         // fetch runs for up to 5 repos sequentially to avoid rate limits
         const top = repos.slice(0, 5);
-        return this.gh.listRuns(top[0].name).pipe(
+        return this.gh.listRuns(top[0].full_name).pipe(
           catchError(() => of({ workflow_runs: [] })),
           switchMap((first) => {
             const all = [...(first.workflow_runs ?? [])];

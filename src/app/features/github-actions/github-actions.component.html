@@ -4,7 +4,7 @@
     <p>Browse workflows and manage runs.</p>
   </div>
   @if (selectedRepo()) {
-    <a [href]="'https://github.com/' + selectedRepo() + '/actions'" target="_blank" rel="noopener" class="btn btn-sm">
+    <a [href]="'https://github.com/' + selectedRepo()!.full_name + '/actions'" target="_blank" rel="noopener" class="btn btn-sm">
       Open in GitHub ↗
     </a>
   }
@@ -17,15 +17,43 @@
 } @else {
   <div class="ga-layout">
     <aside class="repo-list card">
-      <p class="repo-list-label">Repositories</p>
-      @for (repo of repos(); track repo.id) {
-        <button class="repo-btn" [class.active]="selectedRepo() === repo.name" (click)="selectRepo(repo.name)">
+      <div class="repo-search-wrap">
+        <input
+          class="form-control repo-search"
+          type="text"
+          placeholder="Search repos…"
+          [ngModel]="repoSearch()"
+          (ngModelChange)="repoSearch.set($event)"
+        />
+      </div>
+
+      <p class="repo-list-label">
+        {{ filteredRepos().length }} / {{ repos().length }} repos
+      </p>
+
+      @for (repo of filteredRepos(); track repo.id) {
+        <button
+          class="repo-btn"
+          [class.active]="selectedRepo()?.id === repo.id"
+          [title]="repo.full_name"
+          (click)="selectRepo(repo)">
+          <span class="repo-private-icon">{{ repo.private ? '🔒' : '' }}</span>
           {{ repo.name }}
         </button>
+      }
+
+      @if (filteredRepos().length === 0) {
+        <p class="text-muted text-sm" style="padding: 0.5rem">No repos match.</p>
       }
     </aside>
 
     <section class="runs-panel">
+      @if (selectedRepo()) {
+        <div class="runs-panel-header">
+          <h2 class="runs-panel-title">{{ selectedRepo()!.full_name }}</h2>
+        </div>
+      }
+
       @if (runsLoading()) {
         <div class="empty-state"><div class="spinner"></div></div>
       } @else if (runs().length === 0) {

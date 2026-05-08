@@ -13,47 +13,54 @@ import { RunStatusPipe } from '../../shared/pipes/run-status.pipe';
 export class GithubActionsComponent implements OnInit {
   private gh = inject(GitHubApiService);
 
-  repos = signal<GhRepo[]>([]);
-  selectedRepo = signal<string | null>(null);
-  workflows = signal<GhWorkflow[]>([]);
-  runs = signal<GhRun[]>([]);
-  loading = signal(true);
-  runsLoading = signal(false);
-  error = signal<string | null>(null);
-  actionFeedback = signal<{ id: number; msg: string } | null>(null);
+  repos           = signal<GhRepo[]>([]);
+  repoSearch      = signal('');
+  selectedRepo    = signal<GhRepo | null>(null);
+  workflows       = signal<GhWorkflow[]>([]);
+  runs            = signal<GhRun[]>([]);
+  loading         = signal(true);
+  runsLoading     = signal(false);
+  error           = signal<string | null>(null);
+  actionFeedback  = signal<{ id: number; msg: string } | null>(null);
+
+  readonly filteredRepos = computed(() => {
+    const q = this.repoSearch().toLowerCase().trim();
+    if (!q) return this.repos();
+    return this.repos().filter((r) =>
+      r.name.toLowerCase().includes(q) || r.full_name.toLowerCase().includes(q)
+    );
+  });
 
   ngOnInit(): void {
     this.gh.listRepos().subscribe({
       next: (repos) => {
         this.repos.set(repos);
         this.loading.set(false);
-        if (repos.length) this.selectRepo(repos[0].name);
+        if (repos.length) this.selectRepo(repos[0]);
       },
       error: (e) => { this.error.set(e?.message); this.loading.set(false); },
     });
   }
 
-  selectRepo(name: string): void {
-    this.selectedRepo.set(name);
+  selectRepo(repo: GhRepo): void {
+    this.selectedRepo.set(repo);
     this.runsLoading.set(true);
     this.runs.set([]);
-    this.gh.listRuns(name).subscribe({
+    this.gh.listRuns(repo.full_name).subscribe({
       next: (res) => { this.runs.set(res.workflow_runs); this.runsLoading.set(false); },
       error: () => this.runsLoading.set(false),
     });
   }
 
   rerun(run: GhRun): void {
-    const repo = this.selectedRepo()!;
-    this.gh.rerunWorkflow(repo, run.id).subscribe({
+    this.gh.rerunWorkflow(this.selectedRepo()!.full_name, run.id).subscribe({
       next: () => this.showFeedback(run.id, 'Re-run triggered'),
       error: (e) => this.showFeedback(run.id, e?.error?.message ?? 'Error'),
     });
   }
 
   cancel(run: GhRun): void {
-    const repo = this.selectedRepo()!;
-    this.gh.cancelRun(repo, run.id).subscribe({
+    this.gh.cancelRun(this.selectedRepo()!.full_name, run.id).subscribe({
       next: () => this.showFeedback(run.id, 'Cancelled'),
       error: (e) => this.showFeedback(run.id, e?.error?.message ?? 'Error'),
     });

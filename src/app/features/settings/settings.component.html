@@ -17,7 +17,16 @@
 
     @if (hasGh()) {
       <p class="text-muted text-sm mt-1">Owner: <strong>{{ ghOwner() }}</strong></p>
+
+      @if (ghTest()) {
+        <p class="test-result mt-1" [class.ok]="ghTest()!.status === 'ok'" [class.err]="ghTest()!.status === 'error'">
+          @if (ghTest()!.status === 'testing') { <span class="spinner"></span> }
+          {{ ghTest()!.detail }}
+        </p>
+      }
+
       <div class="settings-actions mt-2">
+        <button class="btn btn-sm" (click)="testGitHub()" [disabled]="ghTest()?.status === 'testing'">Test</button>
         <button class="btn btn-sm" (click)="showGhForm.set(!showGhForm())">Update token</button>
         <button class="btn btn-sm btn-danger" (click)="clearGh()">Remove</button>
       </div>
@@ -60,7 +69,16 @@
           <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">Cancel</button>
         }
       </div>
+
+      @if (adoTest()) {
+        <p class="test-result mt-1" [class.ok]="adoTest()!.status === 'ok'" [class.err]="adoTest()!.status === 'error'">
+          @if (adoTest()!.status === 'testing') { <span class="spinner"></span> }
+          {{ adoTest()!.detail }}
+        </p>
+      }
+
       <div class="settings-actions mt-2">
+        <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">Test</button>
         <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">Update token</button>
         <button class="btn btn-sm btn-danger" (click)="clearAdo()">Remove</button>
       </div>

@@ -3,6 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TokenService } from './token.service';
 
+export interface GhOrg { login: string; }
+export interface GhTokenScopes { scopes: string[] | null; }
+
 @Injectable({ providedIn: 'root' })
 export class GitHubApiService {
   private http = inject(HttpClient);
@@ -19,43 +22,69 @@ export class GitHubApiService {
     return this.tokens.githubOwner() ?? '';
   }
 
-  listRepos(): Observable<GhRepo[]> {
+  getAuthenticatedUser(): Observable<GhUser> {
+    return this.http.get<GhUser>('https://api.github.com/user', { headers: this.headers });
+  }
+
+  listOrgs(): Observable<GhOrg[]> {
+    return this.http.get<GhOrg[]>('https://api.github.com/user/orgs?per_page=100', { headers: this.headers });
+  }
+
+  listOrgRepos(org: string): Observable<GhRepo[]> {
     return this.http.get<GhRepo[]>(
-      `https://api.github.com/users/${this.owner}/repos?per_page=100&sort=updated`,
+      `https://api.github.com/orgs/${org}/repos?per_page=100&sort=updated`,
       { headers: this.headers }
     );
   }
 
-  listWorkflows(repo: string): Observable<{ workflows: GhWorkflow[] }> {
+  listRepos(): Observable<GhRepo[]> {
+    // /user/repos returns all repos (public + private) for the authenticated user
+    // affiliation=owner,collaborator,organization_member covers org repos too
+    return this.http.get<GhRepo[]>(
+      `https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member`,
+      { headers: this.headers }
+    );
+  }
+
+  // fullName = "owner/repo"
+  listWorkflows(fullName: string): Observable<{ workflows: GhWorkflow[] }> {
     return this.http.get<{ workflows: GhWorkflow[] }>(
-      `https://api.github.com/repos/${this.owner}/${repo}/actions/workflows`,
+      `https://api.github.com/repos/${fullName}/actions/workflows`,
       { headers: this.headers }
     );
   }
 
-  listRuns(repo: string, workflowId?: number): Observable<{ workflow_runs: GhRun[] }> {
-    const base = `https://api.github.com/repos/${this.owner}/${repo}/actions`;
+  listRuns(fullName: string, workflowId?: number): Observable<{ workflow_runs: GhRun[] }> {
+    const base = `https://api.github.com/repos/${fullName}/actions`;
     const url = workflowId
       ? `${base}/workflows/${workflowId}/runs?per_page=10`
       : `${base}/runs?per_page=20`;
     return this.http.get<{ workflow_runs: GhRun[] }>(url, { headers: this.headers });
   }
 
-  rerunWorkflow(repo: string, runId: number): Observable<void> {
+  rerunWorkflow(fullName: string, runId: number): Observable<void> {
     return this.http.post<void>(
-      `https://api.github.com/repos/${this.owner}/${repo}/actions/runs/${runId}/rerun`,
+      `https://api.github.com/repos/${fullName}/actions/runs/${runId}/rerun`,
       {},
       { headers: this.headers }
     );
   }
 
-  cancelRun(repo: string, runId: number): Observable<void> {
+  cancelRun(fullName: string, runId: number): Observable<void> {
     return this.http.post<void>(
-      `https://api.github.com/repos/${this.owner}/${repo}/actions/runs/${runId}/cancel`,
+      `https://api.github.com/repos/${fullName}/actions/runs/${runId}/cancel`,
       {},
       { headers: this.headers }
     );
   }
+}
+
+export interface GhUser {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  public_repos: number;
+  total_private_repos: number;
 }
 
 export interface GhRepo {

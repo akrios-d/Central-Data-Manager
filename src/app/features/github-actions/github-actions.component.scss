@@ -1,26 +1,37 @@
 .ga-layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 1.25rem;
   align-items: start;
 }
+
+// ── Repo list sidebar ─────────────────────────────────────────────────────────
 
 .repo-list {
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   max-height: calc(100vh - 160px);
   overflow-y: auto;
 }
 
+.repo-search-wrap {
+  margin-bottom: 0.5rem;
+}
+
+.repo-search {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+}
+
 .repo-list-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
-  margin-bottom: 0.25rem;
-  padding: 0 0.5rem;
+  padding: 0 0.4rem;
+  margin-bottom: 0.2rem;
 }
 
 .repo-btn {
@@ -28,7 +39,7 @@
   border: none;
   color: var(--text-muted);
   text-align: left;
-  padding: 0.45rem 0.6rem;
+  padding: 0.4rem 0.6rem;
   border-radius: var(--radius);
   cursor: pointer;
   font-size: 0.85rem;
@@ -37,9 +48,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 
-  &:hover { background: var(--surface-2); color: var(--text); }
-  &.active { background: var(--surface-2); color: var(--accent); }
+  &:hover  { background: var(--surface-2); color: var(--text); }
+  &.active { background: var(--surface-2); color: var(--accent); font-weight: 500; }
+}
+
+.repo-private-icon { font-size: 0.65rem; flex-shrink: 0; }
+
+// ── Runs panel ────────────────────────────────────────────────────────────────
+
+.runs-panel-header {
+  margin-bottom: 0.75rem;
+}
+
+.runs-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .runs-list {

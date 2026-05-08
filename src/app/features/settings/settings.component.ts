@@ -4,6 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DevOpsApiService, DevOpsTeam } from '../../core/services/devops-api.service';
+import { GitHubApiService, GhUser } from '../../core/services/github-api.service';
+import { forkJoin } from 'rxjs';
+import { catchError, of } from 'rxjs';
+
+interface ConnectionTest {
+  status: 'testing' | 'ok' | 'error';
+  detail: string;
+}
 
 @Component({
   selector: 'app-settings',
@@ -16,9 +24,10 @@ export class SettingsComponent implements OnInit {
   private router = inject(Router);
   private toasts = inject(ToastService);
   private ado    = inject(DevOpsApiService);
+  private gh     = inject(GitHubApiService);
 
-  readonly hasGh  = this.tokens.hasGitHub;
-  readonly hasAdo = this.tokens.hasDevOps;
+  readonly hasGh        = this.tokens.hasGitHub;
+  readonly hasAdo       = this.tokens.hasDevOps;
   readonly ghOwner      = this.tokens.githubOwner;
   readonly adoOrg       = this.tokens.devopsOrg;
   readonly adoProject   = this.tokens.devopsProject;
@@ -41,10 +50,56 @@ export class SettingsComponent implements OnInit {
   availableTeams = signal<DevOpsTeam[]>([]);
   teamsLoading   = signal(false);
 
+  ghTest  = signal<ConnectionTest | null>(null);
+  adoTest = signal<ConnectionTest | null>(null);
+
   ngOnInit(): void {
-    // pre-fill sprint edit fields with saved values
     this.editAdoProject.set(this.tokens.devopsProject() ?? '');
     this.editAdoTeam.set(this.tokens.devopsTeam() ?? '');
+  }
+
+  testGitHub(): void {
+    this.ghTest.set({ status: 'testing', detail: 'Connecting…' });
+
+    forkJoin({
+      user:  this.gh.getAuthenticatedUser(),
+      repos: this.gh.listRepos().pipe(catchError(() => of([]))),
+      orgs:  this.gh.listOrgs().pipe(catchError(() => of([]))),
+    }).subscribe({
+      next: ({ user, repos, orgs }) => {
+        const orgList = orgs.map((o: any) => o.login).join(', ');
+        const lines = [
+          `✓ Authenticated as ${user.login}`,
+          `Repos visíveis via API: ${repos.length}`,
+          orgs.length ? `Orgs: ${orgList}` : 'Sem orgs associadas',
+        ];
+        if (repos.length === 0 && orgs.length > 0) {
+          lines.push('⚠ Se os repos estão numa org, pode precisar de autorizar o PAT nessa org (SSO/SAML).');
+        }
+        this.ghTest.set({ status: repos.length > 0 ? 'ok' : 'error', detail: lines.join(' · ') });
+      },
+      error: (e) => {
+        const msg = e?.error?.message ?? e?.message ?? 'Request failed';
+        this.ghTest.set({ status: 'error', detail: `✗ ${msg}` });
+      },
+    });
+  }
+
+  testDevOps(): void {
+    this.adoTest.set({ status: 'testing', detail: 'Connecting…' });
+    this.ado.listProjects().subscribe({
+      next: (res) => {
+        const names = res.value.slice(0, 3).map((p) => p.name).join(', ');
+        this.adoTest.set({
+          status: 'ok',
+          detail: `✓ ${res.count} project(s) found: ${names}${res.count > 3 ? '…' : ''}`,
+        });
+      },
+      error: (e) => {
+        const msg = e?.error?.message ?? e?.message ?? 'Request failed';
+        this.adoTest.set({ status: 'error', detail: `✗ ${msg}` });
+      },
+    });
   }
 
   openAdoOrgEdit(): void {
@@ -93,6 +148,7 @@ export class SettingsComponent implements OnInit {
       this.ghToken.set('');
       this.ghOwner2.set('');
       this.showGhForm.set(false);
+      this.ghTest.set(null);
     }
   }
 
@@ -102,12 +158,14 @@ export class SettingsComponent implements OnInit {
       this.adoToken.set('');
       this.adoOrg2.set('');
       this.showAdoForm.set(false);
+      this.adoTest.set(null);
     }
   }
 
   clearGh(): void {
     this.toasts.confirm('Remove GitHub token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearGitHub();
+      this.ghTest.set(null);
       if (!this.tokens.hasAnyToken()) this.router.navigate(['/onboarding']);
       else this.toasts.show('GitHub token removed.', 'success');
     });
@@ -116,6 +174,7 @@ export class SettingsComponent implements OnInit {
   clearAdo(): void {
     this.toasts.confirm('Remove Azure DevOps token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearDevOps();
+      this.adoTest.set(null);
       if (!this.tokens.hasAnyToken()) this.router.navigate(['/onboarding']);
       else this.toasts.show('Azure DevOps token removed.', 'success');
     });

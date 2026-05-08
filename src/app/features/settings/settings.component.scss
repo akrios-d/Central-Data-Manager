@@ -20,6 +20,17 @@
   padding-top: 1rem;
 }
 
+.test-result {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  &.ok  { color: var(--success); }
+  &.err { color: var(--danger); }
+  .spinner { width: 0.75rem; height: 0.75rem; border-width: 1.5px; flex-shrink: 0; }
+}
+
 .inline-row {
   display: flex;
   gap: 0.5rem;
