@@ -5,7 +5,7 @@
   </div>
   @if (projects().length > 1) {
     <select class="form-control" style="width:auto"
-      [ngModel]="selectedProject()" (ngModelChange)="selectProject($event)">
+      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event)">
       @for (p of projects(); track p.id) {
         <option [value]="p.name">{{ p.name }}</option>
       }
@@ -17,58 +17,95 @@
   <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading projects…</p></div>
 } @else if (error()) {
   <div class="card"><p class="text-muted">{{ error() }}</p></div>
-} @else if (boardLoading()) {
-  <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading board…</p></div>
 } @else {
-  <div class="kanban-board">
-    @for (col of columns(); track col.state) {
-      <div class="kanban-col"
-        [class.drag-over]="dragOverState() === col.state"
-        (dragover)="$event.preventDefault()"
-        (dragenter)="onDragEnter(col.state)"
-        (dragleave)="onDragLeave($event)"
-        (drop)="onDrop(col.state)">
 
-        <div class="kanban-col-header">
-          <span>{{ col.state }}</span>
-          <span class="badge badge-muted">{{ col.items.length }}</span>
-        </div>
+  @if (showFilters()) {
+    <div class="card filter-card">
+      <h2 class="section-title">O que queres ver?</h2>
 
-        <div class="kanban-items">
-          @for (wi of col.items; track wi.id) {
-            <div class="wi-card"
-              [class.saving]="saving() === wi.id"
-              draggable="true"
-              (click)="openItem(wi)"
-              (dragstart)="onDragStart($event, wi)"
-              (dragend)="onDragEnd($event)">
-              <div class="wi-card-top">
-                <span class="wi-type badge badge-muted">{{ wi.fields['System.WorkItemType'] }}</span>
-                <span class="wi-priority">{{ priority(wi) }}</span>
-              </div>
-              <p class="wi-card-title">{{ wi.fields['System.Title'] }}</p>
-              @if (wi.fields['System.AssignedTo']) {
-                <span class="wi-assignee text-muted text-sm">
-                  {{ wi.fields['System.AssignedTo']?.displayName }}
-                </span>
-              }
-              <div class="wi-card-footer">
-                <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
-                @if (saving() === wi.id) {
-                  <span class="spinner"></span>
-                }
-              </div>
-            </div>
-          }
-          @if (col.items.length === 0) {
-            <div class="kanban-empty" [class.drop-target]="dragOverState() === col.state">
-              Drop here
-            </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de item</label>
+        <div class="type-chips">
+          @for (t of typeOptions; track t) {
+            <button class="type-chip" [class.active]="isTypeSelected(t)" (click)="toggleType(t)">
+              {{ t }}
+            </button>
           }
         </div>
+        <p class="text-muted text-sm mt-1">Sem selecção = todos os tipos</p>
       </div>
-    }
-  </div>
+
+      <div class="form-group">
+        <label class="form-label">Atribuído a</label>
+        <input class="form-control filter-assignee"
+          placeholder="Nome ou email… (parcial)"
+          [ngModel]="filterAssignee()"
+          (ngModelChange)="filterAssignee.set($event)" />
+      </div>
+
+      <button class="btn btn-primary" [disabled]="boardLoading()" (click)="loadBoard()">
+        @if (boardLoading()) { <span class="spinner-inline"></span> A carregar… }
+        @else { ▷ Carregar Board }
+      </button>
+    </div>
+  }
+
+  @if (boardLoading() && !showFilters()) {
+    <div class="empty-state"><div class="spinner"></div><p class="mt-2">Loading board…</p></div>
+  }
+
+  @if (boardReady() && !showFilters()) {
+    <div class="board-meta text-muted text-sm">
+      {{ totalItems() }} itens em {{ columns().length }} estados
+    </div>
+    <div class="kanban-board">
+      @for (col of columns(); track col.state) {
+        <div class="kanban-col"
+          [class.drag-over]="dragOverState() === col.state"
+          (dragover)="$event.preventDefault()"
+          (dragenter)="onDragEnter(col.state)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop(col.state)">
+
+          <div class="kanban-col-header">
+            <span>{{ col.state }}</span>
+            <span class="badge badge-muted">{{ col.items.length }}</span>
+          </div>
+
+          <div class="kanban-items">
+            @for (wi of col.items; track wi.id) {
+              <div class="wi-card"
+                [class.saving]="saving() === wi.id"
+                draggable="true"
+                (click)="openItem(wi)"
+                (dragstart)="onDragStart($event, wi)"
+                (dragend)="onDragEnd($event)">
+                <div class="wi-card-top">
+                  <span class="wi-type badge badge-muted">{{ wi.fields['System.WorkItemType'] }}</span>
+                  <span class="wi-priority">{{ priority(wi) }}</span>
+                </div>
+                <p class="wi-card-title">{{ wi.fields['System.Title'] }}</p>
+                @if (wi.fields['System.AssignedTo']) {
+                  <span class="wi-assignee text-muted text-sm">
+                    {{ wi.fields['System.AssignedTo']?.displayName }}
+                  </span>
+                }
+                <div class="wi-card-footer">
+                  <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
+                  @if (saving() === wi.id) { <span class="spinner"></span> }
+                </div>
+              </div>
+            }
+            @if (col.items.length === 0) {
+              <div class="kanban-empty" [class.drop-target]="dragOverState() === col.state">
+                Drop here
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
 }
 
 <app-work-item-panel [item]="selectedItem()" (closed)="closePanel()" />
