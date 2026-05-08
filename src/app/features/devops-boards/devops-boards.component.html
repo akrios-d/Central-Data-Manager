@@ -96,12 +96,17 @@
       @for (col of visibleColumns(); track col.state) {
         <div class="kanban-col"
           [class.drag-over]="dragOverState() === col.state"
+          [class.col-board-dragging]="dragColBoardState() === col.state"
           (dragover)="$event.preventDefault()"
           (dragenter)="onDragEnter(col.state)"
           (dragleave)="onDragLeave($event)"
           (drop)="onDrop(col.state)">
 
-          <div class="kanban-col-header">
+          <div class="kanban-col-header"
+            draggable="true"
+            (dragstart)="onColBoardDragStart($event, col.state)"
+            (dragend)="onColBoardDragEnd()">
+            <span class="col-header-drag-hint">⠿</span>
             <span>{{ col.state }}</span>
             <span class="badge badge-muted">{{ col.items.length }}</span>
           </div>

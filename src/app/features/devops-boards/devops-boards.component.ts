@@ -204,7 +204,8 @@ export class DevopsBoardsComponent implements OnInit {
     );
   }
 
-  dragColIndex = signal<number | null>(null);
+  dragColIndex      = signal<number | null>(null);
+  dragColBoardState = signal<string | null>(null);
 
   toggleColVisibility(state: string): void {
     this.columnConfigs.update(cfgs =>
@@ -244,6 +245,31 @@ export class DevopsBoardsComponent implements OnInit {
     this.saveColConfig();
   }
 
+  onColBoardDragStart(event: DragEvent, state: string): void {
+    this.dragColBoardState.set(state);
+    event.stopPropagation();
+  }
+
+  private reorderColBoard(toState: string): void {
+    const fromState = this.dragColBoardState();
+    if (!fromState || fromState === toState) return;
+    this.columnConfigs.update(cfgs => {
+      const next = [...cfgs];
+      const fromIdx = next.findIndex(c => c.state === fromState);
+      const toIdx = next.findIndex(c => c.state === toState);
+      if (fromIdx === -1 || toIdx === -1) return cfgs;
+      const [item] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, item);
+      return next;
+    });
+    this.dragColBoardState.set(toState);
+  }
+
+  onColBoardDragEnd(): void {
+    this.dragColBoardState.set(null);
+    this.saveColConfig();
+  }
+
   openItem(wi: DevOpsWorkItem): void {
     if (this.wasDragging) return;
     this.selectedItem.set(wi);
@@ -264,15 +290,23 @@ export class DevopsBoardsComponent implements OnInit {
     setTimeout(() => { this.wasDragging = false; }, 0);
   }
 
-  onDragEnter(state: string): void { this.dragOverState.set(state); }
+  onDragEnter(state: string): void {
+    if (this.dragColBoardState()) {
+      this.reorderColBoard(state);
+    } else {
+      this.dragOverState.set(state);
+    }
+  }
 
   onDragLeave(event: DragEvent): void {
+    if (this.dragColBoardState()) return;
     const col = event.currentTarget as HTMLElement;
     const related = event.relatedTarget as Node | null;
     if (!related || !col.contains(related)) this.dragOverState.set(null);
   }
 
   onDrop(targetState: string): void {
+    if (this.dragColBoardState()) return;
     this.dragOverState.set(null);
     const item = this.dragItem();
     if (!item || item.fields['System.State'] === targetState) return;

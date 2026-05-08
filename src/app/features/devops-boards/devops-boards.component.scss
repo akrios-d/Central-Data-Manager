@@ -205,6 +205,10 @@
   }
 }
 
+.kanban-col {
+  &.col-board-dragging { opacity: 0.4; }
+}
+
 .kanban-col-header {
   display: flex;
   justify-content: space-between;
@@ -217,6 +221,19 @@
   top: 0;
   background: inherit;
   border-radius: var(--radius) var(--radius) 0 0;
+  cursor: grab;
+  user-select: none;
+
+  &:active { cursor: grabbing; }
+}
+
+.col-header-drag-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+
+  .kanban-col-header:hover & { opacity: 1; }
 }
 
 .kanban-items {
