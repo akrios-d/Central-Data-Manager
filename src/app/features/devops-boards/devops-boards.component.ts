@@ -9,6 +9,7 @@ const PREFERRED_STATES = ['New', 'Active', 'Resolved', 'Closed'];
 const TYPE_OPTIONS = ['Epic', 'Feature', 'User Story', 'Product Backlog Item', 'Task', 'Bug', 'Issue', 'Test Case'];
 
 interface Column { state: string; items: DevOpsWorkItem[]; }
+interface ColumnConfig { state: string; visible: boolean; }
 
 @Component({
   selector: 'app-devops-boards',
@@ -35,6 +36,15 @@ export class DevopsBoardsComponent implements OnInit {
   selectedItem    = signal<DevOpsWorkItem | null>(null);
 
   teamMembers     = signal<string[]>([]);
+  columnConfigs   = signal<ColumnConfig[]>([]);
+  showColManager  = signal(false);
+
+  readonly visibleColumns = computed(() =>
+    this.columnConfigs()
+      .filter(cfg => cfg.visible)
+      .map(cfg => this.columns().find(col => col.state === cfg.state))
+      .filter((c): c is Column => !!c)
+  );
 
   // ── Filters ───────────────────────────────────────────────────────────────────
   filterTypes    = signal<Set<string>>(new Set());
@@ -131,6 +141,27 @@ export class DevopsBoardsComponent implements OnInit {
     return `SELECT [System.Id] FROM WorkItems WHERE ${conditions.join(' AND ')} ORDER BY [System.ChangedDate] DESC`;
   }
 
+  private get colConfigKey(): string {
+    return `cdm_col_cfg_${this.selectedProject()}`;
+  }
+
+  private loadColConfig(states: string[]): ColumnConfig[] {
+    try {
+      const saved: ColumnConfig[] = JSON.parse(localStorage.getItem(this.colConfigKey) ?? 'null');
+      if (!saved) return states.map(state => ({ state, visible: true }));
+      const savedStates = new Set(saved.map(c => c.state));
+      const merged = saved.filter(c => states.includes(c.state));
+      const newOnes = states.filter(s => !savedStates.has(s)).map(state => ({ state, visible: true }));
+      return [...merged, ...newOnes];
+    } catch {
+      return states.map(state => ({ state, visible: true }));
+    }
+  }
+
+  private saveColConfig(): void {
+    localStorage.setItem(this.colConfigKey, JSON.stringify(this.columnConfigs()));
+  }
+
   private buildColumns(items: DevOpsWorkItem[]): void {
     const allStates = [...new Set(items.map(i => i.fields['System.State']))];
     const ordered = [
@@ -141,8 +172,35 @@ export class DevopsBoardsComponent implements OnInit {
       state,
       items: items.filter(i => i.fields['System.State'] === state),
     })));
+    this.columnConfigs.set(this.loadColConfig(ordered));
     this.boardLoading.set(false);
     this.boardReady.set(true);
+  }
+
+  private rebucketItems(items: DevOpsWorkItem[]): void {
+    this.columns.update(cols =>
+      cols.map(col => ({
+        ...col,
+        items: items.filter(i => i.fields['System.State'] === col.state),
+      }))
+    );
+  }
+
+  toggleColVisibility(state: string): void {
+    this.columnConfigs.update(cfgs =>
+      cfgs.map(c => c.state === state ? { ...c, visible: !c.visible } : c)
+    );
+    this.saveColConfig();
+  }
+
+  moveCol(index: number, dir: -1 | 1): void {
+    const target = index + dir;
+    this.columnConfigs.update(cfgs => {
+      const next = [...cfgs];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+    this.saveColConfig();
   }
 
   openItem(wi: DevOpsWorkItem): void {
@@ -181,14 +239,14 @@ export class DevopsBoardsComponent implements OnInit {
     const project = this.selectedProject()!;
     const prevState = item.fields['System.State'];
     item.fields['System.State'] = targetState;
-    this.buildColumns(this.columns().flatMap(c => c.items));
+    this.rebucketItems(this.columns().flatMap(c => c.items));
     this.saving.set(item.id);
 
     this.ado.updateWorkItemState(project, item.id, targetState).subscribe({
       next: () => { this.saving.set(null); this.toasts.show(`#${item.id} → ${targetState}`, 'success', 2500); },
       error: (e) => {
         item.fields['System.State'] = prevState;
-        this.buildColumns(this.columns().flatMap(c => c.items));
+        this.rebucketItems(this.columns().flatMap(c => c.items));
         this.saving.set(null);
         this.toasts.show(e?.error?.message ?? 'Failed to update work item', 'danger');
       },

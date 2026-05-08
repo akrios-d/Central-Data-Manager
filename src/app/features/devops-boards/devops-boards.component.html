@@ -56,11 +56,32 @@
   }
 
   @if (boardReady() && !boardLoading()) {
-    <div class="board-meta text-muted text-sm">
-      {{ totalItems() }} itens em {{ columns().length }} estados
+    <div class="board-meta">
+      <span class="text-muted text-sm">{{ totalItems() }} itens em {{ columns().length }} estados</span>
+      <div class="col-manager-wrap">
+        <button class="btn-col-manager" (click)="showColManager.set(!showColManager())">
+          ⚙ Colunas
+        </button>
+        @if (showColManager()) {
+          <div class="col-manager-panel">
+            @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
+              <div class="col-manager-row">
+                <label class="col-manager-label">
+                  <input type="checkbox" [checked]="cfg.visible" (change)="toggleColVisibility(cfg.state)" />
+                  {{ cfg.state }}
+                </label>
+                <div class="col-manager-arrows">
+                  <button [disabled]="i === 0" (click)="moveCol(i, -1)">↑</button>
+                  <button [disabled]="i === columnConfigs().length - 1" (click)="moveCol(i, 1)">↓</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
     <div class="kanban-board">
-      @for (col of columns(); track col.state) {
+      @for (col of visibleColumns(); track col.state) {
         <div class="kanban-col"
           [class.drag-over]="dragOverState() === col.state"
           (dragover)="$event.preventDefault()"

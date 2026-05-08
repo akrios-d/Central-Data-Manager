@@ -90,7 +90,88 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .board-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
+}
+
+.col-manager-wrap {
+  position: relative;
+}
+
+.btn-col-manager {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: var(--text); border-color: var(--text-muted); }
+}
+
+.col-manager-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  min-width: 200px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.col-manager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.2rem 0.25rem;
+  border-radius: 4px;
+
+  &:hover { background: var(--surface-2); }
+}
+
+.col-manager-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  flex: 1;
+
+  input[type="checkbox"] { cursor: pointer; accent-color: var(--accent); }
+}
+
+.col-manager-arrows {
+  display: flex;
+  gap: 0.15rem;
+
+  button {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+
+    &:hover:not([disabled]) { color: var(--text); border-color: var(--text-muted); }
+    &[disabled] { opacity: 0.3; cursor: default; }
+  }
 }
 
 .kanban-board {
