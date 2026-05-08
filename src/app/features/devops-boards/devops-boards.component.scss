@@ -13,8 +13,12 @@
   display: flex;
   flex-direction: column;
   min-height: 200px;
+  transition: border-color 0.15s, background 0.15s;
 
-  &.drag-over { border-color: var(--accent); }
+  &.drag-over {
+    border-color: var(--accent);
+    background: rgba(88, 166, 255, 0.05);
+  }
 }
 
 .kanban-col-header {
@@ -25,6 +29,10 @@
   border-bottom: 1px solid var(--border);
   font-weight: 600;
   font-size: 0.875rem;
+  position: sticky;
+  top: 0;
+  background: inherit;
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .kanban-items {
@@ -39,7 +47,15 @@
   text-align: center;
   color: var(--text-muted);
   font-size: 0.8rem;
-  padding: 1.5rem 0;
+  padding: 2rem 0;
+  border: 2px dashed transparent;
+  border-radius: var(--radius);
+  transition: all 0.15s;
+
+  &.drop-target {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }
 
 .wi-card {
@@ -51,10 +67,24 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+  user-select: none;
 
-  &:hover { border-color: var(--text-muted); }
-  &:active { cursor: grabbing; }
+  &:hover {
+    border-color: var(--text-muted);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  &:active, &.dragging {
+    cursor: grabbing;
+    opacity: 0.5;
+    transform: rotate(1.5deg) scale(0.97);
+  }
+
+  &.saving {
+    opacity: 0.7;
+    pointer-events: none;
+  }
 }
 
 .wi-card-top {
@@ -68,13 +98,20 @@
   line-height: 1.4;
 }
 
-.wi-assignee {
-  font-size: 0.75rem;
+.wi-assignee { font-size: 0.75rem; }
+
+.wi-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.1rem;
+
+  .spinner {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-width: 1.5px;
+  }
 }
 
-.wi-id {
-  font-size: 0.72rem;
-  align-self: flex-end;
-}
-
+.wi-id { font-size: 0.72rem; }
 .wi-priority { font-size: 0.8rem; }

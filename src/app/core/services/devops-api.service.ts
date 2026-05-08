@@ -144,12 +144,17 @@ export interface DevOpsWorkItem {
     'System.Title': string;
     'System.State': string;
     'System.WorkItemType': string;
-    'System.AssignedTo'?: { displayName: string };
+    'System.Description'?: string;
+    'System.AssignedTo'?: { displayName: string; imageUrl?: string };
+    'System.CreatedBy'?: { displayName: string };
     'System.IterationPath'?: string;
     'System.AreaPath'?: string;
     'Microsoft.VSTS.Common.Priority'?: number;
+    'Microsoft.VSTS.Common.Severity'?: string;
+    'System.Tags'?: string;
     'System.CreatedDate': string;
     'System.ChangedDate': string;
   };
+  _links?: { html?: { href: string } };
   url: string;
 }

@@ -1,0 +1,74 @@
+<div class="panel-backdrop" [class.visible]="!!item()" (click)="close()"></div>
+
+<aside class="panel" [class.open]="!!item()">
+  @if (item(); as wi) {
+    <div class="panel-header">
+      <div class="panel-meta">
+        <span class="wi-type-badge">{{ wi.fields['System.WorkItemType'] }}</span>
+        <span class="wi-id text-muted">#{{ wi.id }}</span>
+      </div>
+      <div class="panel-actions">
+        @if (devopsUrl()) {
+          <a [href]="devopsUrl()!" target="_blank" rel="noopener" class="btn btn-sm" title="Abrir no Azure DevOps">↗ DevOps</a>
+        }
+        <button class="btn btn-sm" (click)="close()" title="Fechar">✕</button>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <h2 class="wi-title">{{ wi.fields['System.Title'] }}</h2>
+
+      <div class="wi-state" [class]="stateClass(wi.fields['System.State'])">
+        {{ wi.fields['System.State'] }}
+      </div>
+
+      <dl class="wi-meta-grid">
+        @if (wi.fields['System.AssignedTo']) {
+          <dt>Assigned to</dt>
+          <dd>{{ wi.fields['System.AssignedTo']!.displayName }}</dd>
+        }
+        @if (wi.fields['System.CreatedBy']) {
+          <dt>Created by</dt>
+          <dd>{{ wi.fields['System.CreatedBy']!.displayName }}</dd>
+        }
+        @if (priorityLabel()) {
+          <dt>Priority</dt>
+          <dd>{{ priorityLabel() }}</dd>
+        }
+        @if (wi.fields['Microsoft.VSTS.Common.Severity']) {
+          <dt>Severity</dt>
+          <dd>{{ wi.fields['Microsoft.VSTS.Common.Severity'] }}</dd>
+        }
+        @if (wi.fields['System.IterationPath']) {
+          <dt>Sprint</dt>
+          <dd>{{ wi.fields['System.IterationPath'] }}</dd>
+        }
+        @if (wi.fields['System.AreaPath']) {
+          <dt>Area</dt>
+          <dd>{{ wi.fields['System.AreaPath'] }}</dd>
+        }
+        <dt>Created</dt>
+        <dd>{{ wi.fields['System.CreatedDate'] | date:'dd MMM yyyy HH:mm' }}</dd>
+        <dt>Last updated</dt>
+        <dd>{{ wi.fields['System.ChangedDate'] | date:'dd MMM yyyy HH:mm' }}</dd>
+      </dl>
+
+      @if (tags().length) {
+        <div class="wi-tags">
+          @for (tag of tags(); track tag) {
+            <span class="tag">{{ tag }}</span>
+          }
+        </div>
+      }
+
+      @if (wi.fields['System.Description']) {
+        <div class="wi-description">
+          <h3>Description</h3>
+          <div class="description-body" [innerHTML]="wi.fields['System.Description']"></div>
+        </div>
+      } @else {
+        <p class="text-muted text-sm wi-no-desc">No description.</p>
+      }
+    </div>
+  }
+</aside>
