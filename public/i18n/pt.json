@@ -36,7 +36,10 @@
     "of": "de",
     "visibleColumns": "colunas visíveis",
     "dropHere": "Largar aqui",
-    "resetColumns": "Repor"
+    "resetColumns": "Repor",
+    "columnsFilterNote": "As colunas reflectem o teu filtro activo — recarrega após alterar filtros para descobrir mais estados.",
+    "resetConfirmMsg": "Isto irá limpar a configuração de colunas e recarregar o board.",
+    "resetConfirmBtn": "Sim, repor"
   },
   "sprint": {
     "configureIntro": "Configura o Projecto e o Team do Azure DevOps nas",

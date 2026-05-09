@@ -36,7 +36,10 @@
     "of": "of",
     "visibleColumns": "columns visible",
     "dropHere": "Drop here",
-    "resetColumns": "Reset"
+    "resetColumns": "Reset",
+    "columnsFilterNote": "Columns reflect your active filter — reload after changing filters to discover more states.",
+    "resetConfirmMsg": "This will clear your column config and reload the board.",
+    "resetConfirmBtn": "Yes, reset"
   },
   "sprint": {
     "configureIntro": "Configure the Project and Team for Azure DevOps in",

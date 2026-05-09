@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin, switchMap } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { from, forkJoin, switchMap, mergeMap, toArray } from 'rxjs';
 import { DevOpsApiService, DevOpsProject, DevOpsWorkItem } from '../../core/services/devops-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
@@ -19,8 +19,9 @@ interface ColumnConfig { state: string; visible: boolean; }
   styleUrl: './devops-boards.component.scss',
 })
 export class DevopsBoardsComponent implements OnInit {
-  private ado    = inject(DevOpsApiService);
-  private toasts = inject(ToastService);
+  private readonly ado       = inject(DevOpsApiService);
+  private readonly toasts    = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly typeOptions = TYPE_OPTIONS;
 
@@ -48,7 +49,7 @@ export class DevopsBoardsComponent implements OnInit {
   });
 
   private normalize(s: string): string {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    return s.normalize('NFD').replaceAll(/[̀-ͯ]/g, '').toLowerCase();
   }
 
   readonly visibleColumns = computed(() =>
@@ -84,14 +85,15 @@ export class DevopsBoardsComponent implements OnInit {
 
   loadTeamMembers(project: string): void {
     this.ado.listTeams(project).pipe(
-      switchMap(teams => forkJoin(
-        teams.value.map(t => this.ado.listTeamMembers(project, t.id))
+      switchMap(teams => from(teams.value).pipe(
+        mergeMap(t => this.ado.listTeamMembers(project, t.id)),
+        toArray()
       ))
     ).subscribe({
       next: (results) => {
         const names = [...new Set(
           results.flatMap(r => r.value.map(m => m.identity.displayName))
-        )].sort();
+        )].sort((a, b) => a.localeCompare(b));
         this.teamMembers.set(names);
       },
     });
@@ -226,16 +228,6 @@ export class DevopsBoardsComponent implements OnInit {
     this.saveColConfig();
   }
 
-  moveCol(index: number, dir: -1 | 1): void {
-    const target = index + dir;
-    this.columnConfigs.update(cfgs => {
-      const next = [...cfgs];
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
-    this.saveColConfig();
-  }
-
   onColDragStart(index: number): void {
     this.dragColIndex.set(index);
   }
@@ -283,10 +275,16 @@ export class DevopsBoardsComponent implements OnInit {
   }
 
   resetColConfig(): void {
-    localStorage.removeItem(this.colConfigKey);
-    this.columnConfigs.set([]);
-    this.showColManager.set(false);
-    this.loadBoard();
+    this.toasts.confirm(
+      this.translate.instant('boards.resetConfirmMsg'),
+      this.translate.instant('boards.resetConfirmBtn'),
+      () => {
+        localStorage.removeItem(this.colConfigKey);
+        this.columnConfigs.set([]);
+        this.showColManager.set(false);
+        this.loadBoard();
+      }
+    );
   }
 
   openItem(wi: DevOpsWorkItem): void {
@@ -351,6 +349,8 @@ export class DevopsBoardsComponent implements OnInit {
   priority(wi: DevOpsWorkItem): string {
     const p = wi.fields['Microsoft.VSTS.Common.Priority'];
     if (!p) return '';
-    return p <= 1 ? '🔴' : p === 2 ? '🟠' : '🟡';
+    if (p <= 1) return '🔴';
+    if (p === 2) return '🟠';
+    return '🟡';
   }
 }

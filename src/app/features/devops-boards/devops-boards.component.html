@@ -65,6 +65,7 @@
             @if (!columnConfigs().length) {
               <p class="col-manager-empty">{{ 'boards.columnsEmpty' | translate }}</p>
             } @else {
+              <p class="col-manager-note">{{ 'boards.columnsFilterNote' | translate }}</p>
               @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
                 <div class="col-manager-row"
                   draggable="true"
