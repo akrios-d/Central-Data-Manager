@@ -42,13 +42,14 @@ export class ChainExecutorService {
       this.push(run);
 
       const triggerTime = Date.now();
-      const triggered = await this.triggerStep(step.repoFullName, step.workflowId, step.ref, step.inputs);
-      if (!triggered) {
+      const triggerError = await this.triggerStep(step.repoFullName, step.workflowId, step.ref, step.inputs);
+      if (triggerError !== null) {
         run.steps[i].status = 'failure';
-        run.steps[i].error = 'Failed to trigger workflow';
+        run.steps[i].error = triggerError;
         run.steps[i].completedAt = new Date().toISOString();
         for (let j = i + 1; j < run.steps.length; j++) run.steps[j].status = 'skipped';
         run.status = 'failure';
+        this.push(run);
         break;
       }
 
@@ -77,11 +78,14 @@ export class ChainExecutorService {
     this.chainSvc.saveRun({ ...run, steps: run.steps.map((s) => ({ ...s })) });
   }
 
-  private triggerStep(fullName: string, workflowId: number, ref: string, inputs: Record<string, string>): Promise<boolean> {
+  private triggerStep(fullName: string, workflowId: number, ref: string, inputs: Record<string, string>): Promise<string | null> {
     return new Promise((resolve) => {
       this.gh.triggerWorkflow(fullName, workflowId, ref, inputs).subscribe({
-        next: () => resolve(true),
-        error: () => resolve(false),
+        next: () => resolve(null),
+        error: (e) => {
+          const msg: string = e?.error?.message ?? e?.message ?? 'Failed to trigger workflow';
+          resolve(msg);
+        },
       });
     });
   }

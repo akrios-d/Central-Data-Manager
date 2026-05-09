@@ -138,9 +138,13 @@
     "inputValue": "valor",
     "addInput": "+ Input",
     "updateStep": "Actualizar Passo",
+    "tabChains": "Chains",
+    "tabEditor": "Editor",
+    "tabRun": "Execução",
     "runHistory": "Histórico de execuções",
     "viewOnGithub": "Ver no GitHub ↗",
-    "emptyState": "Selecciona uma chain à esquerda, ou cria uma nova."
+    "emptyState": "Selecciona uma chain à esquerda, ou cria uma nova.",
+    "noRunsYet": "Sem execuções — clica em Executar para começar."
   },
   "settings": {
     "title": "Definições",

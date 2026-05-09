@@ -138,9 +138,13 @@
     "inputValue": "value",
     "addInput": "+ Input",
     "updateStep": "Update Step",
+    "tabChains": "Chains",
+    "tabEditor": "Editor",
+    "tabRun": "Run",
     "runHistory": "Run History",
     "viewOnGithub": "View on GitHub ↗",
-    "emptyState": "Select a chain from the left, or create a new one."
+    "emptyState": "Select a chain from the left, or create a new one.",
+    "noRunsYet": "No runs yet — hit Run to start."
   },
   "settings": {
     "title": "Settings",

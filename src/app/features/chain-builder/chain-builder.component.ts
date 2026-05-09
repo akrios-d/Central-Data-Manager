@@ -32,6 +32,7 @@ export class ChainBuilderComponent {
   chainName  = signal('');
   chainRef   = signal('');
   editSteps  = signal<ChainStep[]>([]);
+  activeTab  = signal<'chains' | 'editor' | 'run'>('chains');
 
   // ── Add-step form ─────────────────────────────────────────────────────────────
   repos        = signal<GhRepo[]>([]);
@@ -50,7 +51,8 @@ export class ChainBuilderComponent {
 
   // ── Executor ──────────────────────────────────────────────────────────────────
   readonly activeRun = this.executor.activeRun;
-  running = signal(false);
+  running           = signal(false);
+  dragStepIndex     = signal<number | null>(null);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
   readonly filteredRepos = computed(() => {
@@ -86,6 +88,7 @@ export class ChainBuilderComponent {
     this.chainRef.set(chain.ref ?? '');
     this.editSteps.set(chain.steps.map(s => ({ ...s })));
     this.showAddStep.set(false);
+    this.activeTab.set('editor');
     this.resetStepForm();
   }
 
@@ -95,6 +98,7 @@ export class ChainBuilderComponent {
     this.chainRef.set('');
     this.editSteps.set([]);
     this.showAddStep.set(false);
+    this.activeTab.set('editor');
     this.resetStepForm();
   }
 
@@ -130,12 +134,24 @@ export class ChainBuilderComponent {
     );
   }
 
-  moveStep(i: number, dir: -1 | 1): void {
-    const steps = [...this.editSteps()];
-    const j = i + dir;
-    if (j < 0 || j >= steps.length) return;
-    [steps[i], steps[j]] = [steps[j], steps[i]];
-    this.editSteps.set(steps);
+  onStepDragStart(index: number): void {
+    this.dragStepIndex.set(index);
+  }
+
+  onStepDragEnter(index: number): void {
+    const from = this.dragStepIndex();
+    if (from === null || from === index) return;
+    this.editSteps.update(steps => {
+      const next = [...steps];
+      const [item] = next.splice(from, 1);
+      next.splice(index, 0, item);
+      return next;
+    });
+    this.dragStepIndex.set(index);
+  }
+
+  onStepDragEnd(): void {
+    this.dragStepIndex.set(null);
   }
 
   removeStep(i: number): void {
@@ -302,6 +318,7 @@ export class ChainBuilderComponent {
     };
     this.chainSvc.saveChain(chain);
     this.selectedId.set(id);
+    this.activeTab.set('run');
     this.running.set(true);
     try {
       await this.executor.execute(chain);
