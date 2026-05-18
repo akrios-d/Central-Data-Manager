@@ -50,7 +50,12 @@ export class ChainExecutorService {
       }
 
       const triggerTime = Date.now();
-      const triggerError = await this.triggerStep(step.repoFullName, step.workflowId, step.ref, step.inputs);
+      let ref = step.ref;
+      if (step.useLatestTag) {
+        const tag = await this.fetchLatestTag(step.repoFullName);
+        if (tag) ref = tag;
+      }
+      const triggerError = await this.triggerStep(step.repoFullName, step.workflowId, ref, step.inputs);
       if (triggerError !== null) {
         run.steps[i].status = 'failure';
         run.steps[i].error = triggerError;
@@ -109,6 +114,15 @@ export class ChainExecutorService {
   private push(run: ChainRun): void {
     this.activeRun.set({ ...run, steps: run.steps.map((s) => ({ ...s })) });
     this.chainSvc.saveRun({ ...run, steps: run.steps.map((s) => ({ ...s })) });
+  }
+
+  private fetchLatestTag(fullName: string): Promise<string | null> {
+    return new Promise((resolve) => {
+      this.gh.listTags(fullName).subscribe({
+        next: (tags) => resolve(tags[0]?.name ?? null),
+        error: ()    => resolve(null),
+      });
+    });
   }
 
   private clearCache(fullName: string, ref: string): Promise<void> {

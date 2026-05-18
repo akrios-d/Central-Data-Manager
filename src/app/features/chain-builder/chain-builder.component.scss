@@ -258,6 +258,12 @@
   letter-spacing: 0.01em;
 }
 
+.badge-latest-tag {
+  background: color-mix(in srgb, var(--color-success, #3fb950) 15%, transparent);
+  color: var(--color-success, #3fb950);
+  border-color: color-mix(in srgb, var(--color-success, #3fb950) 35%, transparent);
+}
+
 .step-controls {
   display: flex;
   gap: 0.25rem;

@@ -7,6 +7,7 @@ export interface ChainStep {
   ref: string;
   inputs: Record<string, string>;
   clearCache?: boolean;
+  useLatestTag?: boolean;
 }
 
 export interface Chain {

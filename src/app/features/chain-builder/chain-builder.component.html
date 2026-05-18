@@ -118,6 +118,9 @@
                   @if (step.clearCache) {
                     <span class="step-flag-badge">{{ 'builder.clearCacheBadge' | translate }}</span>
                   }
+                  @if (step.useLatestTag) {
+                    <span class="step-flag-badge badge-latest-tag">{{ 'builder.useLatestTagBadge' | translate }}</span>
+                  }
                 </div>
                 <div class="step-controls">
                   <button class="icon-btn" [title]="'builder.edit' | translate"   (click)="editStep(step)">✎</button>
@@ -213,6 +216,16 @@
                   </div>
                 }
                 <button class="btn btn-xs btn-outline" (click)="addStepInput()">{{ 'builder.addInput' | translate }}</button>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label override-label">
+                  <input type="checkbox" [ngModel]="stepUseLatestTag()" (ngModelChange)="stepUseLatestTag.set($event)" />
+                  {{ 'builder.useLatestTag' | translate }}
+                </label>
+                @if (stepUseLatestTag()) {
+                  <p class="text-muted text-sm mt-1">{{ 'builder.useLatestTagHint' | translate }}</p>
+                }
               </div>
 
               <div class="add-step-actions">

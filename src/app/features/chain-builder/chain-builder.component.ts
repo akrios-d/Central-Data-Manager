@@ -48,8 +48,9 @@ export class ChainBuilderComponent {
   stepRef         = signal('main');
   stepOverrideRef = signal(false);
   stepBranches    = signal<string[]>([]);
-  stepInputs       = signal<StepInput[]>([]);
-  stepClearCache   = signal(false);
+  stepInputs          = signal<StepInput[]>([]);
+  stepClearCache    = signal(false);
+  stepUseLatestTag  = signal(false);
   wfInputsLoading  = signal(false);
   showAddStep      = signal(false);
   editingStepId    = signal<string | null>(null);
@@ -283,6 +284,7 @@ export class ChainBuilderComponent {
 
     this.stepInputs.set(Object.entries(step.inputs).map(([key, value]) => ({ key, value })));
     this.stepClearCache.set(step.clearCache ?? false);
+    this.stepUseLatestTag.set(step.useLatestTag ?? false);
   }
 
   addStep(): void {
@@ -293,20 +295,21 @@ export class ChainBuilderComponent {
       .filter(p => p.key.trim() && p.value.trim())
       .reduce((acc, p) => ({ ...acc, [p.key.trim()]: p.value.trim() }), {} as Record<string, string>);
     const ref = this.stepOverrideRef() ? (this.stepRef().trim() || 'main') : (this.chainRef().trim() || 'main');
-    const clearCache = this.stepClearCache();
-    const editingId = this.editingStepId();
+    const clearCache    = this.stepClearCache();
+    const useLatestTag  = this.stepUseLatestTag();
+    const editingId     = this.editingStepId();
 
     if (editingId) {
       this.editSteps.update(list => list.map(s => s.id === editingId ? {
         ...s, repoFullName: repo.full_name, repoName: repo.name,
-        workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache,
+        workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache, useLatestTag,
       } : s));
       this.toasts.show(`Step "${wf.name}" updated`, 'success');
     } else {
       const step: ChainStep = {
         id: crypto.randomUUID(),
         repoFullName: repo.full_name, repoName: repo.name,
-        workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache,
+        workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache, useLatestTag,
       };
       this.editSteps.update(list => [...list, step]);
       this.selectedStepIds.update(ids => [...ids, step.id]);
@@ -330,6 +333,7 @@ export class ChainBuilderComponent {
     this.stepRef.set('main');
     this.stepOverrideRef.set(false);
     this.stepClearCache.set(false);
+    this.stepUseLatestTag.set(false);
     this.editingStepId.set(null);
     this.stepInputs.set([]);
   }
