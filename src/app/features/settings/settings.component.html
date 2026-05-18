@@ -123,16 +123,29 @@
       <div class="settings-form mt-2">
         <div class="form-group">
           <label>{{ 'settings.projectLabel' | translate }}</label>
-          <div class="inline-row">
-            <input class="form-control" type="text"
-              [ngModel]="editAdoProject()" (ngModelChange)="editAdoProject.set($event)" />
-            <button class="btn btn-sm" (click)="loadTeams()" [disabled]="!editAdoProject().trim() || teamsLoading()">
-              @if (teamsLoading()) { <span class="spinner"></span> } @else { {{ 'settings.loadTeams' | translate }} }
-            </button>
-          </div>
+          @if (projectsLoading()) {
+            <div class="inline-row mt-1">
+              <span class="spinner"></span>
+              <span class="text-muted text-sm">{{ 'settings.loadingProjects' | translate }}</span>
+            </div>
+          } @else {
+            <select class="form-control mt-1"
+              [ngModel]="editAdoProject()"
+              (ngModelChange)="onProjectChange($event)">
+              <option value="">{{ 'settings.selectProject' | translate }}</option>
+              @for (p of availableProjects(); track p.id) {
+                <option [value]="p.name">{{ p.name }}</option>
+              }
+            </select>
+          }
         </div>
 
-        @if (availableTeams().length > 0) {
+        @if (teamsLoading()) {
+          <div class="inline-row mt-1">
+            <span class="spinner"></span>
+            <span class="text-muted text-sm">{{ 'settings.loadingTeams' | translate }}</span>
+          </div>
+        } @else if (availableTeams().length > 0) {
           <div class="form-group mt-1">
             <label>{{ 'settings.teamLabel' | translate }}</label>
             <select class="form-control" [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)">
@@ -141,12 +154,6 @@
                 <option [value]="t.name">{{ t.name }}</option>
               }
             </select>
-          </div>
-        } @else if (!teamsLoading()) {
-          <div class="form-group mt-1">
-            <label>{{ 'settings.teamManual' | translate }}</label>
-            <input class="form-control" type="text"
-              [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)" />
           </div>
         }
 

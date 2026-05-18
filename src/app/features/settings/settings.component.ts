@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { DevOpsApiService, DevOpsTeam } from '../../core/services/devops-api.service';
+import { DevOpsApiService, DevOpsProject, DevOpsTeam } from '../../core/services/devops-api.service';
 import { GitHubApiService, GhUser } from '../../core/services/github-api.service';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
@@ -50,8 +50,10 @@ export class SettingsComponent implements OnInit {
   showAdoOrgEdit  = signal(false);
   showSprintEdit  = signal(false);
 
-  availableTeams = signal<DevOpsTeam[]>([]);
-  teamsLoading   = signal(false);
+  availableProjects = signal<DevOpsProject[]>([]);
+  projectsLoading   = signal(false);
+  availableTeams    = signal<DevOpsTeam[]>([]);
+  teamsLoading      = signal(false);
 
   ghTest  = signal<ConnectionTest | null>(null);
   adoTest = signal<ConnectionTest | null>(null);
@@ -122,7 +124,32 @@ export class SettingsComponent implements OnInit {
   openSprintEdit(): void {
     this.editAdoProject.set(this.tokens.devopsProject() ?? '');
     this.editAdoTeam.set(this.tokens.devopsTeam() ?? '');
+    this.availableTeams.set([]);
     this.showSprintEdit.set(true);
+    this.loadProjects();
+  }
+
+  loadProjects(): void {
+    this.projectsLoading.set(true);
+    this.availableProjects.set([]);
+    this.ado.listProjects().subscribe({
+      next: (res) => {
+        this.availableProjects.set(res.value);
+        this.projectsLoading.set(false);
+        if (this.editAdoProject()) this.loadTeams();
+      },
+      error: () => {
+        this.projectsLoading.set(false);
+        this.toasts.show('Could not load projects.', 'danger');
+      },
+    });
+  }
+
+  onProjectChange(name: string): void {
+    this.editAdoProject.set(name);
+    this.editAdoTeam.set('');
+    this.availableTeams.set([]);
+    if (name) this.loadTeams();
   }
 
   loadTeams(): void {
