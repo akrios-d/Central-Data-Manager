@@ -1,14 +1,19 @@
 /**
- * Extracts workflow_dispatch inputs (key + default value) from a GitHub Actions YAML string.
- * Only reads the on.workflow_dispatch.inputs block; no full YAML parser needed.
+ * Extracts workflow_dispatch inputs from a GitHub Actions YAML string.
+ * Returns key, default value, and description for each input.
  */
-export function parseDispatchInputs(yaml: string): Array<{ key: string; value: string }> {
+export interface WorkflowInput {
+  key:         string;
+  value:       string;
+  description: string;
+}
+
+export function parseDispatchInputs(yaml: string): WorkflowInput[] {
   const lines = yaml.split('\n');
 
   // Locate `workflow_dispatch:` line
   const wdIdx = lines.findIndex(l => /^\s*workflow_dispatch\s*:/.test(l));
   if (wdIdx === -1) return [];
-
   const wdIndent = lines[wdIdx].search(/\S/);
 
   // Find `inputs:` block directly under workflow_dispatch
@@ -35,7 +40,7 @@ export function parseDispatchInputs(yaml: string): Array<{ key: string; value: s
   }
   if (keyIndent === -1) return [];
 
-  const result: Array<{ key: string; value: string }> = [];
+  const result: WorkflowInput[] = [];
   let currentKey: string | null = null;
 
   for (let i = inputsIdx + 1; i < lines.length; i++) {
@@ -50,13 +55,21 @@ export function parseDispatchInputs(yaml: string): Array<{ key: string; value: s
 
     if (ind === keyIndent) {
       currentKey = km[1];
-      result.push({ key: currentKey, value: '' });
-    } else if (currentKey && km[1] === 'default') {
-      const vm = trimmed.match(/^default\s*:\s*(.*)$/);
-      if (vm) {
-        const clean = vm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
-        const entry = result[result.length - 1];
-        if (entry && entry.key === currentKey) entry.value = clean;
+      result.push({ key: currentKey, value: '', description: '' });
+    } else if (currentKey) {
+      const entry = result[result.length - 1];
+      if (!entry || entry.key !== currentKey) continue;
+
+      if (km[1] === 'default') {
+        const vm = trimmed.match(/^default\s*:\s*(.*)$/);
+        if (vm) {
+          entry.value = vm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
+        }
+      } else if (km[1] === 'description') {
+        const dm = trimmed.match(/^description\s*:\s*(.*)$/);
+        if (dm) {
+          entry.description = dm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
+        }
       }
     }
   }

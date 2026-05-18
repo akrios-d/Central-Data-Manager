@@ -3,13 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Chain, ChainStep, ChainStepRun, StepStatus } from '../../core/models/chain.model';
-import { parseDispatchInputs } from '../../core/utils/workflow-parser';
+import { parseDispatchInputs, WorkflowInput } from '../../core/utils/workflow-parser';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
 import { GitHubApiService, GhRepo, GhWorkflow } from '../../core/services/github-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 
-interface StepInput { key: string; value: string; }
+interface StepInput { key: string; value: string; description?: string; }
 
 @Component({
   selector: 'app-chain-builder',

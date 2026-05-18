@@ -200,8 +200,15 @@
                 </label>
                 @for (inp of stepInputs; track $index; let i = $index) {
                   <div class="input-row">
-                    <input class="form-control" [placeholder]="'builder.inputKey' | translate"   [(ngModel)]="inp.key" />
-                    <input class="form-control" [placeholder]="'builder.inputValue' | translate" [(ngModel)]="inp.value" />
+                    <input class="form-control" [placeholder]="'builder.inputKey' | translate" [(ngModel)]="inp.key" />
+                    <div class="input-value-wrap">
+                      <input class="form-control"
+                        [placeholder]="inp.description || ('builder.inputValue' | translate)"
+                        [(ngModel)]="inp.value" />
+                      @if (inp.description) {
+                        <span class="input-desc text-muted">{{ inp.description }}</span>
+                      }
+                    </div>
                     <button class="icon-btn icon-btn-danger" (click)="removeStepInput(i)">✕</button>
                   </div>
                 }
