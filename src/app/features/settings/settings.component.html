@@ -160,6 +160,25 @@
   </div>
 }
 
+<!-- ── Token storage ──────────────────────────────────────────────────────── -->
+<div class="card mt-3" [class.storage-persist-card]="persist()">
+  <div class="flex-between">
+    <div>
+      <h2 class="section-title">{{ 'settings.storageTitle' | translate }}</h2>
+      @if (persist()) {
+        <p class="text-sm mt-1 storage-persist-label">{{ 'settings.storagePersistActive' | translate }}</p>
+      } @else {
+        <p class="text-muted text-sm mt-1">{{ 'settings.storageSessionActive' | translate }}</p>
+      }
+    </div>
+    @if (persist()) {
+      <button class="btn btn-sm" (click)="disablePersist()">{{ 'settings.storageDisable' | translate }}</button>
+    } @else {
+      <button class="btn btn-sm btn-outline" (click)="requestEnablePersist()">{{ 'settings.storageEnable' | translate }}</button>
+    }
+  </div>
+</div>
+
 <!-- ── Danger zone ─────────────────────────────────────────────────────────── -->
 <div class="danger-zone card mt-3">
   <h2 class="section-title">{{ 'settings.dangerZone' | translate }}</h2>

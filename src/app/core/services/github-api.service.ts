@@ -77,6 +77,14 @@ export class GitHubApiService {
     );
   }
 
+  deleteRepoCaches(fullName: string, ref: string): Observable<unknown> {
+    const encodedRef = encodeURIComponent(ref.startsWith('refs/') ? ref : `refs/heads/${ref}`);
+    return this.http.delete<unknown>(
+      `https://api.github.com/repos/${fullName}/actions/caches?ref=${encodedRef}`,
+      { headers: this.headers }
+    );
+  }
+
   rerunWorkflow(fullName: string, runId: number): Observable<void> {
     return this.http.post<void>(
       `https://api.github.com/repos/${fullName}/actions/runs/${runId}/rerun`,

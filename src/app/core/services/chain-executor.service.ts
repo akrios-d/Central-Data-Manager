@@ -41,6 +41,10 @@ export class ChainExecutorService {
       run.steps[i].startedAt = new Date().toISOString();
       this.push(run);
 
+      if (step.clearCache) {
+        await this.clearCache(step.repoFullName, step.ref);
+      }
+
       const triggerTime = Date.now();
       const triggerError = await this.triggerStep(step.repoFullName, step.workflowId, step.ref, step.inputs);
       if (triggerError !== null) {
@@ -76,6 +80,12 @@ export class ChainExecutorService {
   private push(run: ChainRun): void {
     this.activeRun.set({ ...run, steps: run.steps.map((s) => ({ ...s })) });
     this.chainSvc.saveRun({ ...run, steps: run.steps.map((s) => ({ ...s })) });
+  }
+
+  private clearCache(fullName: string, ref: string): Promise<void> {
+    return new Promise((resolve) => {
+      this.gh.deleteRepoCaches(fullName, ref).subscribe({ next: () => resolve(), error: () => resolve() });
+    });
   }
 
   private triggerStep(fullName: string, workflowId: number, ref: string, inputs: Record<string, string>): Promise<string | null> {

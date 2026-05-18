@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { DevOpsApiService, DevOpsTeam } from '../../core/services/devops-api.service';
@@ -21,12 +21,14 @@ interface ConnectionTest {
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit {
-  private tokens = inject(TokenService);
-  private router = inject(Router);
-  private toasts = inject(ToastService);
-  private ado    = inject(DevOpsApiService);
-  private gh     = inject(GitHubApiService);
+  private tokens    = inject(TokenService);
+  private router    = inject(Router);
+  private toasts    = inject(ToastService);
+  private ado       = inject(DevOpsApiService);
+  private gh        = inject(GitHubApiService);
+  private translate = inject(TranslateService);
 
+  readonly persist      = this.tokens.persist;
   readonly hasGh        = this.tokens.hasGitHub;
   readonly hasAdo       = this.tokens.hasDevOps;
   readonly ghOwner      = this.tokens.githubOwner;
@@ -186,5 +188,19 @@ export class SettingsComponent implements OnInit {
       this.tokens.clearAll();
       this.router.navigate(['/onboarding']);
     });
+  }
+
+  requestEnablePersist(): void {
+    const msg    = this.translate.instant('settings.storageRiskMsg');
+    const label  = this.translate.instant('settings.storageRiskAccept');
+    this.toasts.confirm(msg, label, () => {
+      this.tokens.enablePersist();
+      this.toasts.show(this.translate.instant('settings.storagePersistOn'), 'warning');
+    });
+  }
+
+  disablePersist(): void {
+    this.tokens.disablePersist();
+    this.toasts.show(this.translate.instant('settings.storageSessionOn'), 'success');
   }
 }

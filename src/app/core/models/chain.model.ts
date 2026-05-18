@@ -6,6 +6,7 @@ export interface ChainStep {
   workflowName: string;
   ref: string;
   inputs: Record<string, string>;
+  clearCache?: boolean;
 }
 
 export interface Chain {
