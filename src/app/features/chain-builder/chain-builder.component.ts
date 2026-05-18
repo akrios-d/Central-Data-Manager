@@ -46,7 +46,7 @@ export class ChainBuilderComponent {
   stepRef         = signal('main');
   stepOverrideRef = signal(false);
   stepBranches    = signal<string[]>([]);
-  stepInputs:       StepInput[] = [];
+  stepInputs       = signal<StepInput[]>([]);
   stepClearCache   = signal(false);
   wfInputsLoading  = signal(false);
   showAddStep      = signal(false);
@@ -236,16 +236,15 @@ export class ChainBuilderComponent {
     this.wfInputsLoading.set(true);
     this.gh.getFileContent(repo.full_name, wf.path).subscribe({
       next: (yaml) => {
-        const parsed = parseDispatchInputs(yaml);
-        if (parsed.length > 0) this.stepInputs = parsed;
+        this.stepInputs.set(parseDispatchInputs(yaml));
         this.wfInputsLoading.set(false);
       },
       error: () => this.wfInputsLoading.set(false),
     });
   }
 
-  addStepInput(): void         { this.stepInputs.push({ key: '', value: '' }); }
-  removeStepInput(i: number):void { this.stepInputs.splice(i, 1); }
+  addStepInput(): void            { this.stepInputs.update(a => [...a, { key: '', value: '' }]); }
+  removeStepInput(i: number): void { this.stepInputs.update(a => a.filter((_, idx) => idx !== i)); }
 
   editStep(step: ChainStep): void {
     this.editingStepId.set(step.id);
@@ -280,7 +279,7 @@ export class ChainBuilderComponent {
     this.stepOverrideRef.set(hasOverride);
     this.stepRef.set(step.ref);
 
-    this.stepInputs = Object.entries(step.inputs).map(([key, value]) => ({ key, value }));
+    this.stepInputs.set(Object.entries(step.inputs).map(([key, value]) => ({ key, value })));
     this.stepClearCache.set(step.clearCache ?? false);
   }
 
@@ -288,9 +287,9 @@ export class ChainBuilderComponent {
     const repo = this.stepRepo();
     const wf   = this.stepWf();
     if (!repo || !wf) { this.toasts.show('Select a repo and workflow', 'danger'); return; }
-    const inputs = this.stepInputs
-      .filter(p => p.key.trim())
-      .reduce((acc, p) => ({ ...acc, [p.key.trim()]: p.value }), {} as Record<string, string>);
+    const inputs = this.stepInputs()
+      .filter(p => p.key.trim() && p.value.trim())
+      .reduce((acc, p) => ({ ...acc, [p.key.trim()]: p.value.trim() }), {} as Record<string, string>);
     const ref = this.stepOverrideRef() ? (this.stepRef().trim() || 'main') : (this.chainRef().trim() || 'main');
     const clearCache = this.stepClearCache();
     const editingId = this.editingStepId();
@@ -330,7 +329,7 @@ export class ChainBuilderComponent {
     this.stepOverrideRef.set(false);
     this.stepClearCache.set(false);
     this.editingStepId.set(null);
-    this.stepInputs = [];
+    this.stepInputs.set([]);
   }
 
   // ── Run ───────────────────────────────────────────────────────────────────────

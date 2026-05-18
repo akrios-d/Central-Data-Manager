@@ -139,7 +139,7 @@
 }
 
 .col-repo    { width: 220px; min-width: 160px; }
-.col-env     { min-width: 130px; }
+.col-env     { min-width: 160px; }
 .col-actions { width: 40px; text-align: right; }
 
 .cell-repo {
@@ -183,7 +183,8 @@
 }
 
 .cell-edit-input {
-  width: 120px;
+  width: 100%;
+  min-width: 140px;
   font-family: monospace;
   font-size: 0.8rem;
 }

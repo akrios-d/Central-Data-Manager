@@ -198,9 +198,9 @@
                   {{ 'builder.inputs' | translate }} <span class="text-muted">{{ 'builder.optional' | translate }}</span>
                   @if (wfInputsLoading()) { <span class="spinner-sm" style="margin-left:6px"></span> }
                 </label>
-                @for (inp of stepInputs; track $index; let i = $index) {
+                @for (inp of stepInputs(); track $index; let i = $index) {
                   <div class="input-row">
-                    <input class="form-control" [placeholder]="'builder.inputKey' | translate" [(ngModel)]="inp.key" />
+                    <input class="form-control input-key" [placeholder]="'builder.inputKey' | translate" [(ngModel)]="inp.key" />
                     <div class="input-value-wrap">
                       <input class="form-control"
                         [placeholder]="inp.description || ('builder.inputValue' | translate)"
