@@ -55,6 +55,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'releases',
+    canActivate: [tokenGuard],
+    loadComponent: () =>
+      import('./features/releases/releases.component').then((m) => m.ReleasesComponent),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./features/settings/settings.component').then((m) => m.SettingsComponent),

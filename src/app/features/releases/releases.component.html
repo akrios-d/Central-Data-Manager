@@ -1,0 +1,130 @@
+<div class="page-header">
+  <h1>{{ 'releases.title' | translate }}</h1>
+  <p>{{ 'releases.subtitle' | translate }}</p>
+</div>
+
+<div class="card">
+
+  <!-- ── Toolbar ──────────────────────────────────────────────────────────── -->
+  <div class="releases-toolbar">
+    <div class="toolbar-left">
+      @if (!showAddRepo()) {
+        <button class="btn btn-sm btn-primary" (click)="showAddRepo.set(true)">
+          {{ 'releases.addRepo' | translate }}
+        </button>
+      } @else {
+        <div class="add-repo-inline">
+          <input class="form-control form-control-sm"
+            [placeholder]="'releases.repoPlaceholder' | translate"
+            [ngModel]="newRepoName()"
+            (ngModelChange)="newRepoName.set($event)"
+            (keydown.enter)="submitAddRepo()"
+            (keydown.escape)="showAddRepo.set(false); newRepoName.set('')"
+            autofocus />
+          <button class="btn btn-sm btn-primary"  (click)="submitAddRepo()" [disabled]="!newRepoName().trim()">{{ 'releases.add' | translate }}</button>
+          <button class="btn btn-sm btn-outline" (click)="showAddRepo.set(false); newRepoName.set('')">{{ 'releases.cancel' | translate }}</button>
+        </div>
+      }
+    </div>
+    <button class="btn btn-sm btn-outline" [class.active]="managingEnvs()" (click)="managingEnvs.update(v => !v)">
+      {{ 'releases.manageEnvs' | translate }}
+    </button>
+  </div>
+
+  <!-- ── Environment manager ──────────────────────────────────────────────── -->
+  @if (managingEnvs()) {
+    <div class="env-manager">
+      <ul class="env-list">
+        @for (env of envs(); track env.id) {
+          <li class="env-item">
+            @if (editingEnvId() === env.id) {
+              <input class="form-control form-control-sm env-rename-input"
+                [ngModel]="editingEnvName()"
+                (ngModelChange)="editingEnvName.set($event)"
+                (keydown)="onEnvRenameKey($event)"
+                (blur)="commitRenameEnv()" />
+            } @else {
+              <span class="env-name" (click)="startRenameEnv(env.id, env.name)">{{ env.name }}</span>
+              <span class="env-hint text-muted text-sm">{{ 'releases.clickToRename' | translate }}</span>
+            }
+            <button class="icon-btn icon-btn-danger" (click)="removeEnv(env.id)">✕</button>
+          </li>
+        }
+      </ul>
+      <div class="env-add-row">
+        <input class="form-control form-control-sm"
+          [placeholder]="'releases.newEnvPlaceholder' | translate"
+          [ngModel]="newEnvName()"
+          (ngModelChange)="newEnvName.set($event)"
+          (keydown.enter)="submitAddEnv()" />
+        <button class="btn btn-sm btn-outline" (click)="submitAddEnv()" [disabled]="!newEnvName().trim()">
+          {{ 'releases.addEnv' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Table ────────────────────────────────────────────────────────────── -->
+  @if (repos().length === 0) {
+    <p class="text-muted text-sm empty-state">{{ 'releases.emptyState' | translate }}</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="releases-table">
+        <thead>
+          <tr>
+            <th class="col-repo">{{ 'releases.repository' | translate }}</th>
+            @for (env of envs(); track env.id) {
+              <th class="col-env">{{ env.name }}</th>
+            }
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (repo of repos(); track repo.id) {
+            <tr class="repo-row">
+              <td class="cell-repo">
+                <span class="repo-name">{{ repo.repoName }}</span>
+              </td>
+
+              @for (env of envs(); track env.id) {
+                <td class="cell-tag"
+                  [id]="cellId(repo.id, env.id)"
+                  (click)="!isEditing(repo.id, env.id) && startEdit(repo.id, env.id, repo.deployments[env.id] || '')">
+
+                  @if (isEditing(repo.id, env.id)) {
+                    <input class="form-control form-control-sm cell-edit-input"
+                      [attr.list]="'tags-' + repo.id + '-' + env.id"
+                      [ngModel]="editValue()"
+                      (ngModelChange)="editValue.set($event)"
+                      (keydown)="onCellKey($event)"
+                      (blur)="commitEdit()" />
+                    @if (cellTags().length > 0) {
+                      <datalist [id]="'tags-' + repo.id + '-' + env.id">
+                        @for (tag of cellTags(); track tag) {
+                          <option [value]="tag"></option>
+                        }
+                      </datalist>
+                    }
+                  } @else {
+                    @if (repo.deployments[env.id]) {
+                      <span class="tag-badge" [title]="updatedTitle(repo, env.id)">
+                        {{ repo.deployments[env.id] }}
+                      </span>
+                    } @else {
+                      <span class="tag-empty">—</span>
+                    }
+                  }
+                </td>
+              }
+
+              <td class="cell-actions">
+                <button class="icon-btn icon-btn-danger" [title]="'releases.removeRepo' | translate" (click)="removeRepo(repo.id)">✕</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

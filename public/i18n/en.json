@@ -5,6 +5,7 @@
     "githubActions": "GitHub Actions",
     "pipelineRunner": "Pipeline Runner",
     "chainBuilder": "Chain Builder",
+    "releases": "Releases",
     "settings": "Settings"
   },
   "dashboard": {
@@ -194,6 +195,21 @@
     "dangerZone": "Danger zone",
     "dangerWarning": "This will remove all tokens from your browser and redirect you to Onboarding.",
     "clearAll": "Clear all tokens"
+  },
+  "releases": {
+    "title": "Releases",
+    "subtitle": "Track which tag or release is deployed in each environment.",
+    "addRepo": "+ Add Repository",
+    "repoPlaceholder": "owner/repo or any name…",
+    "add": "Add",
+    "cancel": "Cancel",
+    "manageEnvs": "Manage Environments",
+    "newEnvPlaceholder": "Environment name…",
+    "addEnv": "+ Add",
+    "clickToRename": "(click to rename)",
+    "repository": "Repository",
+    "removeRepo": "Remove repository",
+    "emptyState": "No repositories yet — add one above."
   },
   "lang": {
     "en": "EN",

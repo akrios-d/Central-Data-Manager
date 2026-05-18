@@ -62,6 +62,13 @@ export class GitHubApiService {
     return this.http.get<{ workflow_runs: GhRun[] }>(url, { headers: this.headers });
   }
 
+  listTags(fullName: string): Observable<{ name: string }[]> {
+    return this.http.get<{ name: string }[]>(
+      `https://api.github.com/repos/${fullName}/tags?per_page=50`,
+      { headers: this.headers }
+    );
+  }
+
   listBranches(fullName: string): Observable<{ name: string }[]> {
     return this.http.get<{ name: string }[]>(
       `https://api.github.com/repos/${fullName}/branches?per_page=100`,

@@ -1,0 +1,174 @@
+.releases-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-repo-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .form-control { width: 220px; }
+}
+
+// ── Env manager ──────────────────────────────────────────────────────────────
+
+.env-manager {
+  border-top: 1px solid var(--border);
+  padding: 0.75rem 0;
+  margin-bottom: 0.75rem;
+}
+
+.env-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.env-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-raised, rgba(255,255,255,.04));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+}
+
+.env-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+.env-hint {
+  font-size: 0.68rem;
+}
+
+.env-rename-input {
+  width: 120px;
+}
+
+.env-add-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .form-control { width: 180px; }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.empty-state {
+  margin-top: 1rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 0.25rem;
+}
+
+.releases-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th, td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.col-repo    { width: 220px; min-width: 160px; }
+.col-env     { min-width: 130px; }
+.col-actions { width: 40px; text-align: right; }
+
+.cell-repo {
+  .repo-name {
+    font-weight: 500;
+    font-size: 0.85rem;
+  }
+}
+
+.cell-tag {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover .tag-empty { color: var(--text-muted); opacity: 0.7; }
+
+  &:hover:not(:has(.cell-edit-input))::after {
+    content: ' ✎';
+    font-size: 0.7rem;
+    opacity: 0.4;
+    margin-left: 4px;
+  }
+}
+
+.tag-badge {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.78rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-info, #60a5fa) 12%, transparent);
+  color: var(--color-info, #60a5fa);
+  border: 1px solid color-mix(in srgb, var(--color-info, #60a5fa) 30%, transparent);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.tag-empty {
+  color: var(--text-muted);
+  opacity: 0.4;
+  font-size: 0.85rem;
+}
+
+.cell-edit-input {
+  width: 120px;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.cell-actions {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.repo-row:hover .cell-actions {
+  opacity: 1;
+}
+
+// ── Button active state ───────────────────────────────────────────────────────
+
+.btn.active {
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: #fff;
+}
