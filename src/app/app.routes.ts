@@ -55,6 +55,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'chain-orchestrator',
+    canActivate: [tokenGuard],
+    loadComponent: () =>
+      import('./features/chain-orchestrator/chain-orchestrator.component').then(
+        (m) => m.ChainOrchestratorComponent
+      ),
+  },
+  {
     path: 'releases',
     canActivate: [tokenGuard],
     loadComponent: () =>

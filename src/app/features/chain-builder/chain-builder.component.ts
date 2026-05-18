@@ -201,15 +201,22 @@ export class ChainBuilderComponent {
       this.stepRepo.set(null);
       this.stepWfs.set([]);
       this.stepWf.set(null);
+      this.stepInputs.set([]);
     }
   }
 
   onOverrideChange(checked: boolean): void {
     this.stepOverrideRef.set(checked);
     if (checked) {
+      this.stepUseLatestTag.set(false);
       const repo = this.stepRepo();
       this.stepRef.set(repo?.default_branch || this.chainRef().trim() || 'main');
     }
+  }
+
+  onUseLatestTagChange(checked: boolean): void {
+    this.stepUseLatestTag.set(checked);
+    if (checked) this.stepOverrideRef.set(false);
   }
 
   selectStepRepo(repo: GhRepo): void {
@@ -221,6 +228,7 @@ export class ChainBuilderComponent {
     this.stepWf.set(null);
     this.stepWfs.set([]);
     this.stepBranches.set([]);
+    this.stepInputs.set([]);
     this.stepWfLoad.set(true);
     this.gh.listWorkflows(repo.full_name).subscribe({
       next: (res) => { this.stepWfs.set(res.workflows.filter(w => w.state === 'active')); this.stepWfLoad.set(false); },
@@ -234,6 +242,7 @@ export class ChainBuilderComponent {
 
   onWorkflowSelect(wf: GhWorkflow): void {
     this.stepWf.set(wf);
+    this.stepInputs.set([]);
     const repo = this.stepRepo();
     if (!repo || this.editingStepId()) return;
     this.wfInputsLoading.set(true);

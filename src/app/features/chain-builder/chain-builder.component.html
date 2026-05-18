@@ -174,16 +174,27 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label override-label">
-                  <input type="checkbox" [ngModel]="stepOverrideRef()" (ngModelChange)="onOverrideChange($event)" />
-                  {{ 'builder.overrideBranch' | translate }}
-                </label>
+                <div class="ref-options">
+                  <label class="form-label override-label">
+                    <input type="checkbox" [ngModel]="stepOverrideRef()" (ngModelChange)="onOverrideChange($event)" />
+                    {{ 'builder.overrideBranch' | translate }}
+                  </label>
+                  <label class="form-label override-label">
+                    <input type="checkbox" [ngModel]="stepUseLatestTag()" (ngModelChange)="onUseLatestTagChange($event)" />
+                    {{ 'builder.useLatestTag' | translate }}
+                    @if (stepUseLatestTag()) {
+                      <span class="step-flag-badge badge-latest-tag" style="margin-left:4px">⊛</span>
+                    }
+                  </label>
+                </div>
                 @if (stepOverrideRef()) {
                   <input class="form-control mt-1" list="branch-list"
                     [ngModel]="stepRef()" (ngModelChange)="stepRef.set($event)" />
                   <datalist id="branch-list">
                     @for (b of stepBranches(); track b) { <option [value]="b"></option> }
                   </datalist>
+                } @else if (stepUseLatestTag()) {
+                  <p class="text-muted text-sm mt-1">{{ 'builder.useLatestTagHint' | translate }}</p>
                 } @else {
                   <p class="text-muted text-sm mt-1">{{ 'builder.usesDefault' | translate }} <strong>{{ chainRef() || ('builder.notSet' | translate) }}</strong></p>
                 }
@@ -216,16 +227,6 @@
                   </div>
                 }
                 <button class="btn btn-xs btn-outline" (click)="addStepInput()">{{ 'builder.addInput' | translate }}</button>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label override-label">
-                  <input type="checkbox" [ngModel]="stepUseLatestTag()" (ngModelChange)="stepUseLatestTag.set($event)" />
-                  {{ 'builder.useLatestTag' | translate }}
-                </label>
-                @if (stepUseLatestTag()) {
-                  <p class="text-muted text-sm mt-1">{{ 'builder.useLatestTagHint' | translate }}</p>
-                }
               </div>
 
               <div class="add-step-actions">

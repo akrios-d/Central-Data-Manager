@@ -347,6 +347,12 @@
   }
 }
 
+.ref-options {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
 .override-label {
   display: flex;
   align-items: center;

@@ -5,6 +5,7 @@
     "githubActions": "GitHub Actions",
     "pipelineRunner": "Pipeline Runner",
     "chainBuilder": "Chain Builder",
+    "chainOrchestrator": "Orquestrador",
     "releases": "Releases",
     "settings": "Definições"
   },
@@ -215,6 +216,28 @@
     "dangerZone": "Zona de perigo",
     "dangerWarning": "Isto irá remover todos os tokens do teu browser e redireccionar para o Onboarding.",
     "clearAll": "Limpar todos os tokens"
+  },
+  "orch": {
+    "title": "Chain Orchestrator",
+    "subtitle": "Cria pipelines de chains como um grafo visual — liga nós arrastando arestas.",
+    "tabGraphs": "Grafos",
+    "tabCanvas": "Canvas",
+    "tabHistory": "Histórico",
+    "new": "+ Novo",
+    "noGraphs": "Sem grafos ainda.",
+    "chainsCount": "chains",
+    "emptyState": "Selecciona um grafo ou cria um novo.",
+    "graphName": "Nome do grafo…",
+    "save": "Guardar",
+    "delete": "Apagar",
+    "addChain": "+ Chain",
+    "searchChains": "Pesquisar chains…",
+    "noChains": "Nenhuma chain encontrada.",
+    "stop": "■ Parar",
+    "run": "▷ Executar",
+    "startNode": "Início",
+    "removeNode": "Remover nó",
+    "noRuns": "Sem execuções — clica em Executar para começar."
   },
   "releases": {
     "title": "Releases",
