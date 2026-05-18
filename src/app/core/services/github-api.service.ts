@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { TokenService } from './token.service';
 
 export interface GhOrg { login: string; }
@@ -60,6 +60,13 @@ export class GitHubApiService {
       ? `${base}/workflows/${workflowId}/runs?per_page=10`
       : `${base}/runs?per_page=20`;
     return this.http.get<{ workflow_runs: GhRun[] }>(url, { headers: this.headers });
+  }
+
+  getFileContent(fullName: string, path: string): Observable<string> {
+    return this.http.get<{ content: string }>(
+      `https://api.github.com/repos/${fullName}/contents/${path}`,
+      { headers: this.headers }
+    ).pipe(map(r => atob(r.content.replace(/\s+/g, ''))));
   }
 
   listTags(fullName: string): Observable<{ name: string }[]> {

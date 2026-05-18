@@ -161,7 +161,7 @@
                 @if (stepWfLoad()) {
                   <div class="spinner-sm"></div>
                 } @else {
-                  <select class="form-control" [ngModel]="stepWf()" (ngModelChange)="stepWf.set($event)">
+                  <select class="form-control" [ngModel]="stepWf()" (ngModelChange)="onWorkflowSelect($event)">
                     <option [ngValue]="null" disabled>{{ 'builder.selectWorkflow' | translate }}</option>
                     @for (wf of stepWfs(); track wf.id) {
                       <option [ngValue]="wf">{{ wf.name }}</option>
@@ -194,7 +194,10 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label">{{ 'builder.inputs' | translate }} <span class="text-muted">{{ 'builder.optional' | translate }}</span></label>
+                <label class="form-label">
+                  {{ 'builder.inputs' | translate }} <span class="text-muted">{{ 'builder.optional' | translate }}</span>
+                  @if (wfInputsLoading()) { <span class="spinner-sm" style="margin-left:6px"></span> }
+                </label>
                 @for (inp of stepInputs; track $index; let i = $index) {
                   <div class="input-row">
                     <input class="form-control" [placeholder]="'builder.inputKey' | translate"   [(ngModel)]="inp.key" />
@@ -229,6 +232,11 @@
               {{ 'builder.run' | translate }}
             </button>
           }
+          @if (!running() && activeRun()?.status !== 'running') {
+            <button class="btn btn-xs btn-outline step-select-toggle" (click)="toggleAllSteps()">
+              {{ allStepsSelected() ? ('builder.deselectAll' | translate) : ('builder.selectAll' | translate) }}
+            </button>
+          }
           @if (isActiveChain() && activeRun()) {
             <span class="text-muted text-sm">{{ activeRun()!.startedAt | date:'dd MMM HH:mm:ss' }}</span>
           }
@@ -242,8 +250,15 @@
           <ol class="run-step-list">
             @for (step of editSteps(); track step.id) {
               @let sr = getStepRun(step.id);
-              <li class="run-step-item">
-                <span class="run-step-icon" [class]="'status-' + (sr?.status ?? 'pending')">{{ stepIcon(sr?.status ?? 'pending') }}</span>
+              @let eff = getStepEffectiveStatus(step.id);
+              <li class="run-step-item" [class.step-deselected]="!selectedStepIds().includes(step.id)">
+                <label class="step-run-checkbox" [title]="'builder.toggleStep' | translate">
+                  <input type="checkbox"
+                    [checked]="selectedStepIds().includes(step.id)"
+                    [disabled]="running() || activeRun()?.status === 'running'"
+                    (change)="toggleStepSelection(step.id)" />
+                </label>
+                <span class="run-step-icon" [class]="'status-' + eff">{{ stepIcon(eff) }}</span>
                 <div class="run-step-info">
                   <span class="run-step-name">{{ step.workflowName }}</span>
                   <span class="text-muted text-sm">{{ step.repoFullName }}</span>
@@ -252,7 +267,7 @@
                   }
                   @if (sr?.error) { <span class="text-danger text-sm">{{ sr!.error }}</span> }
                 </div>
-                <span class="run-step-status text-sm" [class]="'text-' + runStatusColor(sr?.status ?? 'pending')">{{ sr?.status ?? 'pending' }}</span>
+                <span class="run-step-status text-sm" [class]="'text-' + runStatusColor(eff)">{{ eff }}</span>
               </li>
             }
           </ol>

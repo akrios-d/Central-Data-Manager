@@ -145,6 +145,9 @@
     "tabEditor": "Editor",
     "tabRun": "Run",
     "runHistory": "Run History",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "toggleStep": "Toggle step",
     "viewOnGithub": "View on GitHub ↗",
     "emptyState": "Select a chain from the left, or create a new one.",
     "noRunsYet": "No runs yet — hit Run to start."

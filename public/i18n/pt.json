@@ -145,6 +145,9 @@
     "tabEditor": "Editor",
     "tabRun": "Execução",
     "runHistory": "Histórico de execuções",
+    "selectAll": "Seleccionar todos",
+    "deselectAll": "Desseleccionar todos",
+    "toggleStep": "Activar/desactivar step",
     "viewOnGithub": "Ver no GitHub ↗",
     "emptyState": "Selecciona uma chain à esquerda, ou cria uma nova.",
     "noRunsYet": "Sem execuções — clica em Executar para começar."

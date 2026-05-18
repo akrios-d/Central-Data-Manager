@@ -413,6 +413,24 @@
   border-radius: 6px;
   background: var(--surface-2);
   border: 1px solid var(--border);
+  transition: opacity 0.15s;
+
+  &.step-deselected { opacity: 0.4; }
+}
+
+.step-run-checkbox {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  cursor: pointer;
+
+  input[type="checkbox"] { cursor: pointer; accent-color: var(--color-primary, #6366f1); }
+}
+
+.step-select-toggle {
+  font-size: 0.72rem;
+  padding: 2px 7px;
 }
 
 .run-step-icon {

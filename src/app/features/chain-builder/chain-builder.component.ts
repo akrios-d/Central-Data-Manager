@@ -2,7 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Chain, ChainStep, ChainStepRun } from '../../core/models/chain.model';
+import { Chain, ChainStep, ChainStepRun, StepStatus } from '../../core/models/chain.model';
+import { parseDispatchInputs } from '../../core/utils/workflow-parser';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
 import { GitHubApiService, GhRepo, GhWorkflow } from '../../core/services/github-api.service';
@@ -45,15 +46,17 @@ export class ChainBuilderComponent {
   stepRef         = signal('main');
   stepOverrideRef = signal(false);
   stepBranches    = signal<string[]>([]);
-  stepInputs:      StepInput[] = [];
-  stepClearCache  = signal(false);
-  showAddStep   = signal(false);
-  editingStepId = signal<string | null>(null);
+  stepInputs:       StepInput[] = [];
+  stepClearCache   = signal(false);
+  wfInputsLoading  = signal(false);
+  showAddStep      = signal(false);
+  editingStepId    = signal<string | null>(null);
 
   // ── Executor ──────────────────────────────────────────────────────────────────
-  readonly activeRun = this.executor.activeRun;
-  running           = signal(false);
-  dragStepIndex     = signal<number | null>(null);
+  readonly activeRun  = this.executor.activeRun;
+  running             = signal(false);
+  dragStepIndex       = signal<number | null>(null);
+  selectedStepIds     = signal<string[]>([]);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
   readonly filteredRepos = computed(() => {
@@ -74,7 +77,12 @@ export class ChainBuilderComponent {
 
   readonly canRun = computed(() => {
     const run = this.activeRun();
-    return this.editSteps().length > 0 && !this.running() && run?.status !== 'running';
+    return this.selectedStepIds().length > 0 && !this.running() && run?.status !== 'running';
+  });
+
+  readonly allStepsSelected = computed(() => {
+    const ids = this.selectedStepIds();
+    return this.editSteps().length > 0 && this.editSteps().every(s => ids.includes(s.id));
   });
 
   readonly showRepoDropdown = computed(() => {
@@ -88,6 +96,7 @@ export class ChainBuilderComponent {
     this.chainName.set(chain.name);
     this.chainRef.set(chain.ref ?? '');
     this.editSteps.set(chain.steps.map(s => ({ ...s })));
+    this.selectedStepIds.set(chain.steps.map(s => s.id));
     this.showAddStep.set(false);
     this.activeTab.set('editor');
     this.resetStepForm();
@@ -98,6 +107,7 @@ export class ChainBuilderComponent {
     this.chainName.set('');
     this.chainRef.set('');
     this.editSteps.set([]);
+    this.selectedStepIds.set([]);
     this.showAddStep.set(false);
     this.activeTab.set('editor');
     this.resetStepForm();
@@ -162,6 +172,7 @@ export class ChainBuilderComponent {
       'Remove',
       () => {
         this.editSteps.update(list => list.filter((_, idx) => idx !== i));
+        this.selectedStepIds.update(ids => ids.filter(id => id !== step.id));
         this.toasts.show('Step removed', 'success');
       }
     );
@@ -215,6 +226,21 @@ export class ChainBuilderComponent {
     this.gh.listBranches(repo.full_name).subscribe({
       next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
       error: ()  => {},
+    });
+  }
+
+  onWorkflowSelect(wf: GhWorkflow): void {
+    this.stepWf.set(wf);
+    const repo = this.stepRepo();
+    if (!repo || this.editingStepId()) return;
+    this.wfInputsLoading.set(true);
+    this.gh.getFileContent(repo.full_name, wf.path).subscribe({
+      next: (yaml) => {
+        const parsed = parseDispatchInputs(yaml);
+        if (parsed.length > 0) this.stepInputs = parsed;
+        this.wfInputsLoading.set(false);
+      },
+      error: () => this.wfInputsLoading.set(false),
     });
   }
 
@@ -282,6 +308,7 @@ export class ChainBuilderComponent {
         workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache,
       };
       this.editSteps.update(list => [...list, step]);
+      this.selectedStepIds.update(ids => [...ids, step.id]);
       this.toasts.show(`Step "${wf.name}" added`, 'success');
     }
     this.resetStepForm();
@@ -309,8 +336,10 @@ export class ChainBuilderComponent {
   // ── Run ───────────────────────────────────────────────────────────────────────
   async runChain(): Promise<void> {
     if (!this.canRun()) return;
-    const name  = this.chainName().trim();
-    const steps = this.editSteps();
+    const name     = this.chainName().trim();
+    const allSteps = this.editSteps();
+    const selected = new Set(this.selectedStepIds());
+    const steps    = allSteps.filter(s => selected.has(s.id));
     if (!name || !steps.length) return;
     const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
@@ -320,7 +349,7 @@ export class ChainBuilderComponent {
       steps,
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
-    this.chainSvc.saveChain(chain);
+    this.chainSvc.saveChain({ ...chain, steps: allSteps });
     this.selectedId.set(id);
     this.activeTab.set('run');
     this.running.set(true);
@@ -329,6 +358,17 @@ export class ChainBuilderComponent {
     } finally {
       this.running.set(false);
     }
+  }
+
+  toggleStepSelection(stepId: string): void {
+    this.selectedStepIds.update(ids =>
+      ids.includes(stepId) ? ids.filter(id => id !== stepId) : [...ids, stepId]
+    );
+  }
+
+  toggleAllSteps(): void {
+    const all = this.editSteps().map(s => s.id);
+    this.selectedStepIds.set(this.allStepsSelected() ? [] : all);
   }
 
   stopChain(): void { this.executor.stop(); }
@@ -404,6 +444,13 @@ export class ChainBuilderComponent {
 
   getStepRun(stepId: string): ChainStepRun | undefined {
     return this.activeRun()?.steps.find(sr => sr.stepId === stepId);
+  }
+
+  getStepEffectiveStatus(stepId: string): StepStatus {
+    const sr = this.getStepRun(stepId);
+    if (sr) return sr.status;
+    if (!this.selectedStepIds().includes(stepId)) return 'skipped';
+    return 'pending';
   }
 
   isActiveChain(): boolean {
