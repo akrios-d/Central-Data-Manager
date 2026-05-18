@@ -8,6 +8,7 @@ import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
 import { GitHubApiService, GhRepo, GhWorkflow } from '../../core/services/github-api.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 interface StepInput { key: string; value: string; description?: string; }
 
@@ -23,6 +24,7 @@ export class ChainBuilderComponent {
   private readonly chainSvc = inject(ChainService);
   private readonly executor = inject(ChainExecutorService);
   private readonly toasts   = inject(ToastService);
+  private readonly notif    = inject(NotificationService);
 
   // ── Data ──────────────────────────────────────────────────────────────────────
   readonly chains = this.chainSvc.chains;
@@ -335,6 +337,7 @@ export class ChainBuilderComponent {
   // ── Run ───────────────────────────────────────────────────────────────────────
   async runChain(): Promise<void> {
     if (!this.canRun()) return;
+    await this.notif.requestPermission();
     const name     = this.chainName().trim();
     const allSteps = this.editSteps();
     const selected = new Set(this.selectedStepIds());

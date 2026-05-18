@@ -47,6 +47,16 @@
   .form-control { flex: 1; min-width: 0; }
 }
 
+.exec-params {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.exec-input {
+  width: 90px;
+}
+
 .danger-zone {
   border-color: rgba(248, 81, 73, 0.4);
 }

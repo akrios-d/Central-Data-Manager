@@ -152,6 +152,13 @@
     "emptyState": "Select a chain from the left, or create a new one.",
     "noRunsYet": "No runs yet — hit Run to start."
   },
+  "notif": {
+    "stepOk": "Completed successfully.",
+    "stepFail": "Step failed.",
+    "chainOk": "All steps completed successfully.",
+    "chainFail": "One or more steps failed — check the logs.",
+    "stepTitle": "Step {{n}}/{{total}}: {{name}}"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your API tokens. All data is stored locally in your browser.",
@@ -195,6 +202,13 @@
     "storageRiskAccept": "Yes, I accept the risk",
     "storagePersistOn": "Persistent storage enabled.",
     "storageSessionOn": "Reverted to session storage (8 h).",
+    "chainExec": "Chain Execution",
+    "chainExecSubtitle": "Controls how often the tool polls GitHub for step status.",
+    "pollInterval": "Polling interval",
+    "maxPolls": "Max polls per step",
+    "seconds": "s",
+    "minutes": "min",
+    "execSettingsSaved": "Execution settings saved.",
     "dangerZone": "Danger zone",
     "dangerWarning": "This will remove all tokens from your browser and redirect you to Onboarding.",
     "clearAll": "Clear all tokens"

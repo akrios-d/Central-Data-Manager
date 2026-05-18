@@ -152,6 +152,13 @@
     "emptyState": "Selecciona uma chain à esquerda, ou cria uma nova.",
     "noRunsYet": "Sem execuções — clica em Executar para começar."
   },
+  "notif": {
+    "stepOk": "Concluído com sucesso.",
+    "stepFail": "Step falhou.",
+    "chainOk": "Todos os steps concluídos com sucesso.",
+    "chainFail": "Um ou mais steps falharam — verifica os logs.",
+    "stepTitle": "Step {{n}}/{{total}}: {{name}}"
+  },
   "settings": {
     "title": "Definições",
     "subtitle": "Gere os teus tokens de API. Todos os dados são guardados localmente no browser.",
@@ -195,6 +202,13 @@
     "storageRiskAccept": "Sim, aceito o risco",
     "storagePersistOn": "Armazenamento persistente activado.",
     "storageSessionOn": "Revertido para sessão (8h).",
+    "chainExec": "Execução de chains",
+    "chainExecSubtitle": "Controla a frequência com que a ferramenta consulta o GitHub para ver o estado de cada step.",
+    "pollInterval": "Intervalo de polling",
+    "maxPolls": "Máx. polls por step",
+    "seconds": "s",
+    "minutes": "min",
+    "execSettingsSaved": "Configurações de execução guardadas.",
     "dangerZone": "Zona de perigo",
     "dangerWarning": "Isto irá remover todos os tokens do teu browser e redireccionar para o Onboarding.",
     "clearAll": "Limpar todos os tokens"

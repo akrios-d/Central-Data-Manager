@@ -1,9 +1,10 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { AppSettingsService } from '../../core/services/app-settings.service';
 import { DevOpsApiService, DevOpsProject, DevOpsTeam } from '../../core/services/devops-api.service';
 import { GitHubApiService, GhUser } from '../../core/services/github-api.service';
 import { forkJoin } from 'rxjs';
@@ -21,12 +22,13 @@ interface ConnectionTest {
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit {
-  private tokens    = inject(TokenService);
-  private router    = inject(Router);
-  private toasts    = inject(ToastService);
-  private ado       = inject(DevOpsApiService);
-  private gh        = inject(GitHubApiService);
-  private translate = inject(TranslateService);
+  private tokens      = inject(TokenService);
+  private router      = inject(Router);
+  private toasts      = inject(ToastService);
+  private ado         = inject(DevOpsApiService);
+  private gh          = inject(GitHubApiService);
+  private translate   = inject(TranslateService);
+  private appSettings = inject(AppSettingsService);
 
   readonly persist      = this.tokens.persist;
   readonly hasGh        = this.tokens.hasGitHub;
@@ -35,6 +37,12 @@ export class SettingsComponent implements OnInit {
   readonly adoOrg       = this.tokens.devopsOrg;
   readonly adoProject   = this.tokens.devopsProject;
   readonly adoTeam      = this.tokens.devopsTeam;
+
+  editPollInterval = signal(this.appSettings.pollIntervalSec());
+  editMaxPolls     = signal(this.appSettings.maxPolls());
+  readonly maxPollMinutes = computed(() =>
+    Math.round(this.editPollInterval() * this.editMaxPolls() / 60)
+  );
 
   ghToken  = signal('');
   ghOwner2 = signal('');
@@ -215,6 +223,11 @@ export class SettingsComponent implements OnInit {
       this.tokens.clearAll();
       this.router.navigate(['/onboarding']);
     });
+  }
+
+  saveExecSettings(): void {
+    this.appSettings.save(this.editPollInterval(), this.editMaxPolls());
+    this.toasts.show(this.translate.instant('settings.execSettingsSaved'), 'success');
   }
 
   requestEnablePersist(): void {

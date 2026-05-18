@@ -186,6 +186,31 @@
   </div>
 </div>
 
+<!-- ── Chain execution ────────────────────────────────────────────────────── -->
+<div class="card mt-3">
+  <h2 class="section-title">{{ 'settings.chainExec' | translate }}</h2>
+  <p class="text-muted text-sm mt-1">{{ 'settings.chainExecSubtitle' | translate }}</p>
+  <div class="exec-params mt-2">
+    <div class="form-group">
+      <label class="form-label">{{ 'settings.pollInterval' | translate }}</label>
+      <div class="inline-row mt-1">
+        <input class="form-control exec-input" type="number" min="2" max="60"
+          [ngModel]="editPollInterval()" (ngModelChange)="editPollInterval.set(+$event)" />
+        <span class="text-muted text-sm">{{ 'settings.seconds' | translate }}</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">{{ 'settings.maxPolls' | translate }}</label>
+      <div class="inline-row mt-1">
+        <input class="form-control exec-input" type="number" min="10" max="500"
+          [ngModel]="editMaxPolls()" (ngModelChange)="editMaxPolls.set(+$event)" />
+        <span class="text-muted text-sm">≈ {{ maxPollMinutes() }} {{ 'settings.minutes' | translate }}</span>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">{{ 'settings.save' | translate }}</button>
+</div>
+
 <!-- ── Danger zone ─────────────────────────────────────────────────────────── -->
 <div class="danger-zone card mt-3">
   <h2 class="section-title">{{ 'settings.dangerZone' | translate }}</h2>
