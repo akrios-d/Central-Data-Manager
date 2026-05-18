@@ -200,7 +200,7 @@
     "title": "Releases",
     "subtitle": "Controla qual tag ou release está deployada em cada ambiente.",
     "addRepo": "+ Adicionar Repositório",
-    "repoPlaceholder": "owner/repo ou qualquer nome…",
+    "repoPlaceholder": "Pesquisar repositórios…",
     "add": "Adicionar",
     "cancel": "Cancelar",
     "manageEnvs": "Gerir Ambientes",

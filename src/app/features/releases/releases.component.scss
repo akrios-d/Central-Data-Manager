@@ -17,8 +17,40 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
 
-  .form-control { width: 220px; }
+.repo-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  .form-control { width: 260px; }
+}
+
+.repo-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  list-style: none;
+  background: var(--bg-card, #1e1e2e);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-width: 260px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,.35);
+
+  li {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover:not(.already-added) { background: rgba(255,255,255,.06); }
+    &.already-added { cursor: default; opacity: 0.45; }
+  }
 }
 
 // ── Env manager ──────────────────────────────────────────────────────────────

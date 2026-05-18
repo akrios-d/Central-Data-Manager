@@ -200,7 +200,7 @@
     "title": "Releases",
     "subtitle": "Track which tag or release is deployed in each environment.",
     "addRepo": "+ Add Repository",
-    "repoPlaceholder": "owner/repo or any name…",
+    "repoPlaceholder": "Search repositories…",
     "add": "Add",
     "cancel": "Cancel",
     "manageEnvs": "Manage Environments",

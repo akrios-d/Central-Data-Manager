@@ -1,8 +1,8 @@
-import { Component, ElementRef, inject, signal, effect } from '@angular/core';
+import { Component, ElementRef, inject, signal, effect, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReleaseService } from '../../core/services/release.service';
-import { GitHubApiService } from '../../core/services/github-api.service';
+import { GitHubApiService, GhRepo } from '../../core/services/github-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 interface EditTarget { repoId: string; envId: string; }
@@ -33,8 +33,25 @@ export class ReleasesComponent {
   tagsLoading = signal(false);
 
   // ── Add-repo form ───────────────────────────────────────────────────────────
-  showAddRepo  = signal(false);
-  newRepoName  = signal('');
+  showAddRepo     = signal(false);
+  ghRepos         = signal<GhRepo[]>([]);
+  ghReposLoading  = signal(false);
+  repoSearch      = signal('');
+  selectedGhRepo  = signal<GhRepo | null>(null);
+
+  readonly filteredRepos = computed(() => {
+    const q = this.repoSearch().toLowerCase().trim();
+    const list = this.ghRepos();
+    return q ? list.filter(r => r.full_name.toLowerCase().includes(q)) : list;
+  });
+
+  readonly showRepoDropdown = computed(() =>
+    this.repoSearch().trim().length > 0 && !this.selectedGhRepo() && this.filteredRepos().length > 0
+  );
+
+  readonly alreadyAdded = computed(() =>
+    new Set(this.repos().map(r => r.repoName))
+  );
 
   // ── Manage environments ─────────────────────────────────────────────────────
   managingEnvs   = signal(false);
@@ -112,12 +129,40 @@ export class ReleasesComponent {
 
   // ── Repos ───────────────────────────────────────────────────────────────────
 
+  openAddRepo(): void {
+    this.showAddRepo.set(true);
+    if (!this.ghRepos().length) {
+      this.ghReposLoading.set(true);
+      this.gh.listRepos().subscribe({
+        next: (r)  => { this.ghRepos.set(r); this.ghReposLoading.set(false); },
+        error: ()  => this.ghReposLoading.set(false),
+      });
+    }
+  }
+
+  onRepoSearchChange(val: string): void {
+    this.repoSearch.set(val);
+    if (this.selectedGhRepo() && val !== this.selectedGhRepo()!.full_name) {
+      this.selectedGhRepo.set(null);
+    }
+  }
+
+  selectGhRepo(repo: GhRepo): void {
+    this.selectedGhRepo.set(repo);
+    this.repoSearch.set(repo.full_name);
+  }
+
   submitAddRepo(): void {
-    const name = this.newRepoName().trim();
-    if (!name) return;
-    this.svc.addRepo(name);
-    this.newRepoName.set('');
+    const repo = this.selectedGhRepo();
+    if (!repo) return;
+    this.svc.addRepo(repo.full_name);
+    this.cancelAddRepo();
+  }
+
+  cancelAddRepo(): void {
     this.showAddRepo.set(false);
+    this.repoSearch.set('');
+    this.selectedGhRepo.set(null);
   }
 
   removeRepo(id: string): void {

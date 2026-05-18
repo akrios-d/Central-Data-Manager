@@ -9,20 +9,31 @@
   <div class="releases-toolbar">
     <div class="toolbar-left">
       @if (!showAddRepo()) {
-        <button class="btn btn-sm btn-primary" (click)="showAddRepo.set(true)">
+        <button class="btn btn-sm btn-primary" (click)="openAddRepo()">
           {{ 'releases.addRepo' | translate }}
         </button>
       } @else {
         <div class="add-repo-inline">
-          <input class="form-control form-control-sm"
-            [placeholder]="'releases.repoPlaceholder' | translate"
-            [ngModel]="newRepoName()"
-            (ngModelChange)="newRepoName.set($event)"
-            (keydown.enter)="submitAddRepo()"
-            (keydown.escape)="showAddRepo.set(false); newRepoName.set('')"
-            autofocus />
-          <button class="btn btn-sm btn-primary"  (click)="submitAddRepo()" [disabled]="!newRepoName().trim()">{{ 'releases.add' | translate }}</button>
-          <button class="btn btn-sm btn-outline" (click)="showAddRepo.set(false); newRepoName.set('')">{{ 'releases.cancel' | translate }}</button>
+          <div class="repo-search-wrap">
+            <input class="form-control form-control-sm"
+              [placeholder]="'releases.repoPlaceholder' | translate"
+              [ngModel]="repoSearch()"
+              (ngModelChange)="onRepoSearchChange($event)"
+              (keydown.escape)="cancelAddRepo()" />
+            @if (ghReposLoading()) { <div class="spinner-sm"></div> }
+            @if (showRepoDropdown()) {
+              <ul class="repo-dropdown">
+                @for (r of filteredRepos(); track r.id) {
+                  <li [class.already-added]="alreadyAdded().has(r.full_name)" (click)="!alreadyAdded().has(r.full_name) && selectGhRepo(r)">
+                    {{ r.full_name }}
+                    @if (alreadyAdded().has(r.full_name)) { <span class="text-muted text-sm"> · já adicionado</span> }
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          <button class="btn btn-sm btn-primary" (click)="submitAddRepo()" [disabled]="!selectedGhRepo()">{{ 'releases.add' | translate }}</button>
+          <button class="btn btn-sm btn-outline" (click)="cancelAddRepo()">{{ 'releases.cancel' | translate }}</button>
         </div>
       }
     </div>
