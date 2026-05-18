@@ -237,6 +237,8 @@
     "run": "▷ Executar",
     "startNode": "Início",
     "removeNode": "Remover nó",
+    "export": "↓ Exportar",
+    "import": "↑ Importar",
     "noRuns": "Sem execuções — clica em Executar para começar."
   },
   "releases": {

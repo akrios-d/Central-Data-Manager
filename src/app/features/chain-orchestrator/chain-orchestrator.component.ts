@@ -199,6 +199,54 @@ export class ChainOrchestratorComponent {
     this.selectedNodeId.set(null);
   }
 
+  // ── Export / Import ───────────────────────────────────────────────────────────
+  exportGraph(): void {
+    const name = this.graphName().trim() || 'graph';
+    const graph: OrchGraph = {
+      id:        this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!,
+      name,
+      nodes:     this.graphNodes(),
+      edges:     this.graphEdges(),
+      createdAt: this.selectedGraph()?.createdAt ?? new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(graph, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `graph-${name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  importGraph(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    file.text().then(text => {
+      try {
+        const data = JSON.parse(text);
+        if (!data?.name || !Array.isArray(data?.nodes) || !Array.isArray(data?.edges)) {
+          this.toasts.show('Invalid graph file', 'danger');
+          return;
+        }
+        const idMap = new Map<string, string>();
+        const newId = (old: string) => { if (!idMap.has(old)) idMap.set(old, crypto.randomUUID()); return idMap.get(old)!; };
+        const graph: OrchGraph = {
+          id:        crypto.randomUUID(),
+          name:      data.name,
+          nodes:     (data.nodes as OrchNode[]).map(n  => ({ ...n,  id: newId(n.id) })),
+          edges:     (data.edges as OrchEdge[]).map(e  => ({ ...e,  id: crypto.randomUUID(), fromId: newId(e.fromId), toId: newId(e.toId) })),
+          createdAt: new Date().toISOString(),
+        };
+        this.orchSvc.saveGraph(graph);
+        this.selectGraph(graph);
+        this.toasts.show(`Graph "${graph.name}" imported`, 'success');
+      } catch {
+        this.toasts.show('Could not read file', 'danger');
+      }
+      (event.target as HTMLInputElement).value = '';
+    });
+  }
+
   // ── Global mouse handlers ─────────────────────────────────────────────────────
   @HostListener('document:mousemove', ['$event'])
   onDocMouseMove(e: MouseEvent): void {
