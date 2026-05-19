@@ -6,6 +6,7 @@
     "pipelineRunner": "Pipeline Runner",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orquestrador",
+    "blockers": "Bloqueadores",
     "releases": "Releases",
     "settings": "Definições"
   },
@@ -255,6 +256,24 @@
     "repository": "Repositório",
     "removeRepo": "Remover repositório",
     "emptyState": "Sem repositórios ainda — adiciona um acima."
+  },
+  "blockers": {
+    "title": "Mapa de Bloqueadores",
+    "subtitle": "Visualiza quais itens de trabalho estão a bloquear outros e o seu impacto transitivo.",
+    "selectProject": "-- seleccionar projecto --",
+    "loadingProjects": "A carregar projectos…",
+    "load": "Carregar",
+    "loading": "A carregar grafo de dependências…",
+    "noDeps": "Nenhuma dependência de bloqueio encontrada neste projecto.",
+    "noProject": "Selecciona um projecto e clica em Carregar.",
+    "noDevops": "Azure DevOps não configurado — vai às Definições para adicionar um token.",
+    "topBlockers": "Maiores Bloqueadores",
+    "detail": "Item seleccionado",
+    "assignedTo": "Atribuído a",
+    "sprint": "Sprint",
+    "impact": "Impacto transitivo",
+    "blocks": "Bloqueia",
+    "blockedBy": "Bloqueado por"
   },
   "lang": {
     "en": "EN",

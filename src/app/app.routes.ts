@@ -63,6 +63,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'blockers',
+    canActivate: [tokenGuard],
+    loadComponent: () =>
+      import('./features/blockers/blockers.component').then((m) => m.BlockersComponent),
+  },
+  {
     path: 'releases',
     canActivate: [tokenGuard],
     loadComponent: () =>

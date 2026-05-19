@@ -1,0 +1,328 @@
+// ── Layout ────────────────────────────────────────────────────────────────────
+
+.blockers-card {
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  min-height: calc(100vh - 11rem);
+}
+
+.blockers-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  background: var(--surface-1);
+}
+
+.blockers-canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  position: relative;
+  background: var(--surface-0, #0d1117);
+  background-image: radial-gradient(circle, var(--border, #30363d) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+// ── Sidebar sections ──────────────────────────────────────────────────────────
+
+.sidebar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-section {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sidebar-heading {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 0 0 0.2rem;
+}
+
+// ── Blocker list ──────────────────────────────────────────────────────────────
+
+.blocker-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0;
+  margin: 0;
+}
+
+.blocker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover    { background: var(--surface-2); }
+  &.selected { background: var(--accent-muted, rgba(88,166,255,0.12)); }
+}
+
+.type-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.blocker-title {
+  flex: 1;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.impact-badge {
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 18%, transparent);
+  color: var(--color-warning, #f59e0b);
+  border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 35%, transparent);
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  min-width: 20px;
+  text-align: center;
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+
+.detail-panel { gap: 0.5rem; }
+
+.detail-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--info, #58a6ff);
+  text-decoration: none;
+  word-break: break-word;
+  line-height: 1.3;
+  &:hover { text-decoration: underline; }
+}
+
+.detail-meta {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.type-chip {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.state-chip {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.detail-row {
+  font-size: 0.78rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.detail-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: 0.3rem 0 0.1rem;
+}
+
+.detail-links { display: flex; flex-direction: column; gap: 0.1rem; }
+
+.detail-link-item {
+  font-size: 0.75rem;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 0.5rem;
+}
+
+// ── Canvas overlay (loading / empty) ─────────────────────────────────────────
+
+.canvas-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+// ── Canvas ────────────────────────────────────────────────────────────────────
+
+.blockers-canvas {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.blockers-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+// ── Edges ─────────────────────────────────────────────────────────────────────
+
+.block-edge {
+  fill: none;
+  stroke: var(--border, #30363d);
+  stroke-width: 1.5;
+  transition: stroke 0.2s, opacity 0.2s;
+
+  &.edge-active {
+    stroke: var(--color-warning, #f59e0b);
+    stroke-width: 2;
+  }
+
+  &.edge-dimmed {
+    opacity: 0.2;
+  }
+}
+
+.block-arr-fill        { fill: var(--border, #30363d); }
+.block-arr-fill-active { fill: var(--color-warning, #f59e0b); }
+
+// ── Nodes ─────────────────────────────────────────────────────────────────────
+
+.block-node {
+  position: absolute;
+  width: 260px;
+  height: 72px;
+  display: flex;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--text-muted);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+
+  &.selected {
+    border-color: var(--accent, #58a6ff);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #58a6ff) 30%, transparent);
+  }
+
+  &.node-direct-blocked {
+    border-color: var(--color-warning, #f59e0b);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-warning, #f59e0b) 25%, transparent);
+  }
+
+  &.node-indirect-blocked {
+    border-color: color-mix(in srgb, var(--color-warning, #f59e0b) 50%, transparent);
+  }
+
+  &.node-dimmed {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.node-type-bar {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.node-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.node-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.node-type-tag {
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.node-impact-badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-warning, #f59e0b);
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-warning, #f59e0b) 30%, transparent);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.node-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.node-state {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--info, #58a6ff);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

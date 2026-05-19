@@ -98,6 +98,20 @@ export class DevOpsApiService {
     );
   }
 
+  queryWorkItemLinks(project: string, wiql: string): Observable<{
+    workItemRelations: Array<{
+      rel: string | null;
+      source: { id: number } | null;
+      target: { id: number } | null;
+    }>;
+  }> {
+    return this.http.post<any>(
+      `${this.base(project)}/wit/wiql?api-version=7.1`,
+      { query: wiql },
+      { headers: this.headers }
+    );
+  }
+
   updateWorkItemState(project: string, id: number, state: string): Observable<DevOpsWorkItem> {
     return this.http.post<DevOpsWorkItem>(
       `${this.base(project)}/wit/workitems/${id}?api-version=7.1`,
