@@ -7,7 +7,6 @@
     "releases": "Releases",
     "sectionCicd": "CI/CD & Pipelines",
     "githubActions": "GitHub Actions",
-    "pipelineHealth": "Saúde de Pipelines",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orquestrador",
     "settings": "Definições"
@@ -72,7 +71,9 @@
   },
   "actions": {
     "title": "GitHub Actions",
-    "subtitle": "Explorar workflows e gerir execuções.",
+    "subtitle": "Explore workflows, gere execuções e monitoriza a saúde.",
+    "tabRuns": "Execuções",
+    "tabHealth": "Saúde",
     "openInGithub": "Abrir no GitHub ↗",
     "loadingRepos": "A carregar repositórios…",
     "searchRepos": "Pesquisar repos…",

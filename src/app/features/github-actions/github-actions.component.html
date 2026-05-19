@@ -1,13 +1,6 @@
-<div class="page-header flex-between">
-  <div>
-    <h1>{{ 'actions.title' | translate }}</h1>
-    <p>{{ 'actions.subtitle' | translate }}</p>
-  </div>
-  @if (selectedRepo()) {
-    <a [href]="'https://github.com/' + selectedRepo()!.full_name + '/actions'" target="_blank" rel="noopener" class="btn btn-sm">
-      {{ 'actions.openInGithub' | translate }}
-    </a>
-  }
+<div class="page-header">
+  <h1>{{ 'actions.title' | translate }}</h1>
+  <p>{{ 'actions.subtitle' | translate }}</p>
 </div>
 
 @if (loading()) {
@@ -16,6 +9,8 @@
   <div class="card"><p class="text-muted">{{ error() }}</p></div>
 } @else {
   <div class="ga-layout">
+
+    <!-- ── Repo sidebar ──────────────────────────────────────────────────── -->
     <aside class="repo-list card">
       <div class="repo-search-wrap">
         <input
@@ -47,46 +42,132 @@
       }
     </aside>
 
-    <section class="runs-panel">
+    <!-- ── Main panel ────────────────────────────────────────────────────── -->
+    <section class="ga-panel">
+
       @if (selectedRepo()) {
-        <div class="runs-panel-header">
-          <h2 class="runs-panel-title">{{ selectedRepo()!.full_name }}</h2>
+        <div class="ga-panel-header">
+          <div class="ga-panel-title-row">
+            <h2 class="ga-panel-title">{{ selectedRepo()!.full_name }}</h2>
+            <a [href]="'https://github.com/' + selectedRepo()!.full_name + '/actions'" target="_blank" rel="noopener" class="btn btn-sm">
+              {{ 'actions.openInGithub' | translate }}
+            </a>
+          </div>
+          <div class="ga-tabs">
+            <button class="ga-tab" [class.active]="activeTab() === 'runs'" (click)="switchTab('runs')">
+              {{ 'actions.tabRuns' | translate }}
+            </button>
+            <button class="ga-tab" [class.active]="activeTab() === 'health'" (click)="switchTab('health')">
+              {{ 'actions.tabHealth' | translate }}
+            </button>
+          </div>
         </div>
       }
 
-      @if (runsLoading()) {
-        <div class="empty-state"><div class="spinner"></div></div>
-      } @else if (runs().length === 0) {
-        <div class="empty-state"><p>{{ 'actions.noRunsFound' | translate }}</p></div>
-      } @else {
-        <ul class="runs-list">
-          @for (run of runs(); track run.id) {
-            <li class="run-card card">
-              <div class="run-card-header">
-                <span class="run-dot-lg" [class]="runClass(run)"></span>
-                <div class="run-card-info">
-                  <span class="run-card-name">{{ run.name }}</span>
-                  <span class="text-muted text-sm">{{ run.head_branch }} · {{ run.created_at | date:'dd MMM yyyy HH:mm' }}</span>
+      <!-- ── Runs tab ────────────────────────────────────────────────────── -->
+      @if (activeTab() === 'runs') {
+        @if (runsLoading()) {
+          <div class="empty-state"><div class="spinner"></div></div>
+        } @else if (runs().length === 0) {
+          <div class="empty-state"><p class="text-muted">{{ 'actions.noRunsFound' | translate }}</p></div>
+        } @else {
+          <ul class="runs-list">
+            @for (run of runs(); track run.id) {
+              <li class="run-card card">
+                <div class="run-card-header">
+                  <span class="run-dot-lg" [class]="runClass(run)"></span>
+                  <div class="run-card-info">
+                    <span class="run-card-name">{{ run.name }}</span>
+                    <span class="text-muted text-sm">{{ run.head_branch }} · {{ run.created_at | date:'dd MMM yyyy HH:mm' }}</span>
+                  </div>
+                  <span class="badge" [class]="'badge-' + (runClass(run) === 'success' ? 'success' : runClass(run) === 'failure' ? 'danger' : runClass(run) === 'in_progress' ? 'info' : 'muted')">
+                    {{ run | runStatus }}
+                  </span>
                 </div>
-                <span class="badge" [class]="'badge-' + (runClass(run) === 'success' ? 'success' : runClass(run) === 'failure' ? 'danger' : runClass(run) === 'in_progress' ? 'info' : 'muted')">
-                  {{ run | runStatus }}
-                </span>
-              </div>
-              <div class="run-card-actions">
-                @if (actionFeedback()?.id === run.id) {
-                  <span class="text-muted text-sm">{{ actionFeedback()?.msg }}</span>
-                } @else {
-                  <button class="btn btn-sm" (click)="rerun(run)" [title]="'actions.rerun' | translate">{{ 'actions.rerun' | translate }}</button>
-                  @if (run.status === 'in_progress' || run.status === 'queued') {
-                    <button class="btn btn-sm btn-danger" (click)="cancel(run)">{{ 'actions.cancel' | translate }}</button>
+                <div class="run-card-actions">
+                  @if (actionFeedback()?.id === run.id) {
+                    <span class="text-muted text-sm">{{ actionFeedback()?.msg }}</span>
+                  } @else {
+                    <button class="btn btn-sm" (click)="rerun(run)">{{ 'actions.rerun' | translate }}</button>
+                    @if (run.status === 'in_progress' || run.status === 'queued') {
+                      <button class="btn btn-sm btn-danger" (click)="cancel(run)">{{ 'actions.cancel' | translate }}</button>
+                    }
+                    <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">{{ 'actions.view' | translate }}</a>
                   }
-                  <a [href]="run.html_url" target="_blank" rel="noopener" class="btn btn-sm">{{ 'actions.view' | translate }}</a>
-                }
-              </div>
-            </li>
-          }
-        </ul>
+                </div>
+              </li>
+            }
+          </ul>
+        }
       }
+
+      <!-- ── Health tab ──────────────────────────────────────────────────── -->
+      @if (activeTab() === 'health') {
+        @if (!selectedRepo()) {
+          <div class="empty-state"><p class="text-muted text-sm">{{ 'health.emptyState' | translate }}</p></div>
+        } @else if (statsLoading()) {
+          <div class="empty-state">
+            <div class="spinner"></div>
+            <p class="text-muted text-sm">{{ 'health.loading' | translate }}</p>
+          </div>
+        } @else if (statsError()) {
+          <p class="text-sm" style="color:var(--danger);padding:1rem">{{ statsError() }}</p>
+        } @else if (!stats().length) {
+          <div class="empty-state"><p class="text-muted text-sm">{{ 'health.noRuns' | translate }}</p></div>
+        } @else {
+          <div class="health-meta">
+            <span class="text-muted text-sm">{{ stats().length }} {{ 'health.workflows' | translate }}</span>
+          </div>
+          <div class="stats-table-wrap">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>{{ 'health.workflow' | translate }}</th>
+                  <th class="col-last">{{ 'health.last' | translate }}</th>
+                  <th class="col-rate">{{ 'health.successRate' | translate }}</th>
+                  <th class="col-avg">{{ 'health.avgDuration' | translate }}</th>
+                  <th class="col-spark">{{ 'health.trend' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (stat of stats(); track stat.id) {
+                  <tr class="stat-row">
+                    <td class="cell-name">
+                      <span class="last-dot" [class]="conclusionClass(stat.lastConclusion)"></span>
+                      <span class="wf-name">{{ stat.name }}</span>
+                      <span class="run-count text-muted text-sm">{{ stat.totalRuns }}</span>
+                    </td>
+                    <td class="cell-last">
+                      <span class="conclusion-pill" [class]="'pill-' + (stat.lastConclusion ?? 'other')">
+                        {{ stat.lastConclusion ?? '—' }}
+                      </span>
+                    </td>
+                    <td class="cell-rate">
+                      <div class="rate-wrap">
+                        <span class="rate-pct" [class]="rateClass(stat.successRate)">{{ stat.successRate }}%</span>
+                        <div class="rate-bar">
+                          <div class="rate-fill" [class]="rateClass(stat.successRate)" [style.width.%]="stat.successRate"></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="cell-avg text-muted">{{ formatDuration(stat.avgDuration) }}</td>
+                    <td class="cell-spark">
+                      <div class="sparkline">
+                        @for (run of stat.recentRuns; track run.id) {
+                          <span [class]="'spark-dot ' + sparkClass(run)" [title]="(run.conclusion ?? run.status) + ' · ' + shortDate(run.created_at)">
+                            {{ sparkDot(run) }}
+                          </span>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
     </section>
   </div>
 }
