@@ -5,6 +5,12 @@
   align-items: start;
 }
 
+@media (max-width: 768px) {
+  .ga-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 // ── Repo list sidebar ─────────────────────────────────────────────────────────
 
 .repo-list {

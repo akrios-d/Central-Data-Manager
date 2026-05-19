@@ -98,6 +98,11 @@ a:hover { color: var(--accent-hover); }
 
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .page-header { margin-bottom: 1rem; }
+}
 .flex   { display: flex; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .gap-sm { gap: 0.5rem; }

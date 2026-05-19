@@ -197,3 +197,9 @@
 .sprint-more {
   padding-left: 1.4rem;
 }
+
+@media (max-width: 768px) {
+  .sprint-name {
+    word-break: break-word;
+  }
+}

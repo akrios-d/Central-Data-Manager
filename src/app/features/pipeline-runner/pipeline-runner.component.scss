@@ -5,6 +5,12 @@
   align-items: start;
 }
 
+@media (max-width: 768px) {
+  .runner-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 // ── Form card ─────────────────────────────────────────────────────────────────
 
 .runner-form {

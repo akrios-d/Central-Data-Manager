@@ -227,6 +227,26 @@
   color: var(--text-muted);
 }
 
+// ── Mobile ────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .blockers-card {
+    flex-direction: column;
+    min-height: unset;
+  }
+
+  .blockers-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 300px;
+  }
+
+  .blockers-canvas-wrap {
+    min-height: 400px;
+  }
+}
+
 .detail-label {
   font-size: 0.72rem;
   font-weight: 600;

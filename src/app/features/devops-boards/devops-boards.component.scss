@@ -377,3 +377,15 @@
 
 .wi-id { font-size: 0.72rem; }
 .wi-priority { font-size: 0.8rem; }
+
+// ── Mobile ────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .kanban-board {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    min-height: unset;
+    overflow-x: auto;
+  }
+
+  .filter-row { gap: 0.5rem; }
+}

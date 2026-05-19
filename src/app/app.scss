@@ -4,6 +4,8 @@
   overflow: hidden;
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
 .sidebar {
   width: 220px;
   flex-shrink: 0;
@@ -73,10 +75,88 @@
   }
 }
 
+// ── Main content ──────────────────────────────────────────────────────────────
+
 .main-content {
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
   background: var(--surface-0);
   &.no-nav { padding: 0; }
+}
+
+// ── Hamburger (hidden on desktop) ─────────────────────────────────────────────
+
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 400;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  padding: 0;
+
+  span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  &.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  &.open span:nth-child(2) { opacity: 0; }
+  &.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+}
+
+// ── Mobile backdrop ───────────────────────────────────────────────────────────
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 299;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(1px);
+}
+
+// ── Mobile breakpoint ─────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+
+  .sidebar-backdrop.visible { display: block; }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease, box-shadow 0.25s;
+    padding-top: 3.5rem;
+
+    &.open {
+      transform: translateX(0);
+      box-shadow: 4px 0 28px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  .main-content {
+    padding: 1rem;
+    padding-top: 3.5rem;
+    overflow-x: hidden;
+    &.no-nav { padding: 0; }
+  }
 }

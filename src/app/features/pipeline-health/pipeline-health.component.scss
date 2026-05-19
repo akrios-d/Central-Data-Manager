@@ -236,3 +236,28 @@
 .spark-running { color: var(--info, #58a6ff); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Mobile ────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .health-card {
+    flex-direction: column;
+    min-height: unset;
+  }
+
+  .health-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 220px;
+  }
+
+  .health-main {
+    min-height: 400px;
+  }
+
+  .stats-table th:not(:first-child):not(.col-rate),
+  .stats-table td:not(:first-child):not(.cell-rate) {
+    display: none;
+  }
+}

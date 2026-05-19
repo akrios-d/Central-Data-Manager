@@ -505,3 +505,57 @@
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.55; }
 }
+
+// ── Mobile ────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .vtab-card {
+    flex-direction: column;
+    min-height: unset;
+  }
+
+  .vtab-strip {
+    width: 100%;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    flex-shrink: 0;
+    overflow-x: auto;
+  }
+
+  .vtab-btn {
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    padding: 0.6rem 0.85rem;
+    width: auto;
+    flex-shrink: 0;
+
+    &.active {
+      border-left-color: transparent;
+      border-bottom-color: var(--accent, #58a6ff);
+    }
+  }
+
+  .vtab-body-canvas {
+    min-height: 400px;
+  }
+
+  // ── Toolbar ──────────────────────────────────────────────────────────────────
+  .orch-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .orch-name-input { width: 100%; }
+
+  .orch-toolbar-right {
+    flex-wrap: wrap;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .orch-sep { display: none; }
+}
