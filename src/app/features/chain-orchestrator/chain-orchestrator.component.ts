@@ -167,6 +167,11 @@ export class ChainOrchestratorComponent {
     if (this.selectedNodeId() === nodeId) this.selectedNodeId.set(null);
   }
 
+  toggleNodeDisabled(nodeId: string, e?: MouseEvent): void {
+    e?.stopPropagation();
+    this.graphNodes.update(ns => ns.map(n => n.id === nodeId ? { ...n, disabled: !n.disabled } : n));
+  }
+
   // ── Canvas events ─────────────────────────────────────────────────────────────
   onCanvasMouseDown(e: MouseEvent): void {
     this.selectedNodeId.set(null);

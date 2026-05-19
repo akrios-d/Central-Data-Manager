@@ -62,6 +62,13 @@ export class GitHubApiService {
     return this.http.get<{ workflow_runs: GhRun[] }>(url, { headers: this.headers });
   }
 
+  listRunsForHealth(fullName: string): Observable<{ workflow_runs: GhRun[] }> {
+    return this.http.get<{ workflow_runs: GhRun[] }>(
+      `https://api.github.com/repos/${fullName}/actions/runs?per_page=100`,
+      { headers: this.headers }
+    );
+  }
+
   getFileContent(fullName: string, path: string): Observable<string> {
     return this.http.get<{ content: string }>(
       `https://api.github.com/repos/${fullName}/contents/${path}`,
@@ -173,8 +180,10 @@ export interface GhRun {
   html_url: string;
   created_at: string;
   updated_at: string;
+  run_started_at?: string;
   head_branch: string;
   head_sha: string;
   repository: { name: string; full_name: string };
   workflow_id: number;
+  path?: string;
 }

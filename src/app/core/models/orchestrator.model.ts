@@ -7,6 +7,7 @@ export interface OrchNode {
   label?: string;
   x: number;
   y: number;
+  disabled?: boolean;
 }
 
 export interface OrchEdge {

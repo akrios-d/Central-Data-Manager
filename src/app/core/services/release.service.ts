@@ -80,10 +80,11 @@ export class ReleaseService {
   // ── Deployments ─────────────────────────────────────────────────────────────
 
   setDeployment(repoId: string, envId: string, tag: string): void {
+    const now = new Date().toISOString();
     this._repos.update(list => list.map(r => r.id !== repoId ? r : {
       ...r,
       deployments: { ...r.deployments, [envId]: tag },
-      updatedAt:   { ...r.updatedAt,   [envId]: new Date().toISOString() },
+      updatedAt:   { ...r.updatedAt,   [envId]: now },
     }));
     this.saveRepos();
   }

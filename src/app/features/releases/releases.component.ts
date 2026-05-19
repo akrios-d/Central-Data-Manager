@@ -2,9 +2,25 @@ import { Component, ElementRef, inject, signal, effect, computed } from '@angula
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReleaseService } from '../../core/services/release.service';
-import { GitHubApiService, GhRepo, GhComparison } from '../../core/services/github-api.service';
+import { GitHubApiService, GhRepo, GhComparison, GhCommitInfo } from '../../core/services/github-api.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
+
+const CONV_TYPES: Record<string, { label: string; icon: string }> = {
+  feat:     { label: 'Features',       icon: '🚀' },
+  fix:      { label: 'Bug Fixes',      icon: '🐛' },
+  perf:     { label: 'Performance',    icon: '⚡' },
+  refactor: { label: 'Refactoring',    icon: '♻️' },
+  docs:     { label: 'Documentation',  icon: '📚' },
+  test:     { label: 'Tests',          icon: '🧪' },
+  ci:       { label: 'CI/CD',          icon: '🔄' },
+  build:    { label: 'Build',          icon: '🏗️' },
+  chore:    { label: 'Chores',         icon: '🔧' },
+  style:    { label: 'Style',          icon: '🎨' },
+  other:    { label: 'Other Changes',  icon: '📦' },
+};
+
+interface ChangelogSection { type: string; icon: string; label: string; items: string[]; }
 
 interface EditTarget { repoId: string; envId: string; }
 
@@ -28,10 +44,27 @@ export class ReleasesComponent {
   editTarget = signal<EditTarget | null>(null);
   editValue  = signal('');
 
-  // ── Tag suggestions cache ───────────────────────────────────────────────────
-  private tagsCache = new Map<string, string[]>();
-  cellTags = signal<string[]>([]);
-  tagsLoading = signal(false);
+  // ── Ref suggestions (tags + branches) ──────────────────────────────────────
+  private tagsCache     = new Map<string, string[]>();
+  private branchesCache = new Map<string, string[]>();
+  cellTags     = signal<string[]>([]);
+  cellBranches = signal<string[]>([]);
+  refsLoading  = signal(false);
+  showRefDrop  = signal(false);
+
+  filteredCellTags = computed(() => {
+    const q = this.editValue().toLowerCase();
+    return q ? this.cellTags().filter(t => t.toLowerCase().includes(q)) : this.cellTags();
+  });
+
+  filteredCellBranches = computed(() => {
+    const q = this.editValue().toLowerCase();
+    return q ? this.cellBranches().filter(b => b.toLowerCase().includes(q)) : this.cellBranches();
+  });
+
+  hasRefSuggestions = computed(() =>
+    this.filteredCellTags().length > 0 || this.filteredCellBranches().length > 0
+  );
 
   // ── Add-repo form ───────────────────────────────────────────────────────────
   showAddRepo     = signal(false);
@@ -61,6 +94,33 @@ export class ReleasesComponent {
   comparison       = signal<GhComparison | null>(null);
   compLoading      = signal(false);
   compError        = signal('');
+  showChangelog    = signal(false);
+
+  changelog = computed((): ChangelogSection[] => {
+    const commits = this.comparison()?.commits ?? [];
+    if (!commits.length) return [];
+    const map = new Map<string, string[]>();
+    for (const c of commits) {
+      const type = this.parseConvType(c.commit.message);
+      if (!map.has(type)) map.set(type, []);
+      map.get(type)!.push(this.parseConvDesc(c.commit.message));
+    }
+    const order = Object.keys(CONV_TYPES);
+    return [...map.entries()]
+      .sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]))
+      .map(([type, items]) => ({ type, items, ...CONV_TYPES[type] ?? CONV_TYPES['other'] }));
+  });
+
+  changelogMarkdown = computed((): string => {
+    const comp = this.comparison();
+    if (!comp) return '';
+    const base = this.repos().find(r => r.id === this.compareRepoId())?.deployments[this.compareBaseEnvId()] ?? '';
+    const head = this.repos().find(r => r.id === this.compareRepoId())?.deployments[this.compareHeadEnvId()] ?? '';
+    const sections = this.changelog().map(s =>
+      `### ${s.icon} ${s.label}\n${s.items.map(i => `- ${i}`).join('\n')}`
+    ).join('\n\n');
+    return `## What's Changed\n\n> \`${base}\` → \`${head}\`\n\n${sections}`;
+  });
 
   // ── Manage environments ─────────────────────────────────────────────────────
   managingEnvs   = signal(false);
@@ -91,44 +151,59 @@ export class ReleasesComponent {
     this.editTarget.set({ repoId, envId });
     this.editValue.set(current);
     this.cellTags.set([]);
+    this.cellBranches.set([]);
+    this.showRefDrop.set(true);
 
     const repo = this.repos().find(r => r.id === repoId);
-    if (!repo) return;
+    if (!repo?.repoName.includes('/')) return;
     const name = repo.repoName;
-    if (!name.includes('/')) return;
 
-    if (this.tagsCache.has(name)) {
-      this.cellTags.set(this.tagsCache.get(name)!);
-      return;
+    const tagsReady    = this.tagsCache.has(name);
+    const branchesReady = this.branchesCache.has(name);
+
+    if (tagsReady)    this.cellTags.set(this.tagsCache.get(name)!);
+    if (branchesReady) this.cellBranches.set(this.branchesCache.get(name)!);
+    if (tagsReady && branchesReady) return;
+
+    this.refsLoading.set(true);
+    const pending = { tags: tagsReady, branches: branchesReady };
+    const done = () => { if (pending.tags && pending.branches) this.refsLoading.set(false); };
+
+    if (!tagsReady) {
+      this.gh.listTags(name).subscribe({
+        next: t => { const n = t.map(x => x.name); this.tagsCache.set(name, n); this.cellTags.set(n); pending.tags = true; done(); },
+        error: () => { pending.tags = true; done(); },
+      });
     }
-    this.tagsLoading.set(true);
-    this.gh.listTags(name).subscribe({
-      next: (tags) => {
-        const names = tags.map(t => t.name);
-        this.tagsCache.set(name, names);
-        this.cellTags.set(names);
-        this.tagsLoading.set(false);
-      },
-      error: () => this.tagsLoading.set(false),
-    });
+    if (!branchesReady) {
+      this.gh.listBranches(name).subscribe({
+        next: b => { const n = b.map(x => x.name); this.branchesCache.set(name, n); this.cellBranches.set(n); pending.branches = true; done(); },
+        error: () => { pending.branches = true; done(); },
+      });
+    }
+  }
+
+  selectRef(val: string): void {
+    this.editValue.set(val);
+    this.commitEdit();
   }
 
   commitEdit(): void {
     const t = this.editTarget();
     if (!t) return;
-    const tag = this.editValue().trim();
-    if (tag) {
-      this.svc.setDeployment(t.repoId, t.envId, tag);
+    const val = this.editValue().trim();
+    if (val) {
+      this.svc.setDeployment(t.repoId, t.envId, val);
     } else {
       this.svc.clearDeployment(t.repoId, t.envId);
     }
     this.editTarget.set(null);
-    this.cellTags.set([]);
+    this.showRefDrop.set(false);
   }
 
   cancelEdit(): void {
     this.editTarget.set(null);
-    this.cellTags.set([]);
+    this.showRefDrop.set(false);
   }
 
   onCellKey(event: KeyboardEvent): void {
@@ -222,6 +297,23 @@ export class ReleasesComponent {
 
   // ── Compare ──────────────────────────────────────────────────────────────────
 
+  // ── Changelog helpers ─────────────────────────────────────────────────────
+  private parseConvType(msg: string): string {
+    const m = msg.match(/^(\w+)(?:\(.*?\))?!?:/);
+    const t = m?.[1]?.toLowerCase() ?? 'other';
+    return CONV_TYPES[t] ? t : 'other';
+  }
+
+  private parseConvDesc(msg: string): string {
+    return msg.replace(/^\w+(?:\(.*?\))?!?:\s*/, '').split('\n')[0].trim();
+  }
+
+  copyChangelog(): void {
+    navigator.clipboard.writeText(this.changelogMarkdown()).catch(() => {});
+  }
+
+  // ── Compare ──────────────────────────────────────────────────────────────────
+
   envsWithTag(repoId: string): { envId: string; envName: string; tag: string }[] {
     const repo = this.repos().find(r => r.id === repoId);
     if (!repo) return [];
@@ -242,6 +334,7 @@ export class ReleasesComponent {
     }
     this.comparison.set(null);
     this.compError.set('');
+    this.showChangelog.set(false);
     this.compareRepoId.set(repoId);
 
     const tagged = this.envsWithTag(repoId);
@@ -254,11 +347,13 @@ export class ReleasesComponent {
 
   onBaseEnvChange(envId: string): void {
     this.compareBaseEnvId.set(envId);
+    this.showChangelog.set(false);
     this.runCompare();
   }
 
   onHeadEnvChange(envId: string): void {
     this.compareHeadEnvId.set(envId);
+    this.showChangelog.set(false);
     this.runCompare();
   }
 
@@ -283,6 +378,12 @@ export class ReleasesComponent {
     } finally {
       this.compLoading.set(false);
     }
+  }
+
+  isBranch(val: string): boolean {
+    // Tags look like: v1.0.0, 1.2.3, 20240101, release-1.0
+    // Branches: main, develop, feature/x, hotfix/y, etc.
+    return !/^v?\d[\d.\-_]*$/.test(val) && !(/^release[-\/]\d/i.test(val));
   }
 
   shortDate(dateStr: string): string {

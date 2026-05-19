@@ -103,22 +103,45 @@
                   (click)="!isEditing(repo.id, env.id) && startEdit(repo.id, env.id, repo.deployments[env.id] || '')">
 
                   @if (isEditing(repo.id, env.id)) {
-                    <input class="form-control form-control-sm cell-edit-input"
-                      [attr.list]="'tags-' + repo.id + '-' + env.id"
-                      [ngModel]="editValue()"
-                      (ngModelChange)="editValue.set($event)"
-                      (keydown)="onCellKey($event)"
-                      (blur)="commitEdit()" />
-                    @if (cellTags().length > 0) {
-                      <datalist [id]="'tags-' + repo.id + '-' + env.id">
-                        @for (tag of cellTags(); track tag) {
-                          <option [value]="tag"></option>
-                        }
-                      </datalist>
-                    }
+                    <div class="ref-edit-wrap">
+                      <input class="form-control form-control-sm cell-edit-input"
+                        [placeholder]="'releases.refPlaceholder' | translate"
+                        [ngModel]="editValue()"
+                        (ngModelChange)="editValue.set($event)"
+                        (keydown)="onCellKey($event)"
+                        (focus)="showRefDrop.set(true)"
+                        (blur)="commitEdit()" />
+                      @if (refsLoading()) { <div class="ref-spinner"></div> }
+                      @if (showRefDrop() && hasRefSuggestions()) {
+                        <div class="ref-dropdown">
+                          @if (filteredCellTags().length) {
+                            <div class="ref-group-label">{{ 'releases.tags' | translate }}</div>
+                            @for (tag of filteredCellTags(); track tag) {
+                              <div class="ref-item"
+                                   (mousedown)="$event.preventDefault()"
+                                   (click)="selectRef(tag)">
+                                <span class="ref-icon">🏷</span> {{ tag }}
+                              </div>
+                            }
+                          }
+                          @if (filteredCellBranches().length) {
+                            <div class="ref-group-label">{{ 'releases.branches' | translate }}</div>
+                            @for (branch of filteredCellBranches(); track branch) {
+                              <div class="ref-item"
+                                   (mousedown)="$event.preventDefault()"
+                                   (click)="selectRef(branch)">
+                                <span class="ref-icon">⎇</span> {{ branch }}
+                              </div>
+                            }
+                          }
+                        </div>
+                      }
+                    </div>
                   } @else {
                     @if (repo.deployments[env.id]) {
-                      <span class="tag-badge" [title]="updatedTitle(repo, env.id)">
+                      <span [class]="isBranch(repo.deployments[env.id]) ? 'branch-badge' : 'tag-badge'"
+                            [title]="updatedTitle(repo, env.id)">
+                        @if (isBranch(repo.deployments[env.id])) { <span class="ref-icon-sm">⎇</span> }
                         {{ repo.deployments[env.id] }}
                       </span>
                     } @else {
@@ -191,16 +214,44 @@
                       @if (comp.commits.length === 0) {
                         <p class="text-muted text-sm comp-msg">{{ 'releases.noCommits' | translate }}</p>
                       } @else {
-                        <ul class="comp-commits">
-                          @for (c of comp.commits; track c.sha) {
-                            <li class="comp-commit">
-                              <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
-                              <span class="comp-msg-text">{{ firstCommitLine(c.commit.message) }}</span>
-                              <span class="comp-meta text-muted">{{ c.commit.author.name }}</span>
-                              <span class="comp-meta text-muted">{{ shortDate(c.commit.author.date) }}</span>
-                            </li>
-                          }
-                        </ul>
+                        <!-- view toggle -->
+                        <div class="comp-view-toggle">
+                          <button class="comp-toggle-btn" [class.active]="!showChangelog()" (click)="showChangelog.set(false)">
+                            {{ 'releases.viewCommits' | translate }}
+                          </button>
+                          <button class="comp-toggle-btn" [class.active]="showChangelog()" (click)="showChangelog.set(true)">
+                            {{ 'releases.viewChangelog' | translate }}
+                          </button>
+                        </div>
+
+                        @if (!showChangelog()) {
+                          <ul class="comp-commits">
+                            @for (c of comp.commits; track c.sha) {
+                              <li class="comp-commit">
+                                <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
+                                <span class="comp-msg-text">{{ firstCommitLine(c.commit.message) }}</span>
+                                <span class="comp-meta text-muted">{{ c.commit.author.name }}</span>
+                                <span class="comp-meta text-muted">{{ shortDate(c.commit.author.date) }}</span>
+                              </li>
+                            }
+                          </ul>
+                        } @else {
+                          <div class="changelog-wrap">
+                            <button class="btn btn-sm btn-outline changelog-copy" (click)="copyChangelog()">
+                              {{ 'releases.copyMarkdown' | translate }}
+                            </button>
+                            @for (section of changelog(); track section.type) {
+                              <div class="cl-section">
+                                <h4 class="cl-heading">{{ section.icon }} {{ section.label }}</h4>
+                                <ul class="cl-list">
+                                  @for (item of section.items; track item) {
+                                    <li class="cl-item">{{ item }}</li>
+                                  }
+                                </ul>
+                              </div>
+                            }
+                          </div>
+                        }
                       }
                     }
 
@@ -208,6 +259,7 @@
                 </td>
               </tr>
             }
+
           }
         </tbody>
       </table>

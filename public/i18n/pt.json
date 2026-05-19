@@ -6,6 +6,7 @@
     "pipelineRunner": "Pipeline Runner",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orquestrador",
+    "pipelineHealth": "Saúde de Pipelines",
     "blockers": "Bloqueadores",
     "releases": "Releases",
     "settings": "Definições"
@@ -238,6 +239,8 @@
     "run": "▷ Executar",
     "startNode": "Início",
     "removeNode": "Remover nó",
+    "disableNode": "Desactivar",
+    "enableNode": "Activar",
     "export": "↓ Exportar",
     "import": "↑ Importar",
     "noRuns": "Sem execuções — clica em Executar para começar."
@@ -256,6 +259,9 @@
     "repository": "Repositório",
     "removeRepo": "Remover repositório",
     "emptyState": "Sem repositórios ainda — adiciona um acima.",
+    "refPlaceholder": "tag ou branch…",
+    "tags": "Tags",
+    "branches": "Branches",
     "compare": "Comparar releases",
     "compareBase": "Base",
     "compareHead": "Head",
@@ -264,7 +270,25 @@
     "behind": "commits atrás",
     "noCommits": "Sem commits neste intervalo.",
     "compLoading": "A carregar comparação…",
-    "openOnGitHub": "↗ GitHub"
+    "openOnGitHub": "↗ GitHub",
+    "viewCommits": "Commits",
+    "viewChangelog": "Changelog",
+    "copyMarkdown": "Copiar Markdown"
+  },
+  "health": {
+    "title": "Saúde de Pipelines",
+    "subtitle": "Taxa de sucesso, duração média e tendência por workflow.",
+    "searchRepos": "Pesquisar repos…",
+    "repoHint": "Começa a escrever para pesquisar os teus repositórios.",
+    "emptyState": "Selecciona um repositório para ver a saúde dos workflows.",
+    "loading": "A carregar execuções…",
+    "noRuns": "Nenhuma execução encontrada para este repositório.",
+    "workflows": "workflows",
+    "workflow": "Workflow",
+    "last": "Última exec.",
+    "successRate": "Taxa de sucesso",
+    "avgDuration": "Duração média",
+    "trend": "Tendência (últ. 10)"
   },
   "blockers": {
     "title": "Mapa de Bloqueadores",

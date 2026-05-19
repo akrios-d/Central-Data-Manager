@@ -6,6 +6,7 @@
     "pipelineRunner": "Pipeline Runner",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orchestrator",
+    "pipelineHealth": "Pipeline Health",
     "blockers": "Blockers",
     "releases": "Releases",
     "settings": "Settings"
@@ -238,6 +239,8 @@
     "run": "▷ Run",
     "startNode": "Start",
     "removeNode": "Remove node",
+    "disableNode": "Disable",
+    "enableNode": "Enable",
     "export": "↓ Export",
     "import": "↑ Import",
     "noRuns": "No runs yet — hit Run to start."
@@ -256,6 +259,9 @@
     "repository": "Repository",
     "removeRepo": "Remove repository",
     "emptyState": "No repositories yet — add one above.",
+    "refPlaceholder": "tag or branch…",
+    "tags": "Tags",
+    "branches": "Branches",
     "compare": "Compare releases",
     "compareBase": "Base",
     "compareHead": "Head",
@@ -264,7 +270,25 @@
     "behind": "commits behind",
     "noCommits": "No commits in this range.",
     "compLoading": "Loading comparison…",
-    "openOnGitHub": "↗ GitHub"
+    "openOnGitHub": "↗ GitHub",
+    "viewCommits": "Commits",
+    "viewChangelog": "Changelog",
+    "copyMarkdown": "Copy Markdown"
+  },
+  "health": {
+    "title": "Pipeline Health",
+    "subtitle": "Success rate, average duration and trend for each workflow.",
+    "searchRepos": "Search repos…",
+    "repoHint": "Start typing to search your repositories.",
+    "emptyState": "Select a repository to see its workflow health.",
+    "loading": "Loading runs…",
+    "noRuns": "No runs found for this repository.",
+    "workflows": "workflows",
+    "workflow": "Workflow",
+    "last": "Last run",
+    "successRate": "Success rate",
+    "avgDuration": "Avg duration",
+    "trend": "Trend (last 10)"
   },
   "blockers": {
     "title": "Blockers Map",

@@ -182,12 +182,88 @@
   font-size: 0.85rem;
 }
 
+.ref-edit-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .cell-edit-input {
-  width: 100%;
+  flex: 1;
   min-width: 140px;
   font-family: monospace;
   font-size: 0.8rem;
 }
+
+.ref-spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border);
+  border-top-color: var(--info, #58a6ff);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ref-dropdown {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  z-index: 200;
+  min-width: 220px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  padding: 0.2rem 0;
+}
+
+.ref-group-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 0.35rem 0.65rem 0.1rem;
+}
+
+.ref-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  font-family: monospace;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover { background: var(--surface-2); }
+}
+
+.ref-icon { font-size: 0.75rem; flex-shrink: 0; }
+
+.branch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: monospace;
+  font-size: 0.78rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-success, #3fb950) 12%, transparent);
+  color: var(--color-success, #3fb950);
+  border: 1px solid color-mix(in srgb, var(--color-success, #3fb950) 30%, transparent);
+  cursor: pointer;
+}
+
+.ref-icon-sm { font-size: 0.7rem; }
 
 .cell-actions {
   opacity: 0;
@@ -336,6 +412,70 @@
 .comp-meta {
   font-size: 0.72rem;
   white-space: nowrap;
+}
+
+// ── View toggle (commits / changelog) ────────────────────────────────────────
+
+.comp-view-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  align-self: flex-start;
+}
+
+.comp-toggle-btn {
+  background: none;
+  border: none;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background 0.12s, color 0.12s;
+
+  &:hover    { background: var(--surface-2); color: var(--text); }
+  &.active   { background: var(--accent, #58a6ff); color: #fff; }
+}
+
+// ── Changelog ─────────────────────────────────────────────────────────────────
+
+.changelog-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.changelog-copy {
+  align-self: flex-start;
+  font-size: 0.75rem;
+}
+
+.cl-section { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.cl-heading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.cl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cl-item {
+  font-size: 0.78rem;
+  padding-left: 0.75rem;
+  color: var(--text);
+  &::before { content: '- '; color: var(--text-muted); }
 }
 
 // ── Button active state ───────────────────────────────────────────────────────

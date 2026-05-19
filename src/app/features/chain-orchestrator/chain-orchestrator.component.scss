@@ -333,6 +333,26 @@
   .orch-node:hover & { opacity: 1; }
 }
 
+.orch-node-toggle {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  border-color: transparent;
+
+  .orch-node:hover & { opacity: 1; }
+  .orch-node-disabled & { opacity: 1; color: var(--text-muted); }
+}
+
+.orch-node-disabled {
+  opacity: 0.4;
+  border-style: dashed;
+
+  .orch-node-name { text-decoration: line-through; }
+}
+
 // ── Ports ─────────────────────────────────────────────────────────────────────
 
 .orch-port {

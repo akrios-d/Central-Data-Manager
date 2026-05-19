@@ -50,6 +50,11 @@ export class OrchestratorExecutorService {
           return false;
         }
 
+        if (node.disabled) {
+          this.setStatus(run, nr, 'skipped');
+          return true; // pass-through so downstream nodes still run
+        }
+
         const chain = chainMap.get(node.chainId!);
         if (!chain) {
           nr.error = 'Chain not found';

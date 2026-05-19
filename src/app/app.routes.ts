@@ -63,6 +63,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'pipeline-health',
+    canActivate: [tokenGuard],
+    loadComponent: () =>
+      import('./features/pipeline-health/pipeline-health.component').then((m) => m.PipelineHealthComponent),
+  },
+  {
     path: 'blockers',
     canActivate: [tokenGuard],
     loadComponent: () =>
