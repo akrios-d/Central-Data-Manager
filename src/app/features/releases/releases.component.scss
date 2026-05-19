@@ -192,10 +192,150 @@
 .cell-actions {
   opacity: 0;
   transition: opacity 0.15s;
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .repo-row:hover .cell-actions {
   opacity: 1;
+}
+
+.icon-btn-compare {
+  color: var(--info, #58a6ff);
+  border-color: transparent;
+
+  &:hover:not(:disabled) { border-color: var(--info, #58a6ff); }
+  &.active {
+    color: var(--accent, #58a6ff);
+    background: color-mix(in srgb, var(--accent, #58a6ff) 15%, transparent);
+    border-color: var(--accent, #58a6ff);
+    opacity: 1;
+  }
+}
+
+// ── Compare row ───────────────────────────────────────────────────────────────
+
+.compare-row td {
+  padding: 0;
+  border-bottom: 2px solid var(--accent, #58a6ff);
+}
+
+.comp-panel {
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--accent, #58a6ff) 5%, var(--surface-1));
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.comp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.comp-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.comp-select {
+  width: auto;
+  min-width: 180px;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+.comp-arrow {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 0 0.15rem;
+}
+
+.comp-close {
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.comp-status-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.comp-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.comp-identical {
+  background: color-mix(in srgb, var(--success, #3fb950) 15%, transparent);
+  color: var(--success, #3fb950);
+}
+
+.comp-ahead {
+  background: color-mix(in srgb, var(--info, #58a6ff) 15%, transparent);
+  color: var(--info, #58a6ff);
+}
+
+.comp-behind {
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 15%, transparent);
+  color: var(--color-warning, #f59e0b);
+}
+
+.comp-msg { margin: 0; }
+
+// ── Commit list ───────────────────────────────────────────────────────────────
+
+.comp-commits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.comp-commit {
+  display: grid;
+  grid-template-columns: 56px 1fr auto auto;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+
+  &:hover { background: var(--surface-2); }
+}
+
+.comp-sha {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.comp-msg-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.comp-meta {
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 // ── Button active state ───────────────────────────────────────────────────────

@@ -255,7 +255,16 @@
     "clickToRename": "(click to rename)",
     "repository": "Repository",
     "removeRepo": "Remove repository",
-    "emptyState": "No repositories yet — add one above."
+    "emptyState": "No repositories yet — add one above.",
+    "compare": "Compare releases",
+    "compareBase": "Base",
+    "compareHead": "Head",
+    "identical": "Identical — no commits differ",
+    "ahead": "commits ahead",
+    "behind": "commits behind",
+    "noCommits": "No commits in this range.",
+    "compLoading": "Loading comparison…",
+    "openOnGitHub": "↗ GitHub"
   },
   "blockers": {
     "title": "Blockers Map",

@@ -2,8 +2,9 @@ import { Component, ElementRef, inject, signal, effect, computed } from '@angula
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReleaseService } from '../../core/services/release.service';
-import { GitHubApiService, GhRepo } from '../../core/services/github-api.service';
+import { GitHubApiService, GhRepo, GhComparison } from '../../core/services/github-api.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { firstValueFrom } from 'rxjs';
 
 interface EditTarget { repoId: string; envId: string; }
 
@@ -52,6 +53,14 @@ export class ReleasesComponent {
   readonly alreadyAdded = computed(() =>
     new Set(this.repos().map(r => r.repoName))
   );
+
+  // ── Compare panel ──────────────────────────────────────────────────────────
+  compareRepoId    = signal<string | null>(null);
+  compareBaseEnvId = signal('');
+  compareHeadEnvId = signal('');
+  comparison       = signal<GhComparison | null>(null);
+  compLoading      = signal(false);
+  compError        = signal('');
 
   // ── Manage environments ─────────────────────────────────────────────────────
   managingEnvs   = signal(false);
@@ -209,6 +218,79 @@ export class ReleasesComponent {
     this.toasts.confirm(`Remove environment "${env.name}"? All deployments for this environment will be lost.`, 'Remove', () => {
       this.svc.removeEnv(id);
     });
+  }
+
+  // ── Compare ──────────────────────────────────────────────────────────────────
+
+  envsWithTag(repoId: string): { envId: string; envName: string; tag: string }[] {
+    const repo = this.repos().find(r => r.id === repoId);
+    if (!repo) return [];
+    return this.envs()
+      .filter(e => repo.deployments[e.id])
+      .map(e => ({ envId: e.id, envName: e.name, tag: repo.deployments[e.id] }));
+  }
+
+  canCompare(repoId: string): boolean {
+    return this.envsWithTag(repoId).length >= 2;
+  }
+
+  toggleCompare(repoId: string): void {
+    if (this.compareRepoId() === repoId) {
+      this.compareRepoId.set(null);
+      this.comparison.set(null);
+      return;
+    }
+    this.comparison.set(null);
+    this.compError.set('');
+    this.compareRepoId.set(repoId);
+
+    const tagged = this.envsWithTag(repoId);
+    if (tagged.length >= 2) {
+      this.compareBaseEnvId.set(tagged[tagged.length - 1].envId); // rightmost env (dev)
+      this.compareHeadEnvId.set(tagged[tagged.length - 2].envId); // next to the left
+      this.runCompare();
+    }
+  }
+
+  onBaseEnvChange(envId: string): void {
+    this.compareBaseEnvId.set(envId);
+    this.runCompare();
+  }
+
+  onHeadEnvChange(envId: string): void {
+    this.compareHeadEnvId.set(envId);
+    this.runCompare();
+  }
+
+  async runCompare(): Promise<void> {
+    const repoId = this.compareRepoId();
+    if (!repoId) return;
+    const repo = this.repos().find(r => r.id === repoId);
+    if (!repo) return;
+    const base = repo.deployments[this.compareBaseEnvId()];
+    const head = repo.deployments[this.compareHeadEnvId()];
+    if (!base || !head) return;
+
+    this.comparison.set(null);
+    this.compError.set('');
+    await Promise.resolve(); // flush render so the clear is visible before loading starts
+    this.compLoading.set(true);
+    try {
+      const result = await firstValueFrom(this.gh.compareRefs(repo.repoName, base, head));
+      this.comparison.set(result);
+    } catch (e: any) {
+      this.compError.set(e?.error?.message ?? 'Error loading comparison');
+    } finally {
+      this.compLoading.set(false);
+    }
+  }
+
+  shortDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  }
+
+  firstCommitLine(msg: string): string {
+    return msg.split('\n')[0];
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────

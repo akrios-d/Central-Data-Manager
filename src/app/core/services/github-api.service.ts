@@ -114,6 +114,13 @@ export class GitHubApiService {
       { headers: this.headers }
     );
   }
+
+  compareRefs(fullName: string, base: string, head: string): Observable<GhComparison> {
+    return this.http.get<GhComparison>(
+      `https://api.github.com/repos/${fullName}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
+      { headers: this.headers }
+    );
+  }
 }
 
 export interface GhUser {
@@ -138,6 +145,24 @@ export interface GhWorkflow {
   name: string;
   state: string;
   path: string;
+}
+
+export interface GhComparison {
+  status: 'ahead' | 'behind' | 'diverged' | 'identical';
+  ahead_by: number;
+  behind_by: number;
+  commits: GhCommitInfo[];
+  permalink_url: string;
+}
+
+export interface GhCommitInfo {
+  sha: string;
+  commit: {
+    message: string;
+    author: { name: string; date: string };
+  };
+  html_url: string;
+  author: { login: string; avatar_url: string } | null;
 }
 
 export interface GhRun {
