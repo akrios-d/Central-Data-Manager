@@ -31,6 +31,50 @@
       <p class="text-sm" style="color:var(--danger)">{{ error() }}</p>
     }
 
+    <!-- Filters -->
+    @if (nodes().length) {
+      <div class="sidebar-section filter-section">
+        <div class="filter-header">
+          <span class="sidebar-heading">{{ 'blockers.filters' | translate }}</span>
+          @if (hasActiveFilters()) {
+            <button class="btn-clear-filters" (click)="clearFilters()">{{ 'blockers.clearFilters' | translate }}</button>
+          }
+        </div>
+
+        @if (availableTypes().length > 1) {
+          <div class="filter-group">
+            <span class="filter-label">{{ 'blockers.filterType' | translate }}</span>
+            <div class="filter-chips">
+              @for (type of availableTypes(); track type) {
+                <button class="filter-chip"
+                        [class.active]="filterTypes().has(type)"
+                        [style.--chip-color]="typeColor(type)"
+                        (click)="toggleTypeFilter(type)">{{ type }}</button>
+              }
+            </div>
+          </div>
+        }
+
+        @if (availableStates().length > 1) {
+          <div class="filter-group">
+            <span class="filter-label">{{ 'blockers.filterState' | translate }}</span>
+            <div class="filter-chips">
+              @for (state of availableStates(); track state) {
+                <button class="filter-chip filter-chip-state"
+                        [class.active]="filterStates().has(state)"
+                        (click)="toggleStateFilter(state)">{{ state }}</button>
+              }
+            </div>
+          </div>
+        }
+
+        <label class="filter-toggle-row">
+          <input type="checkbox" [ngModel]="filterOnlyBlockers()" (ngModelChange)="filterOnlyBlockers.set($event)" />
+          <span>{{ 'blockers.onlyBlockers' | translate }}</span>
+        </label>
+      </div>
+    }
+
     <!-- Top blockers list -->
     @if (topBlockers().length) {
       <div class="sidebar-section">
@@ -127,20 +171,20 @@
               <polygon points="0 0, 9 3.5, 0 7" class="block-arr-fill-active" />
             </marker>
           </defs>
-          @for (edge of edges(); track edge.id) {
-            <path [class]="'block-edge' + (isEdgeInSubgraph(edge) ? ' edge-active' : (selectedNodeId() !== null ? ' edge-dimmed' : ''))"
+          @for (edge of filteredEdges(); track edge.id) {
+            <path [class]="'block-edge' + (isEdgeInSubgraph(edge) ? ' edge-active' : (selectedNodeId() !== null && filteredNodeIds().has(selectedNodeId()!) ? ' edge-dimmed' : ''))"
                   [attr.d]="getEdgePath(edge)"
                   [attr.marker-end]="isEdgeInSubgraph(edge) ? 'url(#block-arr-active)' : 'url(#block-arr)'" />
           }
         </svg>
 
         <!-- Nodes -->
-        @for (node of nodes(); track node.id) {
+        @for (node of filteredNodes(); track node.id) {
           <div class="block-node"
                [class.selected]="selectedNodeId() === node.id"
                [class.node-direct-blocked]="affectedNodes().get(node.id) === 'direct'"
                [class.node-indirect-blocked]="affectedNodes().get(node.id) === 'indirect'"
-               [class.node-dimmed]="selectedNodeId() !== null && selectedNodeId() !== node.id && !affectedNodes().has(node.id)"
+               [class.node-dimmed]="selectedNodeId() !== null && filteredNodeIds().has(selectedNodeId()!) && selectedNodeId() !== node.id && !affectedNodes().has(node.id)"
                [style.left.px]="node.x"
                [style.top.px]="node.y"
                (click)="selectNode(node.id)">

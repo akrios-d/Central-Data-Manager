@@ -55,6 +55,85 @@
   margin: 0 0 0.2rem;
 }
 
+// ── Filters ───────────────────────────────────────────────────────────────────
+
+.filter-section { gap: 0.55rem; }
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-clear-filters {
+  background: none;
+  border: none;
+  font-size: 0.7rem;
+  color: var(--info, #58a6ff);
+  cursor: pointer;
+  padding: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.filter-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.filter-chip {
+  background: none;
+  border: 1px solid var(--chip-color, var(--border));
+  border-radius: 4px;
+  color: var(--chip-color, var(--text-muted));
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover { background: color-mix(in srgb, var(--chip-color, var(--border)) 15%, transparent); }
+
+  &.active {
+    background: var(--chip-color, var(--border));
+    color: #fff;
+  }
+}
+
+.filter-chip-state {
+  --chip-color: var(--text-muted);
+
+  &.active {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+}
+
+.filter-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] { cursor: pointer; accent-color: var(--accent, #58a6ff); }
+}
+
 // ── Blocker list ──────────────────────────────────────────────────────────────
 
 .blocker-list {

@@ -282,7 +282,12 @@
     "sprint": "Sprint",
     "impact": "Transitive impact",
     "blocks": "Blocks",
-    "blockedBy": "Blocked by"
+    "blockedBy": "Blocked by",
+    "filters": "Filters",
+    "filterType": "Type",
+    "filterState": "State",
+    "onlyBlockers": "Only items that block others",
+    "clearFilters": "Clear"
   },
   "lang": {
     "en": "EN",

@@ -55,12 +55,44 @@ export class BlockersComponent implements OnInit {
   canvasWidth = signal(800);
   canvasHeight = signal(500);
 
+  // ── Filters ───────────────────────────────────────────────────────────────
+  filterTypes        = signal<Set<string>>(new Set());
+  filterStates       = signal<Set<string>>(new Set());
+  filterOnlyBlockers = signal(false);
+
+  availableTypes  = computed(() => [...new Set(this.nodes().map(n => n.item.fields['System.WorkItemType']))].sort());
+  availableStates = computed(() => [...new Set(this.nodes().map(n => n.item.fields['System.State']))].sort());
+
+  filteredNodes = computed(() => {
+    const types        = this.filterTypes();
+    const states       = this.filterStates();
+    const onlyBlockers = this.filterOnlyBlockers();
+    return this.nodes().filter(n => {
+      if (types.size  > 0 && !types.has(n.item.fields['System.WorkItemType'])) return false;
+      if (states.size > 0 && !states.has(n.item.fields['System.State']))       return false;
+      if (onlyBlockers && n.blocks.length === 0)                                return false;
+      return true;
+    });
+  });
+
+  filteredNodeIds = computed(() => new Set(this.filteredNodes().map(n => n.id)));
+
+  filteredEdges = computed(() => {
+    const ids = this.filteredNodeIds();
+    return this.edges().filter(e => ids.has(e.fromId) && ids.has(e.toId));
+  });
+
+  hasActiveFilters = computed(() =>
+    this.filterTypes().size > 0 || this.filterStates().size > 0 || this.filterOnlyBlockers()
+  );
+
+  // ── Node map (all nodes — needed for positions & BFS even when filtered) ──
   nodeById = computed(() => new Map(this.nodes().map(n => [n.id, n])));
 
   selectedNode = computed(() => this.nodeById().get(this.selectedNodeId()!) ?? null);
 
   topBlockers = computed(() =>
-    [...this.nodes()]
+    [...this.filteredNodes()]
       .filter(n => n.blocks.length > 0)
       .sort((a, b) => b.impactScore - a.impactScore)
   );
@@ -240,6 +272,20 @@ export class BlockersComponent implements OnInit {
     const x2 = to.x,           y2 = to.y + NODE_H / 2;
     const cx = (x1 + x2) / 2;
     return `M ${x1} ${y1} C ${cx} ${y1} ${cx} ${y2} ${x2} ${y2}`;
+  }
+
+  toggleTypeFilter(type: string): void {
+    this.filterTypes.update(s => { const n = new Set(s); n.has(type) ? n.delete(type) : n.add(type); return n; });
+  }
+
+  toggleStateFilter(state: string): void {
+    this.filterStates.update(s => { const n = new Set(s); n.has(state) ? n.delete(state) : n.add(state); return n; });
+  }
+
+  clearFilters(): void {
+    this.filterTypes.set(new Set());
+    this.filterStates.set(new Set());
+    this.filterOnlyBlockers.set(false);
   }
 
   isEdgeInSubgraph(edge: BEdge): boolean {

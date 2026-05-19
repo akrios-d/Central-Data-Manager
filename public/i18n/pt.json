@@ -282,7 +282,12 @@
     "sprint": "Sprint",
     "impact": "Impacto transitivo",
     "blocks": "Bloqueia",
-    "blockedBy": "Bloqueado por"
+    "blockedBy": "Bloqueado por",
+    "filters": "Filtros",
+    "filterType": "Tipo",
+    "filterState": "Estado",
+    "onlyBlockers": "Apenas itens que bloqueiam outros",
+    "clearFilters": "Limpar"
   },
   "lang": {
     "en": "EN",
