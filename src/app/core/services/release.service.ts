@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { ReleaseEnv, RepoEntry } from '../models/release.model';
+import { CiProviderType } from '../interfaces/ci-provider.interface';
 
 const ENVS_KEY  = 'cdm:releases:envs';
 const REPOS_KEY = 'cdm:releases:repos';
@@ -61,10 +62,11 @@ export class ReleaseService {
 
   // ── Repositories ────────────────────────────────────────────────────────────
 
-  addRepo(repoName: string): void {
+  addRepo(repoName: string, provider: CiProviderType = 'github'): void {
     const repo: RepoEntry = {
       id: crypto.randomUUID(),
       repoName: repoName.trim(),
+      provider,
       deployments: {},
       updatedAt:   {},
     };

@@ -12,7 +12,8 @@
       "Bash(node -e \"const m = require\\('./node_modules/@ngx-translate/http-loader'\\); console.log\\(Object.keys\\(m\\)\\)\")",
       "Bash(cat node_modules/@ngx-translate/http-loader/lib/translate-http-loader.d.ts)",
       "Bash(cat node_modules/@ngx-translate/http-loader/public-api.d.ts)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

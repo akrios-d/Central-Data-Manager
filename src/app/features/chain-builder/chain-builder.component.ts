@@ -6,7 +6,8 @@ import { Chain, ChainStep, ChainStepRun, StepStatus } from '../../core/models/ch
 import { parseDispatchInputs, WorkflowInput } from '../../core/utils/workflow-parser';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
-import { GitHubApiService, GhRepo, GhWorkflow } from '../../core/services/github-api.service';
+import { CiProviderService } from '../../core/services/ci-provider.service';
+import { CiRepo, CiWorkflow } from '../../core/interfaces/ci-provider.interface';
 import { ToastService } from '../../shared/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
 
@@ -20,7 +21,7 @@ interface StepInput { key: string; value: string; description?: string; }
   styleUrl: './chain-builder.component.scss',
 })
 export class ChainBuilderComponent {
-  private readonly gh       = inject(GitHubApiService);
+  private readonly ci       = inject(CiProviderService);
   private readonly chainSvc = inject(ChainService);
   private readonly executor = inject(ChainExecutorService);
   private readonly toasts   = inject(ToastService);
@@ -38,13 +39,13 @@ export class ChainBuilderComponent {
   activeTab  = signal<'chains' | 'editor' | 'run'>('chains');
 
   // ── Add-step form ─────────────────────────────────────────────────────────────
-  repos        = signal<GhRepo[]>([]);
+  repos        = signal<CiRepo[]>([]);
   reposLoading = signal(false);
   repoSearch   = signal('');
-  stepRepo     = signal<GhRepo | null>(null);
-  stepWfs      = signal<GhWorkflow[]>([]);
+  stepRepo     = signal<CiRepo | null>(null);
+  stepWfs      = signal<CiWorkflow[]>([]);
   stepWfLoad   = signal(false);
-  stepWf          = signal<GhWorkflow | null>(null);
+  stepWf          = signal<CiWorkflow | null>(null);
   stepRef         = signal('main');
   stepOverrideRef = signal(false);
   stepBranches    = signal<string[]>([]);
@@ -93,6 +94,8 @@ export class ChainBuilderComponent {
     return !!q && !this.stepRepo() && this.filteredRepos().length > 0;
   });
 
+  readonly isGitLabRepo = computed(() => this.stepRepo()?.provider === 'gitlab');
+
   // ── Chain list ────────────────────────────────────────────────────────────────
   selectChain(chain: Chain): void {
     this.selectedId.set(chain.id);
@@ -123,10 +126,9 @@ export class ChainBuilderComponent {
     if (!this.editSteps().length) { this.toasts.show('Add at least one step', 'danger'); return; }
     const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
-      id,
-      name,
-      ref: this.chainRef().trim(),
-      steps: this.editSteps(),
+      id, name,
+      ref:       this.chainRef().trim(),
+      steps:     this.editSteps(),
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
     this.chainSvc.saveChain(chain);
@@ -138,19 +140,12 @@ export class ChainBuilderComponent {
     const id = this.selectedId();
     if (!id || id === 'new') return;
     this.toasts.confirm(
-      `Delete chain "${this.chainName()}"?`,
-      'Delete',
-      () => {
-        this.chainSvc.deleteChain(id);
-        this.selectedId.set(null);
-        this.toasts.show('Chain deleted', 'success');
-      }
+      `Delete chain "${this.chainName()}"?`, 'Delete',
+      () => { this.chainSvc.deleteChain(id); this.selectedId.set(null); this.toasts.show('Chain deleted', 'success'); }
     );
   }
 
-  onStepDragStart(index: number): void {
-    this.dragStepIndex.set(index);
-  }
+  onStepDragStart(index: number): void { this.dragStepIndex.set(index); }
 
   onStepDragEnter(index: number): void {
     const from = this.dragStepIndex();
@@ -164,21 +159,15 @@ export class ChainBuilderComponent {
     this.dragStepIndex.set(index);
   }
 
-  onStepDragEnd(): void {
-    this.dragStepIndex.set(null);
-  }
+  onStepDragEnd(): void { this.dragStepIndex.set(null); }
 
   removeStep(i: number): void {
     const step = this.editSteps()[i];
-    this.toasts.confirm(
-      `Remove step "${step.workflowName}"?`,
-      'Remove',
-      () => {
-        this.editSteps.update(list => list.filter((_, idx) => idx !== i));
-        this.selectedStepIds.update(ids => ids.filter(id => id !== step.id));
-        this.toasts.show('Step removed', 'success');
-      }
-    );
+    this.toasts.confirm(`Remove step "${step.workflowName}"?`, 'Remove', () => {
+      this.editSteps.update(list => list.filter((_, idx) => idx !== i));
+      this.selectedStepIds.update(ids => ids.filter(id => id !== step.id));
+      this.toasts.show('Step removed', 'success');
+    });
   }
 
   // ── Add-step form ─────────────────────────────────────────────────────────────
@@ -189,7 +178,7 @@ export class ChainBuilderComponent {
 
   loadRepos(): void {
     this.reposLoading.set(true);
-    this.gh.listRepos().subscribe({
+    this.ci.listRepos().subscribe({
       next: (r)  => { this.repos.set(r); this.reposLoading.set(false); },
       error: ()  => this.reposLoading.set(false),
     });
@@ -219,34 +208,43 @@ export class ChainBuilderComponent {
     if (checked) this.stepOverrideRef.set(false);
   }
 
-  selectStepRepo(repo: GhRepo): void {
+  selectStepRepo(repo: CiRepo): void {
     this.stepRepo.set(repo);
     this.repoSearch.set(repo.full_name);
-    if (this.stepOverrideRef()) {
-      this.stepRef.set(repo.default_branch || 'main');
-    }
+    if (this.stepOverrideRef()) this.stepRef.set(repo.default_branch || 'main');
     this.stepWf.set(null);
     this.stepWfs.set([]);
     this.stepBranches.set([]);
     this.stepInputs.set([]);
-    this.stepWfLoad.set(true);
-    this.gh.listWorkflows(repo.full_name).subscribe({
-      next: (res) => { this.stepWfs.set(res.workflows.filter(w => w.state === 'active')); this.stepWfLoad.set(false); },
-      error: ()   => this.stepWfLoad.set(false),
-    });
-    this.gh.listBranches(repo.full_name).subscribe({
+
+    // Load branches for ref selection (both providers)
+    this.ci.listBranches(repo.full_name, repo.provider).subscribe({
       next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
       error: ()  => {},
     });
+
+    if (repo.provider === 'gitlab') {
+      // GitLab: no workflow concept — auto-set to default pipeline
+      const pipelineWf: CiWorkflow = { id: 0, name: 'Pipeline', path: '.gitlab-ci.yml' };
+      this.stepWfs.set([pipelineWf]);
+      this.stepWf.set(pipelineWf);
+      this.stepWfLoad.set(false);
+    } else {
+      this.stepWfLoad.set(true);
+      this.ci.listWorkflows(repo).subscribe({
+        next: (wfs) => { this.stepWfs.set(wfs); this.stepWfLoad.set(false); },
+        error: ()   => this.stepWfLoad.set(false),
+      });
+    }
   }
 
-  onWorkflowSelect(wf: GhWorkflow): void {
+  onWorkflowSelect(wf: CiWorkflow): void {
     this.stepWf.set(wf);
     this.stepInputs.set([]);
     const repo = this.stepRepo();
-    if (!repo || this.editingStepId()) return;
+    if (!repo || this.editingStepId() || repo.provider === 'gitlab') return;
     this.wfInputsLoading.set(true);
-    this.gh.getFileContent(repo.full_name, wf.path).subscribe({
+    this.ci.getWorkflowInputsYaml(repo, wf.path).subscribe({
       next: (yaml) => {
         this.stepInputs.set(parseDispatchInputs(yaml));
         this.wfInputsLoading.set(false);
@@ -255,7 +253,7 @@ export class ChainBuilderComponent {
     });
   }
 
-  addStepInput(): void            { this.stepInputs.update(a => [...a, { key: '', value: '' }]); }
+  addStepInput(): void             { this.stepInputs.update(a => [...a, { key: '', value: '' }]); }
   removeStepInput(i: number): void { this.stepInputs.update(a => a.filter((_, idx) => idx !== i)); }
 
   editStep(step: ChainStep): void {
@@ -263,34 +261,40 @@ export class ChainBuilderComponent {
     this.showAddStep.set(true);
     if (!this.repos().length) this.loadRepos();
 
-    // Restore repo (synthetic GhRepo from saved data)
-    const fakeRepo: GhRepo = {
+    const provider = step.provider ?? 'github';
+    const fakeRepo: CiRepo = {
       id: 0, name: step.repoName, full_name: step.repoFullName,
       private: false, html_url: '', default_branch: step.ref,
+      provider,
     };
     this.stepRepo.set(fakeRepo);
     this.repoSearch.set(step.repoFullName);
 
-    // Load workflows & branches for this repo
-    this.stepWfLoad.set(true);
-    this.gh.listWorkflows(step.repoFullName).subscribe({
-      next: (res) => {
-        this.stepWfs.set(res.workflows.filter(w => w.state === 'active'));
-        this.stepWf.set(res.workflows.find(w => w.id === step.workflowId) ?? null);
-        this.stepWfLoad.set(false);
-      },
-      error: () => this.stepWfLoad.set(false),
-    });
-    this.gh.listBranches(step.repoFullName).subscribe({
+    if (provider === 'gitlab') {
+      const pipelineWf: CiWorkflow = { id: 0, name: 'Pipeline', path: '.gitlab-ci.yml' };
+      this.stepWfs.set([pipelineWf]);
+      this.stepWf.set(pipelineWf);
+      this.stepWfLoad.set(false);
+    } else {
+      this.stepWfLoad.set(true);
+      this.ci.listWorkflows(fakeRepo).subscribe({
+        next: (wfs) => {
+          this.stepWfs.set(wfs);
+          this.stepWf.set(wfs.find(w => w.id === step.workflowId) ?? null);
+          this.stepWfLoad.set(false);
+        },
+        error: () => this.stepWfLoad.set(false),
+      });
+    }
+
+    this.ci.listBranches(step.repoFullName, provider).subscribe({
       next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
-      error: () => {},
+      error: ()  => {},
     });
 
     const chainDefaultRef = this.chainRef().trim() || 'main';
-    const hasOverride = step.ref !== chainDefaultRef;
-    this.stepOverrideRef.set(hasOverride);
+    this.stepOverrideRef.set(step.ref !== chainDefaultRef);
     this.stepRef.set(step.ref);
-
     this.stepInputs.set(Object.entries(step.inputs).map(([key, value]) => ({ key, value })));
     this.stepClearCache.set(step.clearCache ?? false);
     this.stepUseLatestTag.set(step.useLatestTag ?? false);
@@ -299,26 +303,29 @@ export class ChainBuilderComponent {
   addStep(): void {
     const repo = this.stepRepo();
     const wf   = this.stepWf();
-    if (!repo || !wf) { this.toasts.show('Select a repo and workflow', 'danger'); return; }
+    if (!repo || !wf) { this.toasts.show('Select a repo', 'danger'); return; }
     const inputs = this.stepInputs()
       .filter(p => p.key.trim() && p.value.trim())
       .reduce((acc, p) => ({ ...acc, [p.key.trim()]: p.value.trim() }), {} as Record<string, string>);
-    const ref = this.stepOverrideRef() ? (this.stepRef().trim() || 'main') : (this.chainRef().trim() || 'main');
-    const clearCache    = this.stepClearCache();
-    const useLatestTag  = this.stepUseLatestTag();
-    const editingId     = this.editingStepId();
+    const ref          = this.stepOverrideRef() ? (this.stepRef().trim() || 'main') : (this.chainRef().trim() || 'main');
+    const clearCache   = this.stepClearCache();
+    const useLatestTag = this.stepUseLatestTag();
+    const editingId    = this.editingStepId();
 
     if (editingId) {
       this.editSteps.update(list => list.map(s => s.id === editingId ? {
         ...s, repoFullName: repo.full_name, repoName: repo.name,
         workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache, useLatestTag,
+        provider: repo.provider,
       } : s));
       this.toasts.show(`Step "${wf.name}" updated`, 'success');
     } else {
       const step: ChainStep = {
         id: crypto.randomUUID(),
         repoFullName: repo.full_name, repoName: repo.name,
-        workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache, useLatestTag,
+        workflowId: wf.id, workflowName: wf.name,
+        ref, inputs, clearCache, useLatestTag,
+        provider: repo.provider,
       };
       this.editSteps.update(list => [...list, step]);
       this.selectedStepIds.update(ids => [...ids, step.id]);
@@ -328,10 +335,7 @@ export class ChainBuilderComponent {
     this.showAddStep.set(false);
   }
 
-  cancelAddStep(): void {
-    this.showAddStep.set(false);
-    this.resetStepForm();
-  }
+  cancelAddStep(): void { this.showAddStep.set(false); this.resetStepForm(); }
 
   private resetStepForm(): void {
     this.repoSearch.set('');
@@ -358,9 +362,8 @@ export class ChainBuilderComponent {
     if (!name || !steps.length) return;
     const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
-      id,
-      name,
-      ref: this.chainRef().trim(),
+      id, name,
+      ref:       this.chainRef().trim(),
       steps,
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
@@ -407,23 +410,16 @@ export class ChainBuilderComponent {
     file.text().then(text => {
       try {
         const data = JSON.parse(text);
-        if (!data?.name || !Array.isArray(data?.steps)) {
-          this.toasts.show('Invalid chain file', 'danger');
-          return;
-        }
+        if (!data?.name || !Array.isArray(data?.steps)) { this.toasts.show('Invalid chain file', 'danger'); return; }
         const chain: Chain = {
-          id:        crypto.randomUUID(),
-          name:      data.name,
-          ref:       data.ref ?? '',
-          steps:     data.steps.map((s: ChainStep) => ({ ...s, id: crypto.randomUUID() })),
+          id: crypto.randomUUID(), name: data.name, ref: data.ref ?? '',
+          steps: data.steps.map((s: ChainStep) => ({ ...s, id: crypto.randomUUID() })),
           createdAt: new Date().toISOString(),
         };
         this.chainSvc.saveChain(chain);
         this.selectChain(chain);
         this.toasts.show(`Chain "${chain.name}" imported`, 'success');
-      } catch {
-        this.toasts.show('Could not read file', 'danger');
-      }
+      } catch { this.toasts.show('Could not read file', 'danger'); }
       (event.target as HTMLInputElement).value = '';
     });
   }
@@ -449,9 +445,7 @@ export class ChainBuilderComponent {
     return ({ running: 'info', success: 'success', failure: 'danger', stopped: 'muted' } as Record<string, string>)[status] ?? 'muted';
   }
 
-  hasInputs(inputs: Record<string, string>): boolean {
-    return Object.keys(inputs).length > 0;
-  }
+  hasInputs(inputs: Record<string, string>): boolean { return Object.keys(inputs).length > 0; }
 
   inputsSummary(inputs: Record<string, string>): string {
     return Object.entries(inputs).map(([k, v]) => `${k}=${v}`).join(', ');
@@ -471,5 +465,9 @@ export class ChainBuilderComponent {
   isActiveChain(): boolean {
     const run = this.activeRun();
     return !!run && run.chainId === this.selectedId();
+  }
+
+  stepProviderBadge(step: ChainStep): string {
+    return step.provider === 'gitlab' ? 'GL' : 'GH';
   }
 }

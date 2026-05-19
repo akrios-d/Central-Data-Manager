@@ -1,30 +1,14 @@
 import { Routes } from '@angular/router';
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { TokenService } from './core/services/token.service';
-
-const tokenGuard = () => {
-  const tokens = inject(TokenService);
-  const router = inject(Router);
-  return tokens.hasAnyToken() ? true : router.createUrlTree(['/onboarding']);
-};
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  {
-    path: 'onboarding',
-    loadComponent: () =>
-      import('./features/onboarding/onboarding.component').then((m) => m.OnboardingComponent),
-  },
+  { path: '', redirectTo: 'settings', pathMatch: 'full' },
   {
     path: 'dashboard',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   {
     path: 'github-actions',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/github-actions/github-actions.component').then(
         (m) => m.GithubActionsComponent
@@ -32,7 +16,6 @@ export const routes: Routes = [
   },
   {
     path: 'devops-boards',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/devops-boards/devops-boards.component').then(
         (m) => m.DevopsBoardsComponent
@@ -40,7 +23,6 @@ export const routes: Routes = [
   },
   {
     path: 'chain-builder',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/chain-builder/chain-builder.component').then(
         (m) => m.ChainBuilderComponent
@@ -48,7 +30,6 @@ export const routes: Routes = [
   },
   {
     path: 'chain-orchestrator',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/chain-orchestrator/chain-orchestrator.component').then(
         (m) => m.ChainOrchestratorComponent
@@ -56,13 +37,11 @@ export const routes: Routes = [
   },
   {
     path: 'blockers',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/blockers/blockers.component').then((m) => m.BlockersComponent),
   },
   {
     path: 'releases',
-    canActivate: [tokenGuard],
     loadComponent: () =>
       import('./features/releases/releases.component').then((m) => m.ReleasesComponent),
   },

@@ -399,6 +399,27 @@
   padding-top: 0.25rem;
 }
 
+.gitlab-pipeline-note {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  background: color-mix(in srgb, var(--info, #58a6ff) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--info, #58a6ff) 25%, transparent);
+  border-radius: 5px;
+}
+
+.step-provider-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-muted) 15%, transparent);
+  color: var(--text-muted);
+  border: 1px solid color-mix(in srgb, var(--text-muted) 30%, transparent);
+  letter-spacing: 0.02em;
+  margin-right: 2px;
+}
+
 .spinner-sm {
   width: 18px;
   height: 18px;

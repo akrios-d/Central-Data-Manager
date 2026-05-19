@@ -57,6 +57,46 @@
   width: 90px;
 }
 
+.provider-switch {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.ps-btn {
+  background: var(--surface-2);
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.15s, background 0.15s;
+
+  & + & { border-left: 1px solid var(--border); }
+  &:hover:not(.active) { color: var(--text); background: var(--surface-1); }
+  &.active {
+    background: var(--accent-muted, rgba(88,166,255,0.12));
+    color: var(--accent, #58a6ff);
+    font-weight: 600;
+  }
+}
+
+.ps-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  &.ps-dot-ok  { background: var(--success, #3fb950); }
+  &.ps-dot-off { background: var(--border); }
+}
+
 .danger-zone {
   border-color: rgba(248, 81, 73, 0.4);
 }

@@ -20,11 +20,12 @@
               [ngModel]="repoSearch()"
               (ngModelChange)="onRepoSearchChange($event)"
               (keydown.escape)="cancelAddRepo()" />
-            @if (ghReposLoading()) { <div class="spinner-sm"></div> }
+            @if (ciReposLoading()) { <div class="spinner-sm"></div> }
             @if (showRepoDropdown()) {
               <ul class="repo-dropdown">
                 @for (r of filteredRepos(); track r.id) {
-                  <li [class.already-added]="alreadyAdded().has(r.full_name)" (click)="!alreadyAdded().has(r.full_name) && selectGhRepo(r)">
+                  <li [class.already-added]="alreadyAdded().has(r.full_name)" (click)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)">
+                    <span class="repo-provider-badge">{{ providerBadge(r.provider) }}</span>
                     {{ r.full_name }}
                     @if (alreadyAdded().has(r.full_name)) { <span class="text-muted text-sm"> · já adicionado</span> }
                   </li>
@@ -32,7 +33,7 @@
               </ul>
             }
           </div>
-          <button class="btn btn-sm btn-primary" (click)="submitAddRepo()" [disabled]="!selectedGhRepo()">{{ 'releases.add' | translate }}</button>
+          <button class="btn btn-sm btn-primary" (click)="submitAddRepo()" [disabled]="!selectedCiRepo()">{{ 'releases.add' | translate }}</button>
           <button class="btn btn-sm btn-outline" (click)="cancelAddRepo()">{{ 'releases.cancel' | translate }}</button>
         </div>
       }
@@ -229,9 +230,9 @@
                             @for (c of comp.commits; track c.sha) {
                               <li class="comp-commit">
                                 <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
-                                <span class="comp-msg-text">{{ firstCommitLine(c.commit.message) }}</span>
-                                <span class="comp-meta text-muted">{{ c.commit.author.name }}</span>
-                                <span class="comp-meta text-muted">{{ shortDate(c.commit.author.date) }}</span>
+                                <span class="comp-msg-text">{{ firstCommitLine(c.message) }}</span>
+                                <span class="comp-meta text-muted">{{ c.author }}</span>
+                                <span class="comp-meta text-muted">{{ shortDate(c.date) }}</span>
                               </li>
                             }
                           </ul>

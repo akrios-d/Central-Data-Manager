@@ -1,13 +1,16 @@
+import { CiProviderType } from '../interfaces/ci-provider.interface';
+
 export interface ChainStep {
   id: string;
   repoFullName: string;
   repoName: string;
-  workflowId: number;
+  workflowId?: number;
   workflowName: string;
   ref: string;
   inputs: Record<string, string>;
   clearCache?: boolean;
   useLatestTag?: boolean;
+  provider?: CiProviderType;
 }
 
 export interface Chain {

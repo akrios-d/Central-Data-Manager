@@ -1,14 +1,13 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { DevOpsApiService, DevOpsProject, DevOpsTeam } from '../../core/services/devops-api.service';
-import { GitHubApiService, GhUser } from '../../core/services/github-api.service';
-import { forkJoin } from 'rxjs';
-import { catchError, of } from 'rxjs';
+import { GitHubApiService } from '../../core/services/github-api.service';
+import { GitLabApiService } from '../../core/services/gitlab-api.service';
+import { forkJoin, catchError, of } from 'rxjs';
 
 interface ConnectionTest {
   status: 'testing' | 'ok' | 'error';
@@ -23,20 +22,25 @@ interface ConnectionTest {
 })
 export class SettingsComponent implements OnInit {
   private tokens      = inject(TokenService);
-  private router      = inject(Router);
   private toasts      = inject(ToastService);
   private ado         = inject(DevOpsApiService);
   private gh          = inject(GitHubApiService);
+  private gl          = inject(GitLabApiService);
   private translate   = inject(TranslateService);
   private appSettings = inject(AppSettingsService);
 
-  readonly persist      = this.tokens.persist;
-  readonly hasGh        = this.tokens.hasGitHub;
-  readonly hasAdo       = this.tokens.hasDevOps;
+  readonly persist            = this.tokens.persist;
+  readonly hasGh              = this.tokens.hasGitHub;
+  readonly hasAdo             = this.tokens.hasDevOps;
+  readonly hasGl              = this.tokens.hasGitLab;
+  readonly activeCiProvider   = this.tokens.activeCiProvider;
+
+  setProvider(p: 'github' | 'gitlab'): void { this.tokens.setActiveCiProvider(p); }
   readonly ghOwner      = this.tokens.githubOwner;
   readonly adoOrg       = this.tokens.devopsOrg;
   readonly adoProject   = this.tokens.devopsProject;
   readonly adoTeam      = this.tokens.devopsTeam;
+  readonly glBaseUrl    = this.tokens.gitlabBaseUrl;
 
   editPollInterval = signal(this.appSettings.pollIntervalSec());
   editMaxPolls     = signal(this.appSettings.maxPolls());
@@ -48,6 +52,8 @@ export class SettingsComponent implements OnInit {
   ghOwner2 = signal('');
   adoToken = signal('');
   adoOrg2  = signal('');
+  glToken  = signal('');
+  glUrl    = signal('https://gitlab.com');
 
   editAdoOrg     = signal('');
   editAdoProject = signal('');
@@ -57,6 +63,7 @@ export class SettingsComponent implements OnInit {
   showAdoForm     = signal(false);
   showAdoOrgEdit  = signal(false);
   showSprintEdit  = signal(false);
+  showGlForm      = signal(false);
 
   availableProjects = signal<DevOpsProject[]>([]);
   projectsLoading   = signal(false);
@@ -65,15 +72,16 @@ export class SettingsComponent implements OnInit {
 
   ghTest  = signal<ConnectionTest | null>(null);
   adoTest = signal<ConnectionTest | null>(null);
+  glTest  = signal<ConnectionTest | null>(null);
 
   ngOnInit(): void {
     this.editAdoProject.set(this.tokens.devopsProject() ?? '');
     this.editAdoTeam.set(this.tokens.devopsTeam() ?? '');
+    this.glUrl.set(this.tokens.gitlabBaseUrl() ?? 'https://gitlab.com');
   }
 
   testGitHub(): void {
     this.ghTest.set({ status: 'testing', detail: 'Connecting…' });
-
     forkJoin({
       user:  this.gh.getAuthenticatedUser(),
       repos: this.gh.listRepos().pipe(catchError(() => of([]))),
@@ -115,6 +123,19 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  testGitLab(): void {
+    this.glTest.set({ status: 'testing', detail: 'Connecting…' });
+    this.gl.listProjects().subscribe({
+      next: (projects) => {
+        this.glTest.set({ status: 'ok', detail: `✓ ${projects.length} project(s) accessible` });
+      },
+      error: (e) => {
+        const msg = e?.error?.message ?? e?.message ?? 'Request failed';
+        this.glTest.set({ status: 'error', detail: `✗ ${msg}` });
+      },
+    });
+  }
+
   openAdoOrgEdit(): void {
     this.editAdoOrg.set(this.adoOrg() ?? '');
     this.showAdoOrgEdit.set(true);
@@ -122,11 +143,7 @@ export class SettingsComponent implements OnInit {
 
   saveAdoOrg(): void {
     const org = this.editAdoOrg().trim();
-    if (org) {
-      this.tokens.updateDevOpsOrg(org);
-      this.showAdoOrgEdit.set(false);
-      this.toasts.show('Organisation updated.', 'success');
-    }
+    if (org) { this.tokens.updateDevOpsOrg(org); this.showAdoOrgEdit.set(false); this.toasts.show('Organisation updated.', 'success'); }
   }
 
   openSprintEdit(): void {
@@ -146,10 +163,7 @@ export class SettingsComponent implements OnInit {
         this.projectsLoading.set(false);
         if (this.editAdoProject()) this.loadTeams();
       },
-      error: () => {
-        this.projectsLoading.set(false);
-        this.toasts.show('Could not load projects.', 'danger');
-      },
+      error: () => { this.projectsLoading.set(false); this.toasts.show('Could not load projects.', 'danger'); },
     });
   }
 
@@ -200,12 +214,22 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  saveGl(): void {
+    const token = this.glToken().trim();
+    const url   = this.glUrl().trim() || 'https://gitlab.com';
+    if (token) {
+      this.tokens.setGitLab(token, url);
+      this.glToken.set('');
+      this.showGlForm.set(false);
+      this.glTest.set(null);
+    }
+  }
+
   clearGh(): void {
     this.toasts.confirm('Remove GitHub token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearGitHub();
       this.ghTest.set(null);
-      if (!this.tokens.hasAnyToken()) this.router.navigate(['/onboarding']);
-      else this.toasts.show('GitHub token removed.', 'success');
+      this.toasts.show('GitHub token removed.', 'success');
     });
   }
 
@@ -213,15 +237,22 @@ export class SettingsComponent implements OnInit {
     this.toasts.confirm('Remove Azure DevOps token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearDevOps();
       this.adoTest.set(null);
-      if (!this.tokens.hasAnyToken()) this.router.navigate(['/onboarding']);
-      else this.toasts.show('Azure DevOps token removed.', 'success');
+      this.toasts.show('Azure DevOps token removed.', 'success');
+    });
+  }
+
+  clearGl(): void {
+    this.toasts.confirm('Remove GitLab token? This cannot be undone.', 'Yes, remove', () => {
+      this.tokens.clearGitLab();
+      this.glTest.set(null);
+      this.toasts.show('GitLab token removed.', 'success');
     });
   }
 
   clearAll(): void {
-    this.toasts.confirm('Clear ALL tokens? You will be redirected to Onboarding.', 'Yes, clear all', () => {
+    this.toasts.confirm('Clear ALL tokens?', 'Yes, clear all', () => {
       this.tokens.clearAll();
-      this.router.navigate(['/onboarding']);
+      this.toasts.show('All tokens cleared.', 'success');
     });
   }
 
@@ -231,8 +262,8 @@ export class SettingsComponent implements OnInit {
   }
 
   requestEnablePersist(): void {
-    const msg    = this.translate.instant('settings.storageRiskMsg');
-    const label  = this.translate.instant('settings.storageRiskAccept');
+    const msg   = this.translate.instant('settings.storageRiskMsg');
+    const label = this.translate.instant('settings.storageRiskAccept');
     this.toasts.confirm(msg, label, () => {
       this.tokens.enablePersist();
       this.toasts.show(this.translate.instant('settings.storagePersistOn'), 'warning');

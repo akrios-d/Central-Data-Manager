@@ -3,20 +3,23 @@
   <p>{{ 'settings.subtitle' | translate }}</p>
 </div>
 
-<div class="settings-grid">
-  <!-- ── GitHub ─────────────────────────────────────────────────────────── -->
-  <div class="card">
-    <div class="flex-between">
-      <h2 class="section-title">{{ 'settings.github' | translate }}</h2>
-      @if (hasGh()) {
-        <span class="badge badge-success">{{ 'settings.connected' | translate }}</span>
-      } @else {
-        <span class="badge badge-muted">{{ 'settings.notConfigured' | translate }}</span>
-      }
-    </div>
+<!-- ── CI Provider ────────────────────────────────────────────────────────── -->
+<div class="card">
+  <div class="provider-switch">
+    <button class="ps-btn" [class.active]="activeCiProvider() === 'github'" (click)="setProvider('github')">
+      GitHub
+      <span class="ps-dot" [class.ps-dot-ok]="hasGh()" [class.ps-dot-off]="!hasGh()"></span>
+    </button>
+    <button class="ps-btn" [class.active]="activeCiProvider() === 'gitlab'" (click)="setProvider('gitlab')">
+      GitLab
+      <span class="ps-dot" [class.ps-dot-ok]="hasGl()" [class.ps-dot-off]="!hasGl()"></span>
+    </button>
+  </div>
 
+  <!-- GitHub panel -->
+  @if (activeCiProvider() === 'github') {
     @if (hasGh()) {
-      <p class="text-muted text-sm mt-1">{{ 'settings.owner' | translate }} <strong>{{ ghOwner() }}</strong></p>
+      <p class="text-muted text-sm mt-2">{{ 'settings.owner' | translate }} <strong>{{ ghOwner() }}</strong></p>
 
       @if (ghTest()) {
         <p class="test-result mt-1" [class.ok]="ghTest()!.status === 'ok'" [class.err]="ghTest()!.status === 'error'">
@@ -45,59 +48,94 @@
         <button class="btn btn-primary btn-sm mt-2" (click)="saveGh()" [disabled]="!ghToken().trim() || !ghOwner2().trim()">{{ 'settings.save' | translate }}</button>
       </div>
     }
-  </div>
+  }
 
-  <!-- ── Azure DevOps ───────────────────────────────────────────────────── -->
-  <div class="card">
-    <div class="flex-between">
-      <h2 class="section-title">{{ 'settings.azureDevOps' | translate }}</h2>
-      @if (hasAdo()) {
-        <span class="badge badge-success">{{ 'settings.connected' | translate }}</span>
-      } @else {
-        <span class="badge badge-muted">{{ 'settings.notConfigured' | translate }}</span>
-      }
-    </div>
+  <!-- GitLab panel -->
+  @if (activeCiProvider() === 'gitlab') {
+    @if (hasGl()) {
+      <p class="text-muted text-sm mt-2">{{ 'settings.gitlabUrl' | translate }}: <strong>{{ glBaseUrl() ?? 'https://gitlab.com' }}</strong></p>
 
-    @if (hasAdo()) {
-      <div class="org-row mt-1">
-        @if (!showAdoOrgEdit()) {
-          <span class="text-muted text-sm">{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span>
-          <button class="btn btn-sm" (click)="openAdoOrgEdit()">{{ 'settings.editOrg' | translate }}</button>
-        } @else {
-          <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
-          <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">{{ 'settings.save' | translate }}</button>
-          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
-        }
-      </div>
-
-      @if (adoTest()) {
-        <p class="test-result mt-1" [class.ok]="adoTest()!.status === 'ok'" [class.err]="adoTest()!.status === 'error'">
-          @if (adoTest()!.status === 'testing') { <span class="spinner"></span> }
-          {{ adoTest()!.detail }}
+      @if (glTest()) {
+        <p class="test-result mt-1" [class.ok]="glTest()!.status === 'ok'" [class.err]="glTest()!.status === 'error'">
+          @if (glTest()!.status === 'testing') { <span class="spinner"></span> }
+          {{ glTest()!.detail }}
         </p>
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
-        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">{{ 'settings.updateToken' | translate }}</button>
-        <button class="btn btn-sm btn-danger" (click)="clearAdo()">{{ 'settings.remove' | translate }}</button>
+        <button class="btn btn-sm" (click)="testGitLab()" [disabled]="glTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
+        <button class="btn btn-sm" (click)="showGlForm.set(!showGlForm())">{{ 'settings.updateToken' | translate }}</button>
+        <button class="btn btn-sm btn-danger" (click)="clearGl()">{{ 'settings.remove' | translate }}</button>
       </div>
     }
 
-    @if (!hasAdo() || showAdoForm()) {
+    @if (!hasGl() || showGlForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>{{ 'settings.orgName' | translate }}</label>
-          <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" [placeholder]="'settings.companyPlaceholder' | translate" />
+          <label>{{ 'settings.gitlabSelfHosted' | translate }}</label>
+          <input class="form-control" type="url" [ngModel]="glUrl()" (ngModelChange)="glUrl.set($event)" placeholder="https://gitlab.com" />
+          <span class="text-muted text-sm">{{ 'settings.gitlabUrlHint' | translate }}</span>
         </div>
         <div class="form-group mt-1">
           <label>{{ 'settings.pat' | translate }}</label>
-          <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" [placeholder]="'settings.patPlaceholder' | translate" />
+          <input class="form-control" type="password" [ngModel]="glToken()" (ngModelChange)="glToken.set($event)" [placeholder]="'settings.gitlabTokenHint' | translate" />
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveGl()" [disabled]="!glToken().trim()">{{ 'settings.save' | translate }}</button>
       </div>
     }
+  }
+</div>
+
+<!-- ── Azure DevOps ───────────────────────────────────────────────────────── -->
+<div class="card mt-3">
+  <div class="flex-between">
+    <h2 class="section-title">{{ 'settings.azureDevOps' | translate }}</h2>
+    @if (hasAdo()) {
+      <span class="badge badge-success">{{ 'settings.connected' | translate }}</span>
+    } @else {
+      <span class="badge badge-muted">{{ 'settings.notConfigured' | translate }}</span>
+    }
   </div>
+
+  @if (hasAdo()) {
+    <div class="org-row mt-1">
+      @if (!showAdoOrgEdit()) {
+        <span class="text-muted text-sm">{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span>
+        <button class="btn btn-sm" (click)="openAdoOrgEdit()">{{ 'settings.editOrg' | translate }}</button>
+      } @else {
+        <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
+        <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">{{ 'settings.save' | translate }}</button>
+        <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+      }
+    </div>
+
+    @if (adoTest()) {
+      <p class="test-result mt-1" [class.ok]="adoTest()!.status === 'ok'" [class.err]="adoTest()!.status === 'error'">
+        @if (adoTest()!.status === 'testing') { <span class="spinner"></span> }
+        {{ adoTest()!.detail }}
+      </p>
+    }
+
+    <div class="settings-actions mt-2">
+      <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
+      <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">{{ 'settings.updateToken' | translate }}</button>
+      <button class="btn btn-sm btn-danger" (click)="clearAdo()">{{ 'settings.remove' | translate }}</button>
+    </div>
+  }
+
+  @if (!hasAdo() || showAdoForm()) {
+    <div class="settings-form mt-2">
+      <div class="form-group">
+        <label>{{ 'settings.orgName' | translate }}</label>
+        <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" [placeholder]="'settings.companyPlaceholder' | translate" />
+      </div>
+      <div class="form-group mt-1">
+        <label>{{ 'settings.pat' | translate }}</label>
+        <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" [placeholder]="'settings.patPlaceholder' | translate" />
+      </div>
+      <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
+    </div>
+  }
 </div>
 
 <!-- ── Sprint config ──────────────────────────────────────────────────────── -->

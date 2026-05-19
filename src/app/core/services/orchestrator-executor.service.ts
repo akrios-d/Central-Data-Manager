@@ -120,10 +120,10 @@ export class OrchestratorExecutorService {
         if (tag) ref = tag;
       }
 
-      const err = await this.triggerStep(step.repoFullName, step.workflowId, ref, step.inputs);
+      const err = await this.triggerStep(step.repoFullName, step.workflowId ?? 0, ref, step.inputs);
       if (err !== null) return false;
 
-      const ok = await this.waitForStep(step.repoFullName, step.workflowId, Date.now());
+      const ok = await this.waitForStep(step.repoFullName, step.workflowId ?? 0, Date.now());
       if (!ok) return false;
     }
     return true;
@@ -163,7 +163,7 @@ export class OrchestratorExecutorService {
         this.gh.listRuns(fullName, workflowId).subscribe({
           next: res => {
             const run = res.workflow_runs.find(r => new Date(r.created_at).getTime() >= since - 8000);
-            if (!run || run.status !== 'completed') { setTimeout(tick, interval); return; }
+            if (run?.status !== 'completed') { setTimeout(tick, interval); return; }
             resolve(run.conclusion === 'success');
           },
           error: () => setTimeout(tick, interval),

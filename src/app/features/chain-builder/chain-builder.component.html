@@ -111,7 +111,10 @@
                 <span class="step-num">{{ i + 1 }}</span>
                 <div class="step-info">
                   <span class="step-wf-name">{{ step.workflowName }}</span>
-                  <span class="text-muted text-sm">{{ step.repoFullName }} · {{ step.ref }}</span>
+                  <span class="text-muted text-sm">
+                    <span class="step-provider-badge">{{ stepProviderBadge(step) }}</span>
+                    {{ step.repoFullName }} · {{ step.ref }}
+                  </span>
                   @if (hasInputs(step.inputs)) {
                     <span class="text-muted text-sm step-inputs-summary">{{ inputsSummary(step.inputs) }}</span>
                   }
@@ -159,19 +162,23 @@
             </div>
 
             @if (stepRepo()) {
-              <div class="form-group">
-                <label class="form-label">{{ 'builder.workflow' | translate }}</label>
-                @if (stepWfLoad()) {
-                  <div class="spinner-sm"></div>
-                } @else {
-                  <select class="form-control" [ngModel]="stepWf()" (ngModelChange)="onWorkflowSelect($event)">
-                    <option [ngValue]="null" disabled>{{ 'builder.selectWorkflow' | translate }}</option>
-                    @for (wf of stepWfs(); track wf.id) {
-                      <option [ngValue]="wf">{{ wf.name }}</option>
-                    }
-                  </select>
-                }
-              </div>
+              @if (!isGitLabRepo()) {
+                <div class="form-group">
+                  <label class="form-label">{{ 'builder.workflow' | translate }}</label>
+                  @if (stepWfLoad()) {
+                    <div class="spinner-sm"></div>
+                  } @else {
+                    <select class="form-control" [ngModel]="stepWf()" (ngModelChange)="onWorkflowSelect($event)">
+                      <option [ngValue]="null" disabled>{{ 'builder.selectWorkflow' | translate }}</option>
+                      @for (wf of stepWfs(); track wf.id) {
+                        <option [ngValue]="wf">{{ wf.name }}</option>
+                      }
+                    </select>
+                  }
+                </div>
+              } @else {
+                <p class="text-muted text-sm gitlab-pipeline-note">{{ 'builder.gitlabPipelineNote' | translate }}</p>
+              }
 
               <div class="form-group">
                 <div class="ref-options">
@@ -230,7 +237,7 @@
               </div>
 
               <div class="add-step-actions">
-                <button class="btn btn-sm btn-primary" [disabled]="!stepWf()" (click)="addStep()">
+                <button class="btn btn-sm btn-primary" [disabled]="!stepRepo() || (!isGitLabRepo() && !stepWf())" (click)="addStep()">
                   {{ editingStepId() ? ('builder.updateStep' | translate) : ('builder.addStepTitle' | translate) }}
                 </button>
               </div>

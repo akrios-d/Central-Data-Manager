@@ -6,14 +6,18 @@ const DEVOPS_ORG_KEY      = 'cdm:devops:org';
 const DEVOPS_PROJECT_KEY  = 'cdm:devops:project';
 const DEVOPS_TEAM_KEY     = 'cdm:devops:team';
 const GITHUB_OWNER_KEY    = 'cdm:github:owner';
-const TOKEN_EXPIRY_KEY    = 'cdm:expiry';
-const PERSIST_KEY         = 'cdm:persist';
+const GITLAB_KEY             = 'cdm:gitlab';
+const GITLAB_URL_KEY         = 'cdm:gitlab:url';
+const ACTIVE_PROVIDER_KEY    = 'cdm:active-provider';
+const TOKEN_EXPIRY_KEY       = 'cdm:expiry';
+const PERSIST_KEY            = 'cdm:persist';
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 8;
 
 const ALL_TOKEN_KEYS = [
   GITHUB_KEY, DEVOPS_KEY, DEVOPS_ORG_KEY,
   DEVOPS_PROJECT_KEY, DEVOPS_TEAM_KEY, GITHUB_OWNER_KEY,
+  GITLAB_KEY, GITLAB_URL_KEY, ACTIVE_PROVIDER_KEY,
 ];
 
 function initRead(key: string): string | null {
@@ -43,6 +47,11 @@ export class TokenService {
   private readonly _devopsProject  = signal<string | null>(initRead(DEVOPS_PROJECT_KEY));
   private readonly _devopsTeam     = signal<string | null>(initRead(DEVOPS_TEAM_KEY));
   private readonly _githubOwner    = signal<string | null>(initRead(GITHUB_OWNER_KEY));
+  private readonly _gitlabToken    = signal<string | null>(initRead(GITLAB_KEY));
+  private readonly _gitlabBaseUrl  = signal<string | null>(initRead(GITLAB_URL_KEY));
+  private readonly _activeProvider = signal<'github' | 'gitlab'>(
+    (initRead(ACTIVE_PROVIDER_KEY) as 'github' | 'gitlab') ?? (initRead(GITHUB_KEY) ? 'github' : 'gitlab')
+  );
 
   // =========================================================
   // Readonly state
@@ -54,11 +63,16 @@ export class TokenService {
   readonly devopsProject = this._devopsProject.asReadonly();
   readonly devopsTeam    = this._devopsTeam.asReadonly();
   readonly githubOwner   = this._githubOwner.asReadonly();
+  readonly gitlabToken   = this._gitlabToken.asReadonly();
+  readonly gitlabBaseUrl = this._gitlabBaseUrl.asReadonly();
   readonly persist       = this._persist.asReadonly();
 
   readonly hasGitHub   = computed(() => !!this._githubToken());
   readonly hasDevOps   = computed(() => !!this._devopsToken() && !!this._devopsOrg());
-  readonly hasAnyToken = computed(() => this.hasGitHub() || this.hasDevOps());
+  readonly hasGitLab   = computed(() => !!this._gitlabToken());
+  readonly hasAnyToken = computed(() => this.hasGitHub() || this.hasDevOps() || this.hasGitLab());
+
+  readonly activeCiProvider = this._activeProvider.asReadonly();
 
   // =========================================================
   // Session helpers
@@ -127,6 +141,30 @@ export class TokenService {
   }
 
   // =========================================================
+  // GitLab
+  // =========================================================
+
+  setGitLab(token: string, baseUrl: string = 'https://gitlab.com'): void {
+    this.store.setItem(GITLAB_KEY, token);
+    this.store.setItem(GITLAB_URL_KEY, baseUrl);
+    this._gitlabToken.set(token);
+    this._gitlabBaseUrl.set(baseUrl);
+    this.refreshSession();
+  }
+
+  clearGitLab(): void {
+    this.store.removeItem(GITLAB_KEY);
+    this.store.removeItem(GITLAB_URL_KEY);
+    this._gitlabToken.set(null);
+    this._gitlabBaseUrl.set(null);
+  }
+
+  setActiveCiProvider(p: 'github' | 'gitlab'): void {
+    this.store.setItem(ACTIVE_PROVIDER_KEY, p);
+    this._activeProvider.set(p);
+  }
+
+  // =========================================================
   // Azure DevOps
   // =========================================================
 
@@ -171,6 +209,7 @@ export class TokenService {
 
   clearAll(): void {
     this.clearGitHub();
+    this.clearGitLab();
     this.clearDevOps();
     sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
     if (this._persist()) {

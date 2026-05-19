@@ -47,10 +47,26 @@
     font-size: 0.82rem;
     cursor: pointer;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 
     &:hover:not(.already-added) { background: rgba(255,255,255,.06); }
     &.already-added { cursor: default; opacity: 0.45; }
   }
+}
+
+.repo-provider-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-muted) 15%, transparent);
+  color: var(--text-muted);
+  border: 1px solid color-mix(in srgb, var(--text-muted) 30%, transparent);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 // ── Env manager ──────────────────────────────────────────────────────────────

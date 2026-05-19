@@ -2,7 +2,8 @@ import { Component, ElementRef, inject, signal, effect, computed } from '@angula
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReleaseService } from '../../core/services/release.service';
-import { GitHubApiService, GhRepo, GhComparison, GhCommitInfo } from '../../core/services/github-api.service';
+import { CiProviderService } from '../../core/services/ci-provider.service';
+import { CiRepo, CiComparison } from '../../core/interfaces/ci-provider.interface';
 import { ToastService } from '../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
 
@@ -21,7 +22,6 @@ const CONV_TYPES: Record<string, { label: string; icon: string }> = {
 };
 
 interface ChangelogSection { type: string; icon: string; label: string; items: string[]; }
-
 interface EditTarget { repoId: string; envId: string; }
 
 @Component({
@@ -33,7 +33,7 @@ interface EditTarget { repoId: string; envId: string; }
 })
 export class ReleasesComponent {
   private readonly svc    = inject(ReleaseService);
-  private readonly gh     = inject(GitHubApiService);
+  private readonly ci     = inject(CiProviderService);
   private readonly toasts = inject(ToastService);
   private readonly el     = inject(ElementRef);
 
@@ -44,7 +44,7 @@ export class ReleasesComponent {
   editTarget = signal<EditTarget | null>(null);
   editValue  = signal('');
 
-  // ── Ref suggestions (tags + branches) ──────────────────────────────────────
+  // ── Ref suggestions ─────────────────────────────────────────────────────────
   private tagsCache     = new Map<string, string[]>();
   private branchesCache = new Map<string, string[]>();
   cellTags     = signal<string[]>([]);
@@ -67,20 +67,20 @@ export class ReleasesComponent {
   );
 
   // ── Add-repo form ───────────────────────────────────────────────────────────
-  showAddRepo     = signal(false);
-  ghRepos         = signal<GhRepo[]>([]);
-  ghReposLoading  = signal(false);
-  repoSearch      = signal('');
-  selectedGhRepo  = signal<GhRepo | null>(null);
+  showAddRepo    = signal(false);
+  ciRepos        = signal<CiRepo[]>([]);
+  ciReposLoading = signal(false);
+  repoSearch     = signal('');
+  selectedCiRepo = signal<CiRepo | null>(null);
 
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase().trim();
-    const list = this.ghRepos();
+    const list = this.ciRepos();
     return q ? list.filter(r => r.full_name.toLowerCase().includes(q)) : list;
   });
 
   readonly showRepoDropdown = computed(() =>
-    this.repoSearch().trim().length > 0 && !this.selectedGhRepo() && this.filteredRepos().length > 0
+    this.repoSearch().trim().length > 0 && !this.selectedCiRepo() && this.filteredRepos().length > 0
   );
 
   readonly alreadyAdded = computed(() =>
@@ -91,7 +91,7 @@ export class ReleasesComponent {
   compareRepoId    = signal<string | null>(null);
   compareBaseEnvId = signal('');
   compareHeadEnvId = signal('');
-  comparison       = signal<GhComparison | null>(null);
+  comparison       = signal<CiComparison | null>(null);
   compLoading      = signal(false);
   compError        = signal('');
   showChangelog    = signal(false);
@@ -101,9 +101,9 @@ export class ReleasesComponent {
     if (!commits.length) return [];
     const map = new Map<string, string[]>();
     for (const c of commits) {
-      const type = this.parseConvType(c.commit.message);
+      const type = this.parseConvType(c.message);
       if (!map.has(type)) map.set(type, []);
-      map.get(type)!.push(this.parseConvDesc(c.commit.message));
+      map.get(type)!.push(this.parseConvDesc(c.message));
     }
     const order = Object.keys(CONV_TYPES);
     return [...map.entries()]
@@ -156,7 +156,8 @@ export class ReleasesComponent {
 
     const repo = this.repos().find(r => r.id === repoId);
     if (!repo?.repoName.includes('/')) return;
-    const name = repo.repoName;
+    const name     = repo.repoName;
+    const provider = repo.provider ?? 'github';
 
     const tagsReady    = this.tagsCache.has(name);
     const branchesReady = this.branchesCache.has(name);
@@ -170,13 +171,13 @@ export class ReleasesComponent {
     const done = () => { if (pending.tags && pending.branches) this.refsLoading.set(false); };
 
     if (!tagsReady) {
-      this.gh.listTags(name).subscribe({
+      this.ci.listTags(name, provider).subscribe({
         next: t => { const n = t.map(x => x.name); this.tagsCache.set(name, n); this.cellTags.set(n); pending.tags = true; done(); },
         error: () => { pending.tags = true; done(); },
       });
     }
     if (!branchesReady) {
-      this.gh.listBranches(name).subscribe({
+      this.ci.listBranches(name, provider).subscribe({
         next: b => { const n = b.map(x => x.name); this.branchesCache.set(name, n); this.cellBranches.set(n); pending.branches = true; done(); },
         error: () => { pending.branches = true; done(); },
       });
@@ -215,38 +216,38 @@ export class ReleasesComponent {
 
   openAddRepo(): void {
     this.showAddRepo.set(true);
-    if (!this.ghRepos().length) {
-      this.ghReposLoading.set(true);
-      this.gh.listRepos().subscribe({
-        next: (r)  => { this.ghRepos.set(r); this.ghReposLoading.set(false); },
-        error: ()  => this.ghReposLoading.set(false),
+    if (!this.ciRepos().length) {
+      this.ciReposLoading.set(true);
+      this.ci.listRepos().subscribe({
+        next: (r)  => { this.ciRepos.set(r); this.ciReposLoading.set(false); },
+        error: ()  => this.ciReposLoading.set(false),
       });
     }
   }
 
   onRepoSearchChange(val: string): void {
     this.repoSearch.set(val);
-    if (this.selectedGhRepo() && val !== this.selectedGhRepo()!.full_name) {
-      this.selectedGhRepo.set(null);
+    if (this.selectedCiRepo() && val !== this.selectedCiRepo()!.full_name) {
+      this.selectedCiRepo.set(null);
     }
   }
 
-  selectGhRepo(repo: GhRepo): void {
-    this.selectedGhRepo.set(repo);
+  selectCiRepo(repo: CiRepo): void {
+    this.selectedCiRepo.set(repo);
     this.repoSearch.set(repo.full_name);
   }
 
   submitAddRepo(): void {
-    const repo = this.selectedGhRepo();
+    const repo = this.selectedCiRepo();
     if (!repo) return;
-    this.svc.addRepo(repo.full_name);
+    this.svc.addRepo(repo.full_name, repo.provider);
     this.cancelAddRepo();
   }
 
   cancelAddRepo(): void {
     this.showAddRepo.set(false);
     this.repoSearch.set('');
-    this.selectedGhRepo.set(null);
+    this.selectedCiRepo.set(null);
   }
 
   removeRepo(id: string): void {
@@ -278,9 +279,7 @@ export class ReleasesComponent {
     this.editingEnvId.set(null);
   }
 
-  cancelRenameEnv(): void {
-    this.editingEnvId.set(null);
-  }
+  cancelRenameEnv(): void { this.editingEnvId.set(null); }
 
   onEnvRenameKey(event: KeyboardEvent): void {
     if (event.key === 'Enter')  { event.preventDefault(); this.commitRenameEnv(); }
@@ -297,7 +296,6 @@ export class ReleasesComponent {
 
   // ── Compare ──────────────────────────────────────────────────────────────────
 
-  // ── Changelog helpers ─────────────────────────────────────────────────────
   private parseConvType(msg: string): string {
     const m = msg.match(/^(\w+)(?:\(.*?\))?!?:/);
     const t = m?.[1]?.toLowerCase() ?? 'other';
@@ -311,8 +309,6 @@ export class ReleasesComponent {
   copyChangelog(): void {
     navigator.clipboard.writeText(this.changelogMarkdown()).catch(() => {});
   }
-
-  // ── Compare ──────────────────────────────────────────────────────────────────
 
   envsWithTag(repoId: string): { envId: string; envName: string; tag: string }[] {
     const repo = this.repos().find(r => r.id === repoId);
@@ -336,11 +332,10 @@ export class ReleasesComponent {
     this.compError.set('');
     this.showChangelog.set(false);
     this.compareRepoId.set(repoId);
-
     const tagged = this.envsWithTag(repoId);
     if (tagged.length >= 2) {
-      this.compareBaseEnvId.set(tagged[tagged.length - 1].envId); // rightmost env (dev)
-      this.compareHeadEnvId.set(tagged[tagged.length - 2].envId); // next to the left
+      this.compareBaseEnvId.set(tagged[tagged.length - 1].envId);
+      this.compareHeadEnvId.set(tagged[tagged.length - 2].envId);
       this.runCompare();
     }
   }
@@ -362,16 +357,17 @@ export class ReleasesComponent {
     if (!repoId) return;
     const repo = this.repos().find(r => r.id === repoId);
     if (!repo) return;
-    const base = repo.deployments[this.compareBaseEnvId()];
-    const head = repo.deployments[this.compareHeadEnvId()];
+    const base     = repo.deployments[this.compareBaseEnvId()];
+    const head     = repo.deployments[this.compareHeadEnvId()];
+    const provider = repo.provider ?? 'github';
     if (!base || !head) return;
 
     this.comparison.set(null);
     this.compError.set('');
-    await Promise.resolve(); // flush render so the clear is visible before loading starts
+    await Promise.resolve();
     this.compLoading.set(true);
     try {
-      const result = await firstValueFrom(this.gh.compareRefs(repo.repoName, base, head));
+      const result = await firstValueFrom(this.ci.compareRefs(repo.repoName, base, head, provider));
       this.comparison.set(result);
     } catch (e: any) {
       this.compError.set(e?.error?.message ?? 'Error loading comparison');
@@ -381,8 +377,6 @@ export class ReleasesComponent {
   }
 
   isBranch(val: string): boolean {
-    // Tags look like: v1.0.0, 1.2.3, 20240101, release-1.0
-    // Branches: main, develop, feature/x, hotfix/y, etc.
     return !/^v?\d[\d.\-_]*$/.test(val) && !(/^release[-\/]\d/i.test(val));
   }
 
@@ -394,8 +388,6 @@ export class ReleasesComponent {
     return msg.split('\n')[0];
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-
   cellId(repoId: string, envId: string): string {
     return `cell-${repoId}-${envId}`;
   }
@@ -403,5 +395,9 @@ export class ReleasesComponent {
   updatedTitle(repo: { updatedAt: Record<string, string> }, envId: string): string {
     const d = repo.updatedAt[envId];
     return d ? new Date(d).toLocaleString() : '';
+  }
+
+  providerBadge(provider: string | undefined): string {
+    return provider === 'gitlab' ? 'GL' : 'GH';
   }
 }

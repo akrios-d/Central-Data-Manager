@@ -2,7 +2,8 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { GitHubApiService, GhRepo, GhRun } from '../../core/services/github-api.service';
+import { CiProviderService } from '../../core/services/ci-provider.service';
+import { CiRepo, CiRun } from '../../core/interfaces/ci-provider.interface';
 import { RunStatusPipe } from '../../shared/pipes/run-status.pipe';
 import { firstValueFrom } from 'rxjs';
 
@@ -12,7 +13,7 @@ interface WorkflowStat {
   successRate: number;
   avgDuration: number;
   lastConclusion: string | null;
-  recentRuns: GhRun[];
+  recentRuns: CiRun[];
   totalRuns: number;
 }
 
@@ -23,12 +24,12 @@ interface WorkflowStat {
   styleUrl:    './github-actions.component.scss',
 })
 export class GithubActionsComponent implements OnInit {
-  private gh = inject(GitHubApiService);
+  private ci = inject(CiProviderService);
 
   // ── Shared ────────────────────────────────────────────────────────────────
-  repos        = signal<GhRepo[]>([]);
+  repos        = signal<CiRepo[]>([]);
   repoSearch   = signal('');
-  selectedRepo = signal<GhRepo | null>(null);
+  selectedRepo = signal<CiRepo | null>(null);
   loading      = signal(true);
   error        = signal<string | null>(null);
 
@@ -41,7 +42,7 @@ export class GithubActionsComponent implements OnInit {
   activeTab = signal<'runs' | 'health'>('runs');
 
   // ── Runs tab ──────────────────────────────────────────────────────────────
-  runs           = signal<GhRun[]>([]);
+  runs           = signal<CiRun[]>([]);
   runsLoading    = signal(false);
   actionFeedback = signal<{ id: number; msg: string } | null>(null);
 
@@ -52,7 +53,7 @@ export class GithubActionsComponent implements OnInit {
 
   // ── Init ──────────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    this.gh.listRepos().subscribe({
+    this.ci.listRepos().subscribe({
       next: (repos) => {
         this.repos.set(repos);
         this.loading.set(false);
@@ -63,7 +64,7 @@ export class GithubActionsComponent implements OnInit {
   }
 
   // ── Repo selection ────────────────────────────────────────────────────────
-  selectRepo(repo: GhRepo): void {
+  selectRepo(repo: CiRepo): void {
     this.selectedRepo.set(repo);
     this.runs.set([]);
     this.stats.set([]);
@@ -82,29 +83,29 @@ export class GithubActionsComponent implements OnInit {
   }
 
   // ── Runs ──────────────────────────────────────────────────────────────────
-  private loadRuns(repo: GhRepo): void {
+  private loadRuns(repo: CiRepo): void {
     this.runsLoading.set(true);
-    this.gh.listRuns(repo.full_name).subscribe({
+    this.ci.listRuns(repo).subscribe({
       next: (res) => { this.runs.set(res.workflow_runs); this.runsLoading.set(false); },
       error: () => this.runsLoading.set(false),
     });
   }
 
-  rerun(run: GhRun): void {
-    this.gh.rerunWorkflow(this.selectedRepo()!.full_name, run.id).subscribe({
+  rerun(run: CiRun): void {
+    this.ci.rerunRun(this.selectedRepo()!, run.id).subscribe({
       next: () => this.showFeedback(run.id, 'Re-run triggered'),
       error: (e) => this.showFeedback(run.id, e?.error?.message ?? 'Error'),
     });
   }
 
-  cancel(run: GhRun): void {
-    this.gh.cancelRun(this.selectedRepo()!.full_name, run.id).subscribe({
+  cancel(run: CiRun): void {
+    this.ci.cancelRun(this.selectedRepo()!, run.id).subscribe({
       next: () => this.showFeedback(run.id, 'Cancelled'),
       error: (e) => this.showFeedback(run.id, e?.error?.message ?? 'Error'),
     });
   }
 
-  runClass(run: GhRun): string {
+  runClass(run: CiRun): string {
     return run.status !== 'completed' ? run.status : (run.conclusion ?? 'unknown');
   }
 
@@ -114,10 +115,10 @@ export class GithubActionsComponent implements OnInit {
   }
 
   // ── Health ────────────────────────────────────────────────────────────────
-  private async loadHealth(repo: GhRepo): Promise<void> {
+  private async loadHealth(repo: CiRepo): Promise<void> {
     this.statsLoading.set(true);
     try {
-      const res = await firstValueFrom(this.gh.listRunsForHealth(repo.full_name));
+      const res = await firstValueFrom(this.ci.listRunsForHealth(repo));
       this.stats.set(this.computeStats(res.workflow_runs ?? []));
     } catch (e: any) {
       this.statsError.set(e?.error?.message ?? 'Error loading runs');
@@ -126,27 +127,27 @@ export class GithubActionsComponent implements OnInit {
     }
   }
 
-  private computeStats(runs: GhRun[]): WorkflowStat[] {
-    const byWorkflow = new Map<number, GhRun[]>();
+  private computeStats(runs: CiRun[]): WorkflowStat[] {
+    const byWorkflow = new Map<number, CiRun[]>();
     for (const r of runs) {
       if (!byWorkflow.has(r.workflow_id)) byWorkflow.set(r.workflow_id, []);
       byWorkflow.get(r.workflow_id)!.push(r);
     }
     return [...byWorkflow.entries()]
       .map(([id, wRuns]) => {
-        const completed    = wRuns.filter(r => r.status === 'completed');
-        const successes    = completed.filter(r => r.conclusion === 'success');
-        const successRate  = completed.length ? Math.round((successes.length / completed.length) * 100) : 0;
-        const durations    = completed
+        const completed   = wRuns.filter(r => r.status === 'completed');
+        const successes   = completed.filter(r => r.conclusion === 'success');
+        const successRate = completed.length ? Math.round((successes.length / completed.length) * 100) : 0;
+        const durations   = completed
           .map(r => new Date(r.updated_at).getTime() - new Date(r.run_started_at ?? r.created_at).getTime())
           .filter(d => d > 0 && d < 3_600_000);
-        const avgDuration  = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
-        const sorted       = [...wRuns].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const avgDuration = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
+        const sorted      = [...wRuns].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         return {
           id, successRate, avgDuration, totalRuns: wRuns.length,
-          name: sorted[0]?.name ?? `Workflow ${id}`,
+          name:           sorted[0]?.name ?? `Workflow ${id}`,
           lastConclusion: sorted[0]?.conclusion ?? null,
-          recentRuns: sorted.slice(0, 10),
+          recentRuns:     sorted.slice(0, 10),
         } satisfies WorkflowStat;
       })
       .sort((a, b) => a.successRate - b.successRate);
@@ -160,11 +161,11 @@ export class GithubActionsComponent implements OnInit {
     return s ? `${m}m ${s}s` : `${m}m`;
   }
 
-  sparkDot(run: GhRun): string {
+  sparkDot(run: CiRun): string {
     return run.status === 'in_progress' ? '◌' : '●';
   }
 
-  sparkClass(run: GhRun): string {
+  sparkClass(run: CiRun): string {
     switch (run.conclusion) {
       case 'success':   return 'spark-ok';
       case 'failure':   return 'spark-fail';
@@ -190,5 +191,9 @@ export class GithubActionsComponent implements OnInit {
 
   shortDate(d: string): string {
     return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  }
+
+  providerBadge(repo: CiRepo): string {
+    return repo.provider === 'gitlab' ? 'GL' : 'GH';
   }
 }
