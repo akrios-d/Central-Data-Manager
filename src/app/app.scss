@@ -53,6 +53,38 @@
 
 .nav-icon { font-size: 1rem; width: 1.2rem; text-align: center; }
 
+.nav-section {
+  padding: 1rem 1.25rem 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.nav-settings {
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 1.25rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-left: 3px solid transparent;
+    transition: all 0.15s ease;
+
+    &:hover { color: var(--text); background: var(--surface-2); }
+    &.active { color: var(--accent); border-left-color: var(--accent); background: var(--surface-2); }
+  }
+}
+
 .lang-switcher {
   margin-top: auto;
   padding: 1rem 1.25rem 0;

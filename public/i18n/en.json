@@ -1,14 +1,15 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "sectionManagement": "Management",
     "devopsBoards": "DevOps Boards",
-    "githubActions": "GitHub Actions",
-    "pipelineRunner": "Pipeline Runner",
-    "chainBuilder": "Chain Builder",
-    "chainOrchestrator": "Orchestrator",
-    "pipelineHealth": "Pipeline Health",
     "blockers": "Blockers",
     "releases": "Releases",
+    "sectionCicd": "CI/CD & Pipelines",
+    "githubActions": "GitHub Actions",
+    "pipelineHealth": "Pipeline Health",
+    "chainBuilder": "Chain Builder",
+    "chainOrchestrator": "Orchestrator",
     "settings": "Settings"
   },
   "dashboard": {
@@ -81,27 +82,6 @@
     "rerun": "↺ Re-run",
     "cancel": "✕ Cancel",
     "view": "↗ View"
-  },
-  "runner": {
-    "title": "Pipeline Runner",
-    "subtitle": "Trigger GitHub Actions workflows with custom parameters and track execution.",
-    "step1": "1 · Repository",
-    "change": "Change",
-    "searchRepos": "Search repos…",
-    "step2": "2 · Workflow",
-    "noWorkflows": "No workflows found.",
-    "step3": "3 · Branch / Ref",
-    "step4": "4 · Inputs",
-    "optional": "(optional)",
-    "addInput": "+ Add",
-    "inputKey": "key",
-    "inputValue": "value",
-    "triggering": "Triggering…",
-    "run": "Run",
-    "recentRuns": "Recent runs",
-    "monitoring": "Monitoring…",
-    "emptyState": "Trigger a workflow to track it here.",
-    "viewLogs": "↗ View logs"
   },
   "builder": {
     "title": "Chain Builder",

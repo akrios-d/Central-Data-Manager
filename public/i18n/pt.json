@@ -1,14 +1,15 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "sectionManagement": "Gestão",
     "devopsBoards": "DevOps Boards",
-    "githubActions": "GitHub Actions",
-    "pipelineRunner": "Pipeline Runner",
-    "chainBuilder": "Chain Builder",
-    "chainOrchestrator": "Orquestrador",
-    "pipelineHealth": "Saúde de Pipelines",
     "blockers": "Bloqueadores",
     "releases": "Releases",
+    "sectionCicd": "CI/CD & Pipelines",
+    "githubActions": "GitHub Actions",
+    "pipelineHealth": "Saúde de Pipelines",
+    "chainBuilder": "Chain Builder",
+    "chainOrchestrator": "Orquestrador",
     "settings": "Definições"
   },
   "dashboard": {
@@ -81,27 +82,6 @@
     "rerun": "↺ Re-executar",
     "cancel": "✕ Cancelar",
     "view": "↗ Ver"
-  },
-  "runner": {
-    "title": "Pipeline Runner",
-    "subtitle": "Dispara workflows GitHub Actions com parâmetros personalizados e acompanha a execução.",
-    "step1": "1 · Repositório",
-    "change": "Alterar",
-    "searchRepos": "Pesquisar repos…",
-    "step2": "2 · Workflow",
-    "noWorkflows": "Nenhum workflow encontrado.",
-    "step3": "3 · Branch / Ref",
-    "step4": "4 · Inputs",
-    "optional": "(opcional)",
-    "addInput": "+ Adicionar",
-    "inputKey": "chave",
-    "inputValue": "valor",
-    "triggering": "A disparar…",
-    "run": "Executar",
-    "recentRuns": "Execuções recentes",
-    "monitoring": "A monitorizar…",
-    "emptyState": "Dispara um workflow para o acompanhar aqui.",
-    "viewLogs": "↗ Ver logs"
   },
   "builder": {
     "title": "Chain Builder",
