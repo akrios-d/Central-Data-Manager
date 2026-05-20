@@ -295,6 +295,7 @@
     "noDeps": "Nenhuma dependência de bloqueio encontrada neste projecto.",
     "noProject": "Selecciona um projecto e clica em Carregar.",
     "noDevops": "Azure DevOps não configurado — vai às Definições para adicionar um token.",
+    "noJira": "Jira não configurado — vai às Definições para adicionar um token.",
     "topBlockers": "Maiores Bloqueadores",
     "detail": "Item seleccionado",
     "assignedTo": "Atribuído a",

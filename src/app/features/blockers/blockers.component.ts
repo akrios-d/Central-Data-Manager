@@ -2,9 +2,10 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
-import { DevOpsApiService, DevOpsProject, DevOpsWorkItem } from '../../core/services/devops-api.service';
-import { TokenService } from '../../core/services/token.service';
 import { firstValueFrom } from 'rxjs';
+import { BoardsProviderService } from '../../core/services/boards-provider.service';
+import { TokenService } from '../../core/services/token.service';
+import { BoardProject, BoardWorkItem } from '../../core/interfaces/boards-provider.interface';
 
 const NODE_W = 260;
 const NODE_H = 72;
@@ -13,20 +14,20 @@ const V_GAP = 12;
 const CANVAS_PAD = 48;
 
 interface BNode {
-  id: number;
-  item: DevOpsWorkItem;
+  id: number | string;
+  item: BoardWorkItem;
   x: number;
   y: number;
   level: number;
   impactScore: number;
-  blocks: number[];
-  blockedBy: number[];
+  blocks: (number | string)[];
+  blockedBy: (number | string)[];
 }
 
 interface BEdge {
   id: string;
-  fromId: number;
-  toId: number;
+  fromId: number | string;
+  toId: number | string;
 }
 
 @Component({
@@ -37,40 +38,39 @@ interface BEdge {
   styleUrl: './blockers.component.scss',
 })
 export class BlockersComponent implements OnInit {
-  private devops = inject(DevOpsApiService);
-  private tokens = inject(TokenService);
+  private boardsProvider = inject(BoardsProviderService);
+  private tokens         = inject(TokenService);
 
   readonly NODE_W = NODE_W;
   readonly NODE_H = NODE_H;
 
-  projects = signal<DevOpsProject[]>([]);
+  projects        = signal<BoardProject[]>([]);
   selectedProject = signal('');
   loadingProjects = signal(false);
-  loading = signal(false);
-  error = signal('');
+  loading         = signal(false);
+  error           = signal('');
 
-  nodes = signal<BNode[]>([]);
-  edges = signal<BEdge[]>([]);
-  selectedNodeId = signal<number | null>(null);
-  canvasWidth = signal(800);
-  canvasHeight = signal(500);
+  nodes          = signal<BNode[]>([]);
+  edges          = signal<BEdge[]>([]);
+  selectedNodeId = signal<number | string | null>(null);
+  canvasWidth    = signal(800);
+  canvasHeight   = signal(500);
 
-  // ── Filters ───────────────────────────────────────────────────────────────
   filterTypes        = signal<Set<string>>(new Set());
   filterStates       = signal<Set<string>>(new Set());
   filterOnlyBlockers = signal(false);
 
-  availableTypes  = computed(() => [...new Set(this.nodes().map(n => n.item.fields['System.WorkItemType']))].sort());
-  availableStates = computed(() => [...new Set(this.nodes().map(n => n.item.fields['System.State']))].sort());
+  availableTypes  = computed(() => [...new Set(this.nodes().map(n => n.item.type))].sort());
+  availableStates = computed(() => [...new Set(this.nodes().map(n => n.item.state))].sort());
 
   filteredNodes = computed(() => {
     const types        = this.filterTypes();
     const states       = this.filterStates();
     const onlyBlockers = this.filterOnlyBlockers();
     return this.nodes().filter(n => {
-      if (types.size  > 0 && !types.has(n.item.fields['System.WorkItemType'])) return false;
-      if (states.size > 0 && !states.has(n.item.fields['System.State']))       return false;
-      if (onlyBlockers && n.blocks.length === 0)                                return false;
+      if (types.size  > 0 && !types.has(n.item.type))  return false;
+      if (states.size > 0 && !states.has(n.item.state)) return false;
+      if (onlyBlockers && n.blocks.length === 0)         return false;
       return true;
     });
   });
@@ -86,7 +86,6 @@ export class BlockersComponent implements OnInit {
     this.filterTypes().size > 0 || this.filterStates().size > 0 || this.filterOnlyBlockers()
   );
 
-  // ── Node map (all nodes — needed for positions & BFS even when filtered) ──
   nodeById = computed(() => new Map(this.nodes().map(n => [n.id, n])));
 
   selectedNode = computed(() => this.nodeById().get(this.selectedNodeId()!) ?? null);
@@ -97,14 +96,13 @@ export class BlockersComponent implements OnInit {
       .sort((a, b) => b.impactScore - a.impactScore)
   );
 
-  // BFS from selected node → marks each reachable node as 'direct' or 'indirect'
-  affectedNodes = computed((): Map<number, 'direct' | 'indirect'> => {
+  affectedNodes = computed((): Map<number | string, 'direct' | 'indirect'> => {
     const selectedId = this.selectedNodeId();
     if (selectedId == null) return new Map();
     const byId = this.nodeById();
-    const result = new Map<number, 'direct' | 'indirect'>();
-    const queue: Array<{ id: number; hop: number }> = [{ id: selectedId, hop: 0 }];
-    const visited = new Set<number>([selectedId]);
+    const result = new Map<number | string, 'direct' | 'indirect'>();
+    const queue: Array<{ id: number | string; hop: number }> = [{ id: selectedId, hop: 0 }];
+    const visited = new Set<number | string>([selectedId]);
     let qi = 0;
     while (qi < queue.length) {
       const { id, hop } = queue[qi++];
@@ -121,18 +119,24 @@ export class BlockersComponent implements OnInit {
     return result;
   });
 
-  hasDevops = computed(() => !!this.tokens.devopsToken());
+  readonly hasProvider = computed(() =>
+    this.boardsProvider.provider === 'jira' ? this.tokens.hasJira() : this.tokens.hasDevOps()
+  );
+
+  readonly noProviderKey = computed(() =>
+    this.boardsProvider.provider === 'jira' ? 'blockers.noJira' : 'blockers.noDevops'
+  );
 
   async ngOnInit() {
-    if (this.hasDevops()) await this.fetchProjects();
+    if (this.hasProvider()) await this.fetchProjects();
   }
 
   async fetchProjects() {
     this.loadingProjects.set(true);
     try {
-      const res = await firstValueFrom(this.devops.listProjects());
-      this.projects.set(res.value ?? []);
-      if (res.value?.length) this.selectedProject.set(res.value[0].name);
+      const ps = await firstValueFrom(this.boardsProvider.listProjects());
+      this.projects.set(ps);
+      if (ps.length) this.selectedProject.set(ps[0].id);
     } catch { /* ignore */ } finally {
       this.loadingProjects.set(false);
     }
@@ -149,45 +153,29 @@ export class BlockersComponent implements OnInit {
     this.selectedNodeId.set(null);
 
     try {
-      const wiql = `SELECT [System.Id] FROM WorkItemLinks WHERE ([Source].[System.TeamProject] = '${project}') AND ([System.Links.LinkType] = 'System.LinkTypes.Dependency-Forward') MODE (MayContain)`;
-      const linkRes = await firstValueFrom(this.devops.queryWorkItemLinks(project, wiql));
-      const relations = (linkRes.workItemRelations ?? []).filter(r => r.rel != null && r.source && r.target);
+      const { items, relations } = await firstValueFrom(this.boardsProvider.loadBlockers(project));
 
-      if (!relations.length) {
-        this.loading.set(false);
-        return;
-      }
+      if (!relations.length) { this.loading.set(false); return; }
 
-      const allIds = new Set<number>();
-      for (const r of relations) { allIds.add(r.source!.id); allIds.add(r.target!.id); }
+      const allIds = [...items.keys()];
 
-      const idArr = [...allIds];
-      const fetchedItems: DevOpsWorkItem[] = [];
-      for (let i = 0; i < idArr.length; i += 200) {
-        const res = await firstValueFrom(this.devops.listWorkItems(project, idArr.slice(i, i + 200)));
-        fetchedItems.push(...(res.value ?? []));
-      }
-      const itemById = new Map(fetchedItems.map(i => [i.id, i]));
-
-      const blocks = new Map<number, Set<number>>();
-      const blockedBy = new Map<number, Set<number>>();
-      for (const id of allIds) { blocks.set(id, new Set()); blockedBy.set(id, new Set()); }
+      const blocks    = new Map<number | string, Set<number | string>>(allIds.map(id => [id, new Set()]));
+      const blockedBy = new Map<number | string, Set<number | string>>(allIds.map(id => [id, new Set()]));
 
       const edgeSeen = new Set<string>();
       const rawEdges: BEdge[] = [];
       for (const r of relations) {
-        const src = r.source!.id, tgt = r.target!.id;
-        const key = `${src}-${tgt}`;
+        const key = `${r.sourceId}-${r.targetId}`;
         if (edgeSeen.has(key)) continue;
         edgeSeen.add(key);
-        blocks.get(src)!.add(tgt);
-        blockedBy.get(tgt)!.add(src);
-        rawEdges.push({ id: key, fromId: src, toId: tgt });
+        blocks.get(r.sourceId)?.add(r.targetId);
+        blockedBy.get(r.targetId)?.add(r.sourceId);
+        rawEdges.push({ id: key, fromId: r.sourceId, toId: r.targetId });
       }
 
       // Level assignment via DFS memoization (handles cycles)
-      const levels = new Map<number, number>();
-      const getLevel = (id: number, visiting: Set<number>): number => {
+      const levels = new Map<number | string, number>();
+      const getLevel = (id: number | string, visiting: Set<number | string>): number => {
         if (levels.has(id)) return levels.get(id)!;
         if (visiting.has(id)) return 0;
         visiting.add(id);
@@ -200,15 +188,15 @@ export class BlockersComponent implements OnInit {
       for (const id of allIds) getLevel(id, new Set());
 
       // Group by level for vertical stacking
-      const levelGroups = new Map<number, number[]>();
+      const levelGroups = new Map<number, (number | string)[]>();
       for (const [id, lvl] of levels) {
         if (!levelGroups.has(lvl)) levelGroups.set(lvl, []);
         levelGroups.get(lvl)!.push(id);
       }
 
-      // Sort each level's nodes: blockers first (higher impactScore), then alphabetically
-      const computeImpact = (startId: number): number => {
-        const visited = new Set<number>();
+      // Impact score: transitive count of blocked items
+      const computeImpact = (startId: number | string): number => {
+        const visited = new Set<number | string>();
         const stack = [...(blocks.get(startId) ?? [])];
         while (stack.length) {
           const id = stack.pop()!;
@@ -218,15 +206,14 @@ export class BlockersComponent implements OnInit {
         }
         return visited.size;
       };
-      const impacts = new Map<number, number>();
+      const impacts = new Map<number | string, number>();
       for (const id of allIds) impacts.set(id, computeImpact(id));
 
       for (const ids of levelGroups.values()) {
         ids.sort((a, b) => (impacts.get(b) ?? 0) - (impacts.get(a) ?? 0));
       }
 
-      // Assign pixel positions
-      const positions = new Map<number, { x: number; y: number }>();
+      const positions = new Map<number | string, { x: number; y: number }>();
       for (const [lvl, ids] of levelGroups) {
         ids.forEach((id, i) => {
           positions.set(id, {
@@ -241,11 +228,11 @@ export class BlockersComponent implements OnInit {
       this.canvasWidth.set(Math.max(...xs) + NODE_W + CANVAS_PAD);
       this.canvasHeight.set(Math.max(...ys) + NODE_H + CANVAS_PAD);
 
-      const bNodes: BNode[] = [...allIds]
-        .filter(id => itemById.has(id))
+      const bNodes: BNode[] = allIds
+        .filter(id => items.has(id) && positions.has(id))
         .map(id => ({
           id,
-          item: itemById.get(id)!,
+          item: items.get(id)!,
           x: positions.get(id)!.x,
           y: positions.get(id)!.y,
           level: levels.get(id)!,
@@ -266,10 +253,10 @@ export class BlockersComponent implements OnInit {
   getEdgePath(edge: BEdge): string {
     const map = this.nodeById();
     const from = map.get(edge.fromId);
-    const to = map.get(edge.toId);
+    const to   = map.get(edge.toId);
     if (!from || !to) return '';
     const x1 = from.x + NODE_W, y1 = from.y + NODE_H / 2;
-    const x2 = to.x,           y2 = to.y + NODE_H / 2;
+    const x2 = to.x,            y2 = to.y + NODE_H / 2;
     const cx = (x1 + x2) / 2;
     return `M ${x1} ${y1} C ${cx} ${y1} ${cx} ${y2} ${x2} ${y2}`;
   }
@@ -295,12 +282,12 @@ export class BlockersComponent implements OnInit {
     return (edge.fromId === selectedId || affected.has(edge.fromId)) && affected.has(edge.toId);
   }
 
-  selectNode(id: number) {
+  selectNode(id: number | string): void {
     this.selectedNodeId.set(this.selectedNodeId() === id ? null : id);
   }
 
-  itemTitle(id: number): string {
-    return this.nodeById().get(id)?.item.fields['System.Title'] ?? `#${id}`;
+  itemTitle(id: number | string): string {
+    return this.nodeById().get(id)?.item.title ?? `#${id}`;
   }
 
   typeColor(type: string): string {
@@ -308,13 +295,10 @@ export class BlockersComponent implements OnInit {
       case 'epic':        return '#a371f7';
       case 'feature':     return '#58a6ff';
       case 'user story':  return '#3fb950';
+      case 'story':       return '#3fb950';
       case 'task':        return '#f0883e';
       case 'bug':         return '#f85149';
       default:            return '#8b949e';
     }
-  }
-
-  devopsUrl(item: DevOpsWorkItem): string {
-    return item._links?.html?.href ?? item.url;
   }
 }

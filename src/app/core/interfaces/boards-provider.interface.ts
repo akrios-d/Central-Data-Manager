@@ -29,6 +29,16 @@ export interface BoardSprint {
   endDate: string | null;
 }
 
+export interface BlockerRelation {
+  sourceId: number | string;
+  targetId: number | string;
+}
+
+export interface BlockerData {
+  items: Map<number | string, BoardWorkItem>;
+  relations: BlockerRelation[];
+}
+
 export interface BoardFilters {
   sprint: 'current' | 'all';
   types: string[];

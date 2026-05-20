@@ -295,6 +295,7 @@
     "noDeps": "No blocking dependencies found in this project.",
     "noProject": "Select a project and click Load.",
     "noDevops": "Azure DevOps not configured — go to Settings to add a token.",
+    "noJira": "Jira not configured — go to Settings to add a token.",
     "topBlockers": "Top Blockers",
     "detail": "Selected item",
     "assignedTo": "Assigned to",

@@ -12,13 +12,13 @@
     <div class="sidebar-controls">
       @if (loadingProjects()) {
         <p class="text-muted text-sm">{{ 'blockers.loadingProjects' | translate }}</p>
-      } @else if (!hasDevops()) {
-        <p class="text-muted text-sm">{{ 'blockers.noDevops' | translate }}</p>
+      } @else if (!hasProvider()) {
+        <p class="text-muted text-sm">{{ noProviderKey() | translate }}</p>
       } @else {
         <select class="form-control form-control-sm" [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event)">
           <option value="" disabled>{{ 'blockers.selectProject' | translate }}</option>
           @for (p of projects(); track p.id) {
-            <option [value]="p.name">{{ p.name }}</option>
+            <option [value]="p.id">{{ p.name }}</option>
           }
         </select>
         <button class="btn btn-sm btn-primary" [disabled]="loading() || !selectedProject()" (click)="load()">
@@ -84,8 +84,8 @@
             <li class="blocker-item"
                 [class.selected]="selectedNodeId() === n.id"
                 (click)="selectNode(n.id)">
-              <span class="type-dot" [style.background]="typeColor(n.item.fields['System.WorkItemType'])"></span>
-              <span class="blocker-title">{{ n.item.fields['System.Title'] }}</span>
+              <span class="type-dot" [style.background]="typeColor(n.item.type)"></span>
+              <span class="blocker-title">{{ n.item.title }}</span>
               <span class="impact-badge">{{ n.impactScore }}</span>
             </li>
           }
@@ -97,20 +97,20 @@
     @if (selectedNode(); as node) {
       <div class="sidebar-section detail-panel">
         <h3 class="sidebar-heading">{{ 'blockers.detail' | translate }}</h3>
-        <a class="detail-title" [href]="devopsUrl(node.item)" target="_blank" rel="noopener">
-          {{ node.item.fields['System.Title'] }}
+        <a class="detail-title" [href]="node.item.url" target="_blank" rel="noopener">
+          {{ node.item.title }}
         </a>
         <div class="detail-meta">
-          <span class="type-chip" [style.background]="typeColor(node.item.fields['System.WorkItemType']) + '22'" [style.color]="typeColor(node.item.fields['System.WorkItemType'])">
-            {{ node.item.fields['System.WorkItemType'] }}
+          <span class="type-chip" [style.background]="typeColor(node.item.type) + '22'" [style.color]="typeColor(node.item.type)">
+            {{ node.item.type }}
           </span>
-          <span class="state-chip">{{ node.item.fields['System.State'] }}</span>
+          <span class="state-chip">{{ node.item.state }}</span>
         </div>
-        @if (node.item.fields['System.AssignedTo']?.displayName) {
-          <p class="detail-row"><span class="detail-label">{{ 'blockers.assignedTo' | translate }}:</span> {{ node.item.fields['System.AssignedTo']!.displayName }}</p>
+        @if (node.item.assignee) {
+          <p class="detail-row"><span class="detail-label">{{ 'blockers.assignedTo' | translate }}:</span> {{ node.item.assignee }}</p>
         }
-        @if (node.item.fields['System.IterationPath']) {
-          <p class="detail-row"><span class="detail-label">{{ 'blockers.sprint' | translate }}:</span> {{ node.item.fields['System.IterationPath'] }}</p>
+        @if (node.item.sprint) {
+          <p class="detail-row"><span class="detail-label">{{ 'blockers.sprint' | translate }}:</span> {{ node.item.sprint }}</p>
         }
         @if (node.impactScore > 0) {
           <p class="detail-row"><span class="detail-label">{{ 'blockers.impact' | translate }}:</span> <strong>{{ node.impactScore }}</strong></p>
@@ -188,18 +188,18 @@
                [style.left.px]="node.x"
                [style.top.px]="node.y"
                (click)="selectNode(node.id)">
-            <div class="node-type-bar" [style.background]="typeColor(node.item.fields['System.WorkItemType'])"></div>
+            <div class="node-type-bar" [style.background]="typeColor(node.item.type)"></div>
             <div class="node-body">
               <div class="node-top">
-                <span class="node-type-tag" [style.color]="typeColor(node.item.fields['System.WorkItemType'])">
-                  {{ node.item.fields['System.WorkItemType'] }}
+                <span class="node-type-tag" [style.color]="typeColor(node.item.type)">
+                  {{ node.item.type }}
                 </span>
                 @if (node.impactScore > 0) {
                   <span class="node-impact-badge" title="{{ 'blockers.impact' | translate }}">⚠ {{ node.impactScore }}</span>
                 }
               </div>
-              <div class="node-title">{{ node.item.fields['System.Title'] }}</div>
-              <span class="node-state">{{ node.item.fields['System.State'] }}</span>
+              <div class="node-title">{{ node.item.title }}</div>
+              <span class="node-state">{{ node.item.state }}</span>
             </div>
           </div>
         }

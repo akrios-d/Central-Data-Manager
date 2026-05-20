@@ -31,6 +31,12 @@ export interface JiraSprint {
   endDate?: string;
 }
 
+export interface JiraIssueLink {
+  type: { name: string; inward: string; outward: string };
+  outwardIssue?: { id: string; key: string; fields?: { summary?: string; status?: { name: string }; issuetype?: { name: string } } };
+  inwardIssue?:  { id: string; key: string; fields?: { summary?: string; status?: { name: string }; issuetype?: { name: string } } };
+}
+
 export interface JiraIssue {
   id: string;
   key: string;
@@ -45,6 +51,7 @@ export interface JiraIssue {
     created: string;
     updated: string;
     description?: any;
+    issuelinks?: JiraIssueLink[];
   };
 }
 
@@ -115,6 +122,13 @@ export class JiraApiService {
   searchIssues(jql: string): Observable<JiraIssue[]> {
     return this.http.get<{ issues: JiraIssue[] }>(
       `${this.base}/search?jql=${encodeURIComponent(jql)}&maxResults=200&fields=summary,status,issuetype,assignee,reporter,creator,priority,created,updated`,
+      { headers: this.headers }
+    ).pipe(map(r => r.issues ?? []));
+  }
+
+  searchIssuesWithLinks(jql: string): Observable<JiraIssue[]> {
+    return this.http.get<{ issues: JiraIssue[] }>(
+      `${this.base}/search?jql=${encodeURIComponent(jql)}&maxResults=500&fields=summary,status,issuetype,assignee,reporter,creator,priority,created,updated,issuelinks`,
       { headers: this.headers }
     ).pipe(map(r => r.issues ?? []));
   }

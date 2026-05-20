@@ -4,7 +4,7 @@ import { map, mergeMap, switchMap, toArray } from 'rxjs/operators';
 import { DevOpsApiService, DevOpsWorkItem } from './devops-api.service';
 import { JiraApiService, JiraIssue } from './jira-api.service';
 import { TokenService } from './token.service';
-import { BoardFilters, BoardProject, BoardSprint, BoardWorkItem } from '../interfaces/boards-provider.interface';
+import { BlockerData, BlockerRelation, BoardFilters, BoardProject, BoardSprint, BoardWorkItem } from '../interfaces/boards-provider.interface';
 
 @Injectable({ providedIn: 'root' })
 export class BoardsProviderService {
@@ -108,6 +108,11 @@ export class BoardsProviderService {
     );
   }
 
+  loadBlockers(projectId: string): Observable<BlockerData> {
+    if (this.provider === 'jira') return this.loadJiraBlockers(projectId);
+    return this.loadAdoBlockers(projectId);
+  }
+
   normalizeAdoWorkItem(wi: DevOpsWorkItem): BoardWorkItem {
     const p = wi.fields['Microsoft.VSTS.Common.Priority'];
     const rawTags = wi.fields['System.Tags'];
@@ -156,6 +161,79 @@ export class BoardsProviderService {
       createdBy: issue.fields.creator?.displayName ?? null,
       tags: [],
     };
+  }
+
+  private loadAdoBlockers(project: string): Observable<BlockerData> {
+    const wiql = `SELECT [System.Id] FROM WorkItemLinks WHERE ([Source].[System.TeamProject] = '${project}') AND ([System.Links.LinkType] = 'System.LinkTypes.Dependency-Forward') MODE (MayContain)`;
+    return this.ado.queryWorkItemLinks(project, wiql).pipe(
+      switchMap(linkRes => {
+        const relations = (linkRes.workItemRelations ?? []).filter(r => r.rel != null && r.source && r.target);
+        if (!relations.length) return of({ items: new Map<number | string, BoardWorkItem>(), relations: [] });
+
+        const allIds = new Set<number>();
+        for (const r of relations) { allIds.add(r.source!.id); allIds.add(r.target!.id); }
+
+        const idArr = [...allIds];
+        const batches: number[][] = [];
+        for (let i = 0; i < idArr.length; i += 200) batches.push(idArr.slice(i, i + 200));
+
+        return forkJoin(batches.map(b => this.ado.listWorkItems(project, b))).pipe(
+          map(results => {
+            const items = new Map<number | string, BoardWorkItem>();
+            for (const wi of results.flatMap(r => r.value)) items.set(wi.id, this.normalizeAdoWorkItem(wi));
+
+            const seen = new Set<string>();
+            const deduped: BlockerRelation[] = [];
+            for (const r of relations) {
+              const key = `${r.source!.id}-${r.target!.id}`;
+              if (!seen.has(key)) { seen.add(key); deduped.push({ sourceId: r.source!.id, targetId: r.target!.id }); }
+            }
+            return { items, relations: deduped };
+          })
+        );
+      })
+    );
+  }
+
+  private loadJiraBlockers(projectId: string): Observable<BlockerData> {
+    return this.jira.searchIssuesWithLinks(`project = "${projectId}" ORDER BY updated DESC`).pipe(
+      map(issues => {
+        const items = new Map<number | string, BoardWorkItem>();
+        for (const issue of issues) items.set(issue.key, this.normalizeJiraIssue(issue));
+
+        const seen = new Set<string>();
+        const relations: BlockerRelation[] = [];
+        const baseUrl = (this.tokens.jiraBaseUrl() ?? '').replace(/\/$/, '');
+
+        for (const issue of issues) {
+          for (const link of (issue.fields.issuelinks ?? [])) {
+            const outward = link.type.outward?.toLowerCase().trim();
+            if (link.outwardIssue && outward === 'blocks') {
+              const targetKey = link.outwardIssue.key;
+              const edgeKey = `${issue.key}-${targetKey}`;
+              if (!seen.has(edgeKey)) {
+                seen.add(edgeKey);
+                if (!items.has(targetKey)) {
+                  const li = link.outwardIssue;
+                  items.set(targetKey, {
+                    id: targetKey,
+                    title: li.fields?.summary ?? targetKey,
+                    type: li.fields?.issuetype?.name ?? 'Issue',
+                    state: li.fields?.status?.name ?? 'Unknown',
+                    assignee: null, sprint: null,
+                    url: `${baseUrl}/browse/${targetKey}`,
+                    priorityEmoji: '', priorityLabel: null,
+                    createdDate: '', changedDate: '', tags: [],
+                  });
+                }
+                relations.push({ sourceId: issue.key, targetId: targetKey });
+              }
+            }
+          }
+        }
+        return { items, relations };
+      })
+    );
   }
 
   private loadAdoWorkItems(project: string, filters: BoardFilters): Observable<BoardWorkItem[]> {
