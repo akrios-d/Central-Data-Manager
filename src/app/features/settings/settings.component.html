@@ -84,6 +84,31 @@
       </div>
     }
   }
+
+  <!-- Chain execution polling -->
+  <div class="settings-subsection">
+    <h3 class="subsection-title">{{ 'settings.chainExec' | translate }}</h3>
+    <p class="text-muted text-sm">{{ 'settings.chainExecSubtitle' | translate }}</p>
+    <div class="exec-params mt-2">
+      <div class="form-group">
+        <label class="form-label">{{ 'settings.pollInterval' | translate }}</label>
+        <div class="inline-row mt-1">
+          <input class="form-control exec-input" type="number" min="2" max="60"
+            [ngModel]="editPollInterval()" (ngModelChange)="editPollInterval.set(+$event)" />
+          <span class="text-muted text-sm">{{ 'settings.seconds' | translate }}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ 'settings.maxPolls' | translate }}</label>
+        <div class="inline-row mt-1">
+          <input class="form-control exec-input" type="number" min="10" max="500"
+            [ngModel]="editMaxPolls()" (ngModelChange)="editMaxPolls.set(+$event)" />
+          <span class="text-muted text-sm">≈ {{ maxPollMinutes() }} {{ 'settings.minutes' | translate }}</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">{{ 'settings.save' | translate }}</button>
+  </div>
 </div>
 
 <!-- ── Boards Provider ───────────────────────────────────────────────────── -->
@@ -140,6 +165,73 @@
         <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
       </div>
     }
+
+    <!-- Sprint config (DevOps-only) -->
+    @if (hasAdo()) {
+      <div class="settings-subsection">
+        <div class="flex-between">
+          <div>
+            <h3 class="subsection-title">{{ 'settings.sprintWidget' | translate }}</h3>
+            @if (adoProject() && adoTeam()) {
+              <p class="text-muted text-sm">
+                {{ 'settings.project' | translate }} <strong>{{ adoProject() }}</strong> · {{ 'settings.team' | translate }} <strong>{{ adoTeam() }}</strong>
+              </p>
+            } @else {
+              <p class="text-muted text-sm">{{ 'settings.sprintNotConfigured' | translate }}</p>
+            }
+          </div>
+          <button class="btn btn-sm" (click)="openSprintEdit()">
+            {{ adoProject() ? ('settings.editBtn' | translate) : ('settings.configureBtn' | translate) }}
+          </button>
+        </div>
+
+        @if (showSprintEdit()) {
+          <div class="settings-form mt-2">
+            <div class="form-group">
+              <label>{{ 'settings.projectLabel' | translate }}</label>
+              @if (projectsLoading()) {
+                <div class="inline-row mt-1">
+                  <span class="spinner"></span>
+                  <span class="text-muted text-sm">{{ 'settings.loadingProjects' | translate }}</span>
+                </div>
+              } @else {
+                <select class="form-control mt-1"
+                  [ngModel]="editAdoProject()"
+                  (ngModelChange)="onProjectChange($event)">
+                  <option value="">{{ 'settings.selectProject' | translate }}</option>
+                  @for (p of availableProjects(); track p.id) {
+                    <option [value]="p.name">{{ p.name }}</option>
+                  }
+                </select>
+              }
+            </div>
+
+            @if (teamsLoading()) {
+              <div class="inline-row mt-1">
+                <span class="spinner"></span>
+                <span class="text-muted text-sm">{{ 'settings.loadingTeams' | translate }}</span>
+              </div>
+            } @else if (availableTeams().length > 0) {
+              <div class="form-group mt-1">
+                <label>{{ 'settings.teamLabel' | translate }}</label>
+                <select class="form-control" [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)">
+                  <option value="">{{ 'settings.selectTeam' | translate }}</option>
+                  @for (t of availableTeams(); track t.id) {
+                    <option [value]="t.name">{{ t.name }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <div class="settings-actions mt-2">
+              <button class="btn btn-primary btn-sm" (click)="saveSprintConfig()"
+                [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()">{{ 'settings.save' | translate }}</button>
+              <button class="btn btn-sm" (click)="showSprintEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
   }
 
   <!-- Jira panel -->
@@ -185,73 +277,6 @@
   }
 </div>
 
-<!-- ── Sprint config ──────────────────────────────────────────────────────── -->
-@if (hasAdo() && activeBoardsProvider() === 'devops') {
-  <div class="card mt-3">
-    <div class="flex-between">
-      <div>
-        <h2 class="section-title">{{ 'settings.sprintWidget' | translate }}</h2>
-        @if (adoProject() && adoTeam()) {
-          <p class="text-muted text-sm mt-1">
-            {{ 'settings.project' | translate }} <strong>{{ adoProject() }}</strong> · {{ 'settings.team' | translate }} <strong>{{ adoTeam() }}</strong>
-          </p>
-        } @else {
-          <p class="text-muted text-sm mt-1">{{ 'settings.sprintNotConfigured' | translate }}</p>
-        }
-      </div>
-      <button class="btn btn-sm" (click)="openSprintEdit()">
-        {{ adoProject() ? ('settings.editBtn' | translate) : ('settings.configureBtn' | translate) }}
-      </button>
-    </div>
-
-    @if (showSprintEdit()) {
-      <div class="settings-form mt-2">
-        <div class="form-group">
-          <label>{{ 'settings.projectLabel' | translate }}</label>
-          @if (projectsLoading()) {
-            <div class="inline-row mt-1">
-              <span class="spinner"></span>
-              <span class="text-muted text-sm">{{ 'settings.loadingProjects' | translate }}</span>
-            </div>
-          } @else {
-            <select class="form-control mt-1"
-              [ngModel]="editAdoProject()"
-              (ngModelChange)="onProjectChange($event)">
-              <option value="">{{ 'settings.selectProject' | translate }}</option>
-              @for (p of availableProjects(); track p.id) {
-                <option [value]="p.name">{{ p.name }}</option>
-              }
-            </select>
-          }
-        </div>
-
-        @if (teamsLoading()) {
-          <div class="inline-row mt-1">
-            <span class="spinner"></span>
-            <span class="text-muted text-sm">{{ 'settings.loadingTeams' | translate }}</span>
-          </div>
-        } @else if (availableTeams().length > 0) {
-          <div class="form-group mt-1">
-            <label>{{ 'settings.teamLabel' | translate }}</label>
-            <select class="form-control" [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)">
-              <option value="">{{ 'settings.selectTeam' | translate }}</option>
-              @for (t of availableTeams(); track t.id) {
-                <option [value]="t.name">{{ t.name }}</option>
-              }
-            </select>
-          </div>
-        }
-
-        <div class="settings-actions mt-2">
-          <button class="btn btn-primary btn-sm" (click)="saveSprintConfig()"
-            [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()">{{ 'settings.save' | translate }}</button>
-          <button class="btn btn-sm" (click)="showSprintEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
-        </div>
-      </div>
-    }
-  </div>
-}
-
 <!-- ── Token storage ──────────────────────────────────────────────────────── -->
 <div class="card mt-3" [class.storage-persist-card]="persist()">
   <div class="flex-between">
@@ -269,31 +294,6 @@
       <button class="btn btn-sm btn-outline" (click)="requestEnablePersist()">{{ 'settings.storageEnable' | translate }}</button>
     }
   </div>
-</div>
-
-<!-- ── Chain execution ────────────────────────────────────────────────────── -->
-<div class="card mt-3">
-  <h2 class="section-title">{{ 'settings.chainExec' | translate }}</h2>
-  <p class="text-muted text-sm mt-1">{{ 'settings.chainExecSubtitle' | translate }}</p>
-  <div class="exec-params mt-2">
-    <div class="form-group">
-      <label class="form-label">{{ 'settings.pollInterval' | translate }}</label>
-      <div class="inline-row mt-1">
-        <input class="form-control exec-input" type="number" min="2" max="60"
-          [ngModel]="editPollInterval()" (ngModelChange)="editPollInterval.set(+$event)" />
-        <span class="text-muted text-sm">{{ 'settings.seconds' | translate }}</span>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">{{ 'settings.maxPolls' | translate }}</label>
-      <div class="inline-row mt-1">
-        <input class="form-control exec-input" type="number" min="10" max="500"
-          [ngModel]="editMaxPolls()" (ngModelChange)="editMaxPolls.set(+$event)" />
-        <span class="text-muted text-sm">≈ {{ maxPollMinutes() }} {{ 'settings.minutes' | translate }}</span>
-      </div>
-    </div>
-  </div>
-  <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">{{ 'settings.save' | translate }}</button>
 </div>
 
 <!-- ── Danger zone ─────────────────────────────────────────────────────────── -->

@@ -97,6 +97,21 @@
   &.ps-dot-off { background: var(--border); }
 }
 
+.settings-subsection {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.subsection-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
 .danger-zone {
   border-color: rgba(248, 81, 73, 0.4);
 }
