@@ -2,11 +2,11 @@
   "nav": {
     "dashboard": "Dashboard",
     "sectionManagement": "Gestão",
-    "devopsBoards": "DevOps Boards",
+    "devopsBoards": "Boards",
     "blockers": "Bloqueadores",
     "releases": "Releases",
-    "sectionCicd": "CI/CD & Pipelines",
-    "githubActions": "GitHub Actions",
+    "sectionCicd": "CI/CD",
+    "githubActions": "Pipelines",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orquestrador",
     "settings": "Definições"
@@ -26,7 +26,7 @@
     "noIntegrationsSuffix": "para adicionar tokens."
   },
   "boards": {
-    "title": "DevOps Boards",
+    "title": "Boards",
     "subtitle": "Vista kanban dos teus itens de trabalho. Arrasta os cards entre colunas para mudar o estado.",
     "loadingProjects": "A carregar projectos…",
     "loadingBoard": "A carregar board…",
@@ -70,7 +70,7 @@
     "noDescription": "Sem descrição."
   },
   "actions": {
-    "title": "GitHub Actions",
+    "title": "Pipelines",
     "subtitle": "Explore workflows, gere execuções e monitoriza a saúde.",
     "tabRuns": "Execuções",
     "tabHealth": "Saúde",
@@ -86,7 +86,7 @@
   },
   "builder": {
     "title": "Chain Builder",
-    "subtitle": "Cria e executa sequências de workflows GitHub Actions.",
+    "subtitle": "Cria e executa sequências de pipelines CI/CD.",
     "myChains": "As minhas chains",
     "import": "↑ Importar",
     "new": "+ Novo",
