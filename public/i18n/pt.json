@@ -9,6 +9,7 @@
     "githubActions": "Pipelines",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orquestrador",
+    "pullRequests": "Pull Requests",
     "auditLog": "Auditoria",
     "settings": "Definições"
   },
@@ -24,7 +25,11 @@
     "recentWorkItems": "Itens de trabalho recentes",
     "noWorkItems": "Nenhum item de trabalho encontrado.",
     "noIntegrations": "Nenhuma integração configurada. Vai às",
-    "noIntegrationsSuffix": "para adicionar tokens."
+    "noIntegrationsSuffix": "para adicionar tokens.",
+    "recentActivity": "Actividade Recente",
+    "viewAll": "Ver tudo",
+    "noActivity": "Sem eventos registados ainda.",
+    "lastChain": "Última chain executada"
   },
   "boards": {
     "title": "Boards",
@@ -213,6 +218,11 @@
     "seconds": "s",
     "minutes": "min",
     "execSettingsSaved": "Configurações de execução guardadas.",
+    "workspace": "Backup de Workspace",
+    "workspaceSubtitle": "Exporta as tuas chains, grafos, releases e definições. Os tokens nunca são exportados.",
+    "workspaceExport": "↓ Exportar workspace",
+    "workspaceImport": "↑ Importar workspace",
+    "workspaceImported": "Workspace importado com sucesso.",
     "dangerZone": "Zona de perigo",
     "dangerWarning": "Isto irá remover todos os tokens do teu browser e redireccionar para o Onboarding.",
     "clearAll": "Limpar todos os tokens"
@@ -374,6 +384,17 @@
     "noEntries": "Sem eventos registados ainda.",
     "empty": "Nenhuma entrada encontrada.",
     "total": "{{count}} entradas"
+  },
+  "prs": {
+    "title": "Pull Requests",
+    "subtitle": "Consulta pull requests e merge requests abertos e fechados.",
+    "searchRepos": "Pesquisar repos…",
+    "open": "Abertos",
+    "closed": "Fechados",
+    "all": "Todos",
+    "noPrs": "Nenhum pull request encontrado.",
+    "noRepos": "Nenhum repositório encontrado.",
+    "selectRepo": "Selecciona um repositório para ver os seus pull requests."
   },
   "lang": {
     "en": "EN",

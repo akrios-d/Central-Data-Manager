@@ -22,6 +22,10 @@ import { BoardWorkItem } from '../../core/interfaces/boards-provider.interface';
 import { TranslateModule } from '@ngx-translate/core';
 import { SprintWidgetComponent } from '../../shared/components/sprint-widget/sprint-widget.component';
 import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
+import { AuditLogService, AuditEntry } from '../../core/services/audit-log.service';
+import { ChainService } from '../../core/services/chain.service';
+import { ChainRun } from '../../core/models/chain.model';
+import { AppConfigService } from '../../core/services/app-config.service';
 
 export interface Pipeline {
   workflowId: number;
@@ -58,12 +62,33 @@ export class DashboardComponent implements OnInit {
   private ci = inject(CiProviderService);
   private ado = inject(DevOpsApiService);
   private boards = inject(BoardsProviderService);
+  private audit = inject(AuditLogService);
+  private chainSvc = inject(ChainService);
+  private appConfig = inject(AppConfigService);
 
   readonly hasCi = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
   readonly hasAdo = this.tokens.hasDevOps;
   readonly hasBoardsProvider = computed(
     () => this.tokens.hasDevOps() || (this.tokens.hasJira() && !!this.tokens.jiraProject()),
   );
+
+  readonly tokenMaxAgeDays = this.appConfig.tokenMaxAgeDays;
+
+  readonly tokenHealth = computed(() => {
+    const providers: { name: string; savedAt: string | null }[] = [];
+    if (this.tokens.hasGitHub())
+      providers.push({ name: 'GitHub', savedAt: this.tokens.githubSavedAt() });
+    if (this.tokens.hasGitLab())
+      providers.push({ name: 'GitLab', savedAt: this.tokens.gitlabSavedAt() });
+    if (this.tokens.hasDevOps())
+      providers.push({ name: 'Azure DevOps', savedAt: this.tokens.devopsSavedAt() });
+    if (this.tokens.hasJira()) providers.push({ name: 'Jira', savedAt: this.tokens.jiraSavedAt() });
+    return providers;
+  });
+
+  readonly recentActivity = computed<AuditEntry[]>(() => this.audit.entries().slice(0, 5));
+
+  readonly lastChainRun = computed<ChainRun | null>(() => this.chainSvc.runs()[0] ?? null);
 
   allRepos = signal<CiRepo[]>([]);
   pipelines = signal<Pipeline[]>([]);
@@ -254,6 +279,20 @@ export class DashboardComponent implements OnInit {
 
   runClass(run: CiRun): string {
     return run.status !== 'completed' ? run.status : (run.conclusion ?? 'unknown');
+  }
+
+  tokenAgeDays(savedAt: string | null): number | null {
+    if (!savedAt) return null;
+    return Math.floor((Date.now() - new Date(savedAt).getTime()) / 86_400_000);
+  }
+
+  tokenHealthClass(savedAt: string | null): string {
+    const days = this.tokenAgeDays(savedAt);
+    if (days === null) return 'health-unknown';
+    const max = this.tokenMaxAgeDays();
+    if (days >= max) return 'health-expired';
+    if (days >= max * 0.75) return 'health-warn';
+    return 'health-ok';
   }
 
   private worstStatus(pipelines: Pipeline[]): string {

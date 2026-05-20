@@ -3,6 +3,20 @@
   <p>{{ 'dashboard.subtitle' | translate }}</p>
 </div>
 
+@if (tokenHealth().length) {
+  <div class="token-health-bar">
+    @for (t of tokenHealth(); track t.name) {
+      <span class="th-item">
+        <span class="th-dot" [class]="tokenHealthClass(t.savedAt)"></span>
+        <span class="th-label">{{ t.name }}</span>
+        @if (tokenAgeDays(t.savedAt) !== null) {
+          <span class="th-age text-muted text-sm">{{ tokenAgeDays(t.savedAt) }}d</span>
+        }
+      </span>
+    }
+  </div>
+}
+
 @if (hasBoardsProvider()) {
   <section class="sprint-section">
     <h2 class="section-title">{{ 'dashboard.currentSprint' | translate }}</h2>
@@ -141,6 +155,51 @@
       </p>
     </div>
   }
+
+  <section class="card">
+    <div class="section-header">
+      <h2 class="section-title">{{ 'dashboard.recentActivity' | translate }}</h2>
+      <a routerLink="/audit-log" class="link-muted text-sm">{{
+        'dashboard.viewAll' | translate
+      }}</a>
+    </div>
+    @if (recentActivity().length === 0) {
+      <p class="text-muted text-sm">{{ 'dashboard.noActivity' | translate }}</p>
+    } @else {
+      <ul class="activity-list">
+        @for (entry of recentActivity(); track entry.id) {
+          <li class="activity-item">
+            <span class="activity-time text-muted text-sm">{{
+              entry.timestamp | date: 'dd/MM HH:mm'
+            }}</span>
+            <span class="activity-action">{{ entry.action }}</span>
+            @if (entry.detail) {
+              <span class="activity-detail text-muted text-sm">· {{ entry.detail }}</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+    @if (lastChainRun()) {
+      <div class="last-chain mt-2">
+        <span class="text-muted text-sm">{{ 'dashboard.lastChain' | translate }}:</span>
+        <a routerLink="/chain-builder" class="last-chain-link">{{ lastChainRun()!.chainName }}</a>
+        <span
+          class="badge"
+          [class]="
+            'badge-' +
+            (lastChainRun()!.status === 'success'
+              ? 'success'
+              : lastChainRun()!.status === 'failure'
+                ? 'danger'
+                : 'info')
+          "
+        >
+          {{ lastChainRun()!.status }}
+        </span>
+      </div>
+    }
+  </section>
 </div>
 
 <app-work-item-panel [item]="selectedItem()" (closed)="selectedItem.set(null)" />

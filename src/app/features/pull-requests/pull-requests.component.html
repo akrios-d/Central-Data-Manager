@@ -1,0 +1,111 @@
+<div class="page-header">
+  <h1>{{ 'prs.title' | translate }}</h1>
+  <p>{{ 'prs.subtitle' | translate }}</p>
+</div>
+
+<div class="pr-layout">
+  <!-- ── Repo list ──────────────────────────────────────────────────────────── -->
+  <aside class="repo-panel card">
+    <input
+      class="form-control repo-search"
+      type="text"
+      [placeholder]="'prs.searchRepos' | translate"
+      [ngModel]="repoSearch()"
+      (ngModelChange)="repoSearch.set($event)"
+    />
+    @if (reposLoading()) {
+      <div class="panel-loading mt-2"><span class="spinner"></span></div>
+    } @else {
+      <ul class="repo-list mt-1">
+        @for (repo of filteredRepos(); track repo.id) {
+          <li>
+            <button
+              class="repo-btn"
+              [class.active]="selectedRepo()?.id === repo.id"
+              (click)="selectRepo(repo)"
+            >
+              <span class="repo-name">{{ repo.full_name }}</span>
+              @if (repo.private) {
+                <span class="private-badge">private</span>
+              }
+            </button>
+          </li>
+        }
+        @if (filteredRepos().length === 0 && !reposLoading()) {
+          <li><p class="text-muted text-sm mt-2">{{ 'prs.noRepos' | translate }}</p></li>
+        }
+      </ul>
+    }
+  </aside>
+
+  <!-- ── PR list ────────────────────────────────────────────────────────────── -->
+  <section class="pr-panel">
+    @if (!selectedRepo()) {
+      <div class="card empty-state">
+        <p class="text-muted">{{ 'prs.selectRepo' | translate }}</p>
+      </div>
+    } @else {
+      <div class="card">
+        <div class="pr-panel-header">
+          <h2 class="section-title">{{ selectedRepo()!.full_name }}</h2>
+          <div class="state-filter">
+            @for (s of [['open','prs.open'],['closed','prs.closed'],['all','prs.all']]; track s[0]) {
+              <button
+                class="state-btn"
+                [class.active]="stateFilter() === s[0]"
+                (click)="setStateFilter($any(s[0]))"
+              >
+                {{ s[1] | translate }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (prsLoading()) {
+          <div class="panel-loading mt-3"><span class="spinner"></span></div>
+        } @else if (filteredPrs().length === 0) {
+          <p class="text-muted text-sm mt-3">{{ 'prs.noPrs' | translate }}</p>
+        } @else {
+          <div class="pr-list mt-2">
+            @for (pr of filteredPrs(); track pr.id) {
+              <div class="pr-card">
+                <div class="pr-card-top">
+                  <span class="pr-badge" [class]="prStateClass(pr.state, pr.draft)">
+                    @if (pr.draft) { Draft }
+                    @else if (pr.state === 'merged') { Merged }
+                    @else if (pr.state === 'open') { Open }
+                    @else { Closed }
+                  </span>
+                  <a class="pr-title" [href]="pr.url" target="_blank" rel="noopener">
+                    #{{ pr.number }} {{ pr.title }}
+                  </a>
+                </div>
+                <div class="pr-meta">
+                  <span class="pr-branch">{{ pr.headBranch }} → {{ pr.baseBranch }}</span>
+                  <span class="text-muted text-sm">{{ pr.author }}</span>
+                  <span class="text-muted text-sm">{{ pr.updatedAt | date: 'dd/MM/yy' }}</span>
+                  @if (pr.reviewers.length) {
+                    <span class="pr-reviewers text-muted text-sm">
+                      👤 {{ pr.reviewers.join(', ') }}
+                    </span>
+                  }
+                </div>
+                @if (pr.labels.length) {
+                  <div class="pr-labels">
+                    @for (label of pr.labels; track label.name) {
+                      <span
+                        class="pr-label"
+                        [style.background]="label.color ? '#' + label.color + '33' : undefined"
+                        [style.color]="label.color ? '#' + label.color : undefined"
+                      >{{ label.name }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

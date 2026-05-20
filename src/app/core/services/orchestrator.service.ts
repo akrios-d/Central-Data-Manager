@@ -39,6 +39,11 @@ export class OrchestratorService {
     });
   }
 
+  restoreAll(graphs: OrchGraph[]): void {
+    localStorage.setItem(GRAPHS_KEY, JSON.stringify(graphs));
+    this._graphs.set(graphs);
+  }
+
   private load<T>(key: string): T[] {
     try {
       return JSON.parse(localStorage.getItem(key) ?? '[]');

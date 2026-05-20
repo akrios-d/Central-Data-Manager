@@ -9,6 +9,7 @@
     "githubActions": "Pipelines",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orchestrator",
+    "pullRequests": "Pull Requests",
     "auditLog": "Audit Log",
     "settings": "Settings"
   },
@@ -24,7 +25,11 @@
     "recentWorkItems": "Recent Work Items",
     "noWorkItems": "No work items found.",
     "noIntegrations": "No integrations configured. Go to",
-    "noIntegrationsSuffix": "to add tokens."
+    "noIntegrationsSuffix": "to add tokens.",
+    "recentActivity": "Recent Activity",
+    "viewAll": "View all",
+    "noActivity": "No events logged yet.",
+    "lastChain": "Last chain run"
   },
   "boards": {
     "title": "Boards",
@@ -213,6 +218,11 @@
     "seconds": "s",
     "minutes": "min",
     "execSettingsSaved": "Execution settings saved.",
+    "workspace": "Workspace Backup",
+    "workspaceSubtitle": "Export your chains, graphs, releases, and settings. Tokens are never exported.",
+    "workspaceExport": "↓ Export workspace",
+    "workspaceImport": "↑ Import workspace",
+    "workspaceImported": "Workspace imported successfully.",
     "dangerZone": "Danger zone",
     "dangerWarning": "This will remove all tokens from your browser and redirect you to Onboarding.",
     "clearAll": "Clear all tokens"
@@ -374,6 +384,17 @@
     "noEntries": "No events logged yet.",
     "empty": "No entries match.",
     "total": "{{count}} entries"
+  },
+  "prs": {
+    "title": "Pull Requests",
+    "subtitle": "Browse open and closed pull requests and merge requests.",
+    "searchRepos": "Search repos…",
+    "open": "Open",
+    "closed": "Closed",
+    "all": "All",
+    "noPrs": "No pull requests found.",
+    "noRepos": "No repositories found.",
+    "selectRepo": "Select a repository to see its pull requests."
   },
   "lang": {
     "en": "EN",

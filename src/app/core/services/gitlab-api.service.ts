@@ -45,6 +45,23 @@ interface GlCommit {
   web_url?: string;
 }
 
+export interface GlMergeRequest {
+  id: number;
+  iid: number;
+  title: string;
+  state: string;
+  draft: boolean;
+  author: { name: string; username: string };
+  created_at: string;
+  updated_at: string;
+  web_url: string;
+  source_branch: string;
+  target_branch: string;
+  labels: string[];
+  reviewers: { name: string; username: string }[];
+  merged_at: string | null;
+}
+
 interface GlComparison {
   commits: GlCommit[];
   compare_same_ref: boolean;
@@ -182,6 +199,16 @@ export class GitLabApiService {
           } as CiComparison;
         }),
       );
+  }
+
+  listMergeRequests(
+    fullPath: string,
+    state: 'opened' | 'closed' | 'merged' | 'all' = 'opened',
+  ): Observable<GlMergeRequest[]> {
+    return this.http.get<GlMergeRequest[]>(
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests?state=${state}&per_page=50&order_by=updated_at&sort=desc`,
+      { headers: this.headers },
+    );
   }
 
   getLatestTag(fullPath: string): Observable<string | null> {

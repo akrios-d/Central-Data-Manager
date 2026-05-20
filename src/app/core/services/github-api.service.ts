@@ -134,6 +134,16 @@ export class GitHubApiService {
     );
   }
 
+  listPullRequests(
+    fullName: string,
+    state: 'open' | 'closed' | 'all' = 'open',
+  ): Observable<GhPullRequest[]> {
+    return this.http.get<GhPullRequest[]>(
+      `https://api.github.com/repos/${fullName}/pulls?state=${state}&per_page=50&sort=updated`,
+      { headers: this.headers },
+    );
+  }
+
   compareRefs(fullName: string, base: string, head: string): Observable<GhComparison> {
     return this.http.get<GhComparison>(
       `https://api.github.com/repos/${fullName}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
@@ -182,6 +192,23 @@ export interface GhCommitInfo {
   };
   html_url: string;
   author: { login: string; avatar_url: string } | null;
+}
+
+export interface GhPullRequest {
+  id: number;
+  number: number;
+  title: string;
+  state: string;
+  draft: boolean;
+  user: { login: string; avatar_url: string };
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+  head: { ref: string };
+  base: { ref: string };
+  labels: { name: string; color: string }[];
+  requested_reviewers: { login: string }[];
+  merged_at: string | null;
 }
 
 export interface GhRun {

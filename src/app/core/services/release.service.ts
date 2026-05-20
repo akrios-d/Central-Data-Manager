@@ -111,6 +111,13 @@ export class ReleaseService {
     this.saveRepos();
   }
 
+  restoreAll(envs: ReleaseEnv[], repos: RepoEntry[]): void {
+    localStorage.setItem(ENVS_KEY, JSON.stringify(envs));
+    localStorage.setItem(REPOS_KEY, JSON.stringify(repos));
+    this._envs.set(envs);
+    this._repos.set(repos);
+  }
+
   clearDeployment(repoId: string, envId: string): void {
     this._repos.update((list) =>
       list.map((r) => {

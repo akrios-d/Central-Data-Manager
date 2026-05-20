@@ -15,6 +15,7 @@ import {
 import { GitHubApiService } from '../../core/services/github-api.service';
 import { GitLabApiService } from '../../core/services/gitlab-api.service';
 import { JiraApiService } from '../../core/services/jira-api.service';
+import { WorkspaceService } from '../../core/services/workspace.service';
 import { forkJoin, catchError, of } from 'rxjs';
 
 interface ConnectionTest {
@@ -76,6 +77,7 @@ export class SettingsComponent implements OnInit {
   readonly glBaseUrl = this.tokens.gitlabBaseUrl;
 
   readonly audit = inject(AuditLogService);
+  private workspace = inject(WorkspaceService);
 
   editPollInterval = signal(this.appSettings.pollIntervalSec());
   editMaxPolls = signal(this.appSettings.maxPolls());
@@ -402,6 +404,22 @@ export class SettingsComponent implements OnInit {
   disablePersist(): void {
     this.tokens.disablePersist();
     this.toasts.show(this.translate.instant('settings.storageSessionOn'), 'success');
+  }
+
+  exportWorkspace(): void {
+    this.workspace.exportWorkspace();
+  }
+
+  async onImportFile(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const result = await this.workspace.importWorkspace(file);
+    if (result.ok) {
+      this.toasts.show(this.translate.instant('settings.workspaceImported'), 'success');
+    } else {
+      this.toasts.show(result.error ?? 'Import failed.', 'danger');
+    }
+    (event.target as HTMLInputElement).value = '';
   }
 
   tokenAgeDays(savedAt: string | null): number | null {

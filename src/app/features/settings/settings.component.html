@@ -662,6 +662,27 @@
   }
 </div>
 
+<!-- ── Workspace backup ───────────────────────────────────────────────────── -->
+<div class="card mt-3">
+  <h2 class="section-title">{{ 'settings.workspace' | translate }}</h2>
+  <p class="text-muted text-sm">{{ 'settings.workspaceSubtitle' | translate }}</p>
+  <div class="settings-actions mt-2">
+    <button class="btn btn-sm" (click)="exportWorkspace()">
+      {{ 'settings.workspaceExport' | translate }}
+    </button>
+    <button class="btn btn-sm" (click)="importInput.click()">
+      {{ 'settings.workspaceImport' | translate }}
+    </button>
+    <input
+      #importInput
+      type="file"
+      accept=".json"
+      style="display: none"
+      (change)="onImportFile($event)"
+    />
+  </div>
+</div>
+
 <!-- ── Danger zone ─────────────────────────────────────────────────────────── -->
 <div class="danger-zone card mt-3">
   <h2 class="section-title">{{ 'settings.dangerZone' | translate }}</h2>

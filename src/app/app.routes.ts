@@ -71,5 +71,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/audit-log/audit-log.component').then((m) => m.AuditLogComponent),
   },
+  {
+    path: 'pull-requests',
+    canActivate: [requireTokensGuard],
+    loadComponent: () =>
+      import('./features/pull-requests/pull-requests.component').then(
+        (m) => m.PullRequestsComponent,
+      ),
+  },
   { path: '**', redirectTo: 'onboarding' },
 ];
