@@ -34,44 +34,77 @@ This file gives Claude Code full context on Central Data Manager so it can be pr
 
 | Path | Component | Guard |
 |---|---|---|
-| `/` | redirect → `/onboarding` or `/dashboard` | `onboardingGuard` |
-| `/onboarding` | `OnboardingComponent` | none |
-| `/dashboard` | `DashboardComponent` | `tokenGuard` |
-| `/github-actions` | `GithubActionsComponent` | `tokenGuard` |
-| `/chain-builder` | `ChainBuilderComponent` | `tokenGuard` |
-| `/chain-orchestrator` | `ChainOrchestratorComponent` | `tokenGuard` |
-| `/devops-boards` | `DevopsBoardsComponent` | `tokenGuard` |
-| `/blockers` | `BlockersComponent` | `tokenGuard` |
-| `/releases` | `ReleasesComponent` | `tokenGuard` |
-| `/settings` | `SettingsComponent` | none |
+| `/` | redirect → `/onboarding` | none |
+| `/onboarding` | `OnboardingComponent` | `skipIfTokensGuard` |
+| `/dashboard` | `DashboardComponent` | `requireTokensGuard` |
+| `/github-actions` | `GithubActionsComponent` | `requireTokensGuard` |
+| `/chain-builder` | `ChainBuilderComponent` | `requireTokensGuard` |
+| `/chain-orchestrator` | `ChainOrchestratorComponent` | `requireTokensGuard` |
+| `/devops-boards` | `DevopsBoardsComponent` | `requireTokensGuard` |
+| `/blockers` | `BlockersComponent` | `requireTokensGuard` |
+| `/releases` | `ReleasesComponent` | `requireTokensGuard` |
+| `/settings` | `SettingsComponent` | `requireTokensGuard` |
+| `/audit-log` | `AuditLogComponent` | `requireTokensGuard` |
+| `/pull-requests` | `PullRequestsComponent` | `requireTokensGuard` |
+| `**` | redirect → `/onboarding` | none |
 
-`tokenGuard` — inline function in `app.routes.ts`, redirects to `/onboarding` if no token is configured for any provider.
+Guards are defined in `src/app/core/guards/onboarding.guard.ts`:
+- `skipIfTokensGuard` — redirects to `/dashboard` if any token is already configured
+- `requireTokensGuard` — redirects to `/onboarding` if no token is configured for any provider
 
 ---
 
 ## Core services
 
 ### `TokenService` (`src/app/core/services/token.service.ts`)
-Single source of truth for all tokens and provider selection. Uses Signals. Reads/writes to sessionStorage (or localStorage when `persist()` is true).
+Single source of truth for all tokens and provider selection. Uses Signals. Reads/writes to sessionStorage (or localStorage when `persist()` is true). `savedAt` timestamps are always in `localStorage` (non-sensitive metadata).
 
-Key signals: `hasGitHub`, `hasDevOps`, `hasGitLab`, `hasJira`, `activeCiProvider`, `activeBoardsProvider`, `persist`, `githubOwner`, `devopsOrg`, `devopsProject`, `devopsTeam`, `gitlabBaseUrl`, `jiraEmail`, `jiraBaseUrl`, `jiraProject`.
+Key signals: `hasGitHub`, `hasDevOps`, `hasGitLab`, `hasJira`, `hasAnyToken`, `activeCiProvider`, `activeBoardsProvider`, `persist`, `githubOwner`, `devopsOrg`, `devopsProject`, `devopsTeam`, `gitlabBaseUrl`, `jiraEmail`, `jiraBaseUrl`, `jiraProject`, `githubSavedAt`, `devopsSavedAt`, `gitlabSavedAt`, `jiraSavedAt`.
 
-Storage keys: `cdm:github`, `cdm:github:owner`, `cdm:devops`, `cdm:devops:org`, `cdm:devops:project`, `cdm:devops:team`, `cdm:gitlab`, `cdm:gitlab:url`, `cdm:jira`, `cdm:jira:email`, `cdm:jira:url`, `cdm:jira:project`, `cdm:persist`, `cdm:ci:provider`, `cdm:boards:provider`.
+Storage keys (session/localStorage based on `persist`): `cdm:github`, `cdm:github:owner`, `cdm:devops`, `cdm:devops:org`, `cdm:devops:project`, `cdm:devops:team`, `cdm:gitlab`, `cdm:gitlab:url`, `cdm:jira`, `cdm:jira:email`, `cdm:jira:url`, `cdm:jira:project`, `cdm:active-provider`, `cdm:active-boards`.
+
+Always-localStorage keys: `cdm:persist`, `cdm:github:saved_at`, `cdm:devops:saved_at`, `cdm:gitlab:saved_at`, `cdm:jira:saved_at`.
+
+SessionStorage-only key: `cdm:expiry` (session expiry timestamp).
 
 ### `AppSettingsService` (`src/app/core/services/app-settings.service.ts`)
-Polling and timeout settings. Signals: `pollIntervalSec` (default 10), `maxPolls` (default 60), `sessionTimeoutHours` (default 8). Storage keys: `cdm:poll_interval`, `cdm:max_polls`, `cdm:session_timeout_h`.
+Polling, timeout, notification, and webhook settings. All stored in `localStorage`.
+
+Signals: `pollIntervalSec` (default 6), `maxPolls` (default 120), `sessionTimeoutHours` (default 8), `notificationsEnabled` (default true), `webhookUrl` (default ''), `webhookEnabled` (default false).
+
+Storage keys: `cdm:poll_interval_s`, `cdm:max_polls`, `cdm:session_timeout_h`, `cdm:notifications`, `cdm:webhook_url`, `cdm:webhook_enabled`.
+
+Methods: `save(intervalSec, maxPolls)`, `saveTimeoutHours(h)`, `saveNotifications(enabled)`, `saveWebhook(url, enabled)`.
+
+### `AppConfigService` (`src/app/core/services/app-config.service.ts`)
+Operator-level feature flags loaded from `/config.json` at startup via `APP_INITIALIZER`. Falls back silently to defaults if the file is missing.
+
+Computed signals: `allowPersistentStorage` (default true), `tokenMaxAgeDays` (default 90).
+
+Method: `load(): Promise<void>` — called once at app init.
+
+### `ThemeService` (`src/app/core/services/theme.service.ts`)
+Manages light/dark theme. Applies `html.light` class synchronously in constructor (prevents FOUC), then reactively via `effect()`.
+
+Signal: `theme` (`'dark' | 'light'`, default `'dark'`). Storage key: `cdm:theme` (always localStorage).
+
+Method: `toggle()`.
 
 ### `AuditLogService` (`src/app/core/services/audit-log.service.ts`)
-Persistent audit trail in `localStorage` key `cdm:audit_log`, max 500 entries (FIFO). Signal: `entries`. Methods: `log(action, detail?)`, `clear()`. Called from: SettingsComponent (token events), ChainExecutorService, OrchestratorExecutorService, SessionTimeoutService.
+Persistent audit trail in `localStorage` key `cdm:audit_log`, max 500 entries (FIFO). On each `log()` call, also fires a fire-and-forget `fetch()` POST to the configured webhook endpoint (if set and enabled).
+
+Signal: `entries`. Methods: `log(action, detail?)`, `clear()`.
+
+Called from: SettingsComponent (token events), ChainExecutorService, OrchestratorExecutorService, SessionTimeoutService, WorkspaceService.
 
 ### `SessionTimeoutService` (`src/app/core/services/session-timeout.service.ts`)
 Inactivity timeout — only active in session-only mode (`!tokens.persist()`). Tracks activity via `click`, `keydown`, `mousemove`, `touchstart` events, throttled writes to `sessionStorage` key `cdm:last_activity` (every 30 s). Polls every 60 s. When expired: calls `tokens.clearAll()`, sets `expired` signal to `true`. Signal: `expired`. Methods: `init()` (called in `App` constructor), `dismiss()`.
 
 ### `GitHubApiService` (`src/app/core/services/github-api.service.ts`)
-Direct calls to `https://api.github.com`. Auth: `Authorization: Bearer <token>`. Methods: `getAuthenticatedUser`, `listRepos`, `listOrgs`, `listWorkflows`, `listRuns`, `triggerWorkflow`, `rerunWorkflow`, `cancelRun`, `listTags`, `deleteRepoCaches`, `getRepo`, `compareCommits`.
+Direct calls to `https://api.github.com`. Auth: `Authorization: Bearer <token>`. Methods: `getAuthenticatedUser`, `listRepos`, `listOrgs`, `listWorkflows`, `listRuns`, `triggerWorkflow`, `rerunWorkflow`, `cancelRun`, `listTags`, `deleteRepoCaches`, `getRepo`, `compareCommits`, `listPullRequests`.
 
 ### `GitLabApiService` (`src/app/core/services/gitlab-api.service.ts`)
-Direct calls to configured base URL (default `https://gitlab.com`). Auth: `PRIVATE-TOKEN` header. Methods: `listProjects`, `listPipelines`, `triggerPipeline`, `getPipeline`, `retryPipeline`, `cancelPipeline`, `listTags`.
+Direct calls to configured base URL (default `https://gitlab.com`). Auth: `PRIVATE-TOKEN` header. Methods: `listProjects`, `listPipelines`, `triggerPipeline`, `getPipeline`, `retryPipeline`, `cancelPipeline`, `listTags`, `listMergeRequests`.
 
 ### `DevOpsApiService` (`src/app/core/services/devops-api.service.ts`)
 Direct calls to `https://dev.azure.com` and `https://vsrm.dev.azure.com`. Auth: Basic with base64 `:PAT`. Methods: `listProjects`, `listTeams`, `getWorkItems`, `updateWorkItemState`, `getIterations`, `getIterationWorkItems`, `listBoards`.
@@ -100,11 +133,16 @@ Runs a graph: resolves DAG with `Promise.all` per node, respects `node.disabledS
 ### `ReleaseService` (`src/app/core/services/release.service.ts`)
 Persists release tracking rows to localStorage. Key: `cdm:releases`.
 
+### `WorkspaceService` (`src/app/core/services/workspace.service.ts`)
+Exports and imports the full workspace (chains, graphs, releases, settings) as a JSON file. Tokens are never exported.
+
+Methods: `exportWorkspace()` — triggers a browser download; `importWorkspace(file: File): Promise<{ok, error?}>` — parses and restores all data via the relevant services.
+
 ### `ToastService` (`src/app/shared/services/toast.service.ts`)
 In-app toast notifications and confirm dialogs.
 
 ### `NotificationService` (`src/app/core/services/notification.service.ts`)
-Browser Notification API for chain/step completion.
+Browser Notification API for chain/step completion. Checks `AppSettingsService.notificationsEnabled()` before showing — returns silently if disabled. Methods: `requestPermission()`, `show(title, body)`.
 
 ---
 
@@ -163,6 +201,8 @@ type NodeRunStatus = 'idle' | 'running' | 'success' | 'failure' | 'skipped'
 | Boards | `src/app/features/devops-boards/` |
 | Blockers Map | `src/app/features/blockers/` |
 | Releases | `src/app/features/releases/` |
+| Pull Requests | `src/app/features/pull-requests/` |
+| Audit Log | `src/app/features/audit-log/` |
 | Settings | `src/app/features/settings/` |
 | Sprint widget | `src/app/shared/components/sprint-widget/` |
 | Work item panel | `src/app/shared/components/work-item-panel/` |
@@ -172,15 +212,17 @@ type NodeRunStatus = 'idle' | 'running' | 'success' | 'failure' | 'skipped'
 
 ## Styling conventions
 
-- Global CSS variables defined in `src/styles.scss`: `--surface-0/1/2`, `--border`, `--text`, `--text-muted`, `--accent`, `--success`, `--danger`, `--radius`
+- Global CSS variables defined in `src/styles.scss`: `--surface-0/1/2`, `--border`, `--text`, `--text-muted`, `--accent`, `--success`, `--danger`, `--warning`, `--radius`, `--btn-primary-text`, `--surface-hover`
 - Utility classes: `.card`, `.btn`, `.btn-sm`, `.btn-primary`, `.btn-danger`, `.btn-outline`, `.form-control`, `.form-group`, `.form-label`, `.text-muted`, `.text-sm`, `.mt-1/2/3`, `.flex-between`, `.spinner`, `.page-header`
-- Dark theme only
+- Dark theme by default; light theme applied via `html.light` CSS class (toggled by `ThemeService`)
+- `ThemeService` persists choice to `localStorage` key `cdm:theme` and applies class immediately in constructor to prevent FOUC
+- Toggle button in the sidebar (☀/🌙)
 
 ---
 
 ## i18n
 
-All user-facing strings go through `@ngx-translate`. Keys are namespaced: `nav.*`, `settings.*`, `security.*`, `builder.*`, `orch.*`, `boards.*`, `releases.*`, `blockers.*`, `health.*`, `notif.*`, `onboarding.*`, `dashboard.*`, `sprint.*`, `panel.*`, `actions.*`. Both `en.json` and `pt.json` must be kept in sync.
+All user-facing strings go through `@ngx-translate`. Keys are namespaced: `nav.*`, `settings.*`, `security.*`, `builder.*`, `orch.*`, `boards.*`, `releases.*`, `blockers.*`, `health.*`, `notif.*`, `onboarding.*`, `dashboard.*`, `sprint.*`, `panel.*`, `actions.*`, `audit.*`, `prs.*`, `lang.*`. Both `en.json` and `pt.json` must be kept in sync.
 
 ---
 
@@ -188,7 +230,9 @@ All user-facing strings go through `@ngx-translate`. Keys are namespaced: `nav.*
 
 - All tokens stored in browser only (`sessionStorage` default, `localStorage` opt-in)
 - Session inactivity timeout clears tokens and shows a modal (`SessionTimeoutService`)
-- Audit log in `localStorage` key `cdm:audit_log` (max 500 entries)
+- Audit log in `localStorage` key `cdm:audit_log` (max 500 entries); optionally forwarded to a webhook
+- PAT age tracking: `savedAt` timestamps stored in localStorage; `AppConfigService.tokenMaxAgeDays` configures the warning threshold (default 90 d)
+- Operator config via `/config.json`: `allowPersistentStorage` and `tokenMaxAgeDays` flags loaded at startup; `allowPersistentStorage: false` hides the persistent storage option in Settings
 - CSP enforced via `nginx.conf`: `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'`
 - No token ever leaves the browser except in `Authorization` headers to the provider APIs
 
@@ -216,8 +260,5 @@ All user-facing strings go through `@ngx-translate`. Keys are namespaced: `nav.*
 
 These are tracked in `README.md` under "Future work" and are the planned next items:
 
-1. **Centralised audit log export** — webhook/HTTP endpoint to forward audit entries to a SIEM
-2. **SSO / SAML / OIDC** — identity provider integration so PATs can be injected automatically
-3. **RBAC** — operator config to restrict destructive actions (trigger, cancel, board moves) by role
-4. **PAT expiry enforcement** — warnings based on API responses + configurable max token age
-5. **Persistent storage lockout** — build-time or `config.json` flag `allowPersistentStorage: false`
+1. **SSO / SAML / OIDC** — identity provider integration so PATs can be injected automatically
+2. **RBAC** — operator config to restrict destructive actions (trigger, cancel, board moves) by role

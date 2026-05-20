@@ -4,13 +4,14 @@ A client-side dashboard for managing CI/CD pipelines, work boards, releases and 
 
 ## Supported integrations
 
-| Category          | Providers                              |
-| ----------------- | -------------------------------------- |
-| CI/CD & Pipelines | GitHub Actions, GitLab CI              |
-| Work Boards       | Azure DevOps, Jira                     |
-| Releases          | GitHub, GitLab                         |
-| Chain Builder     | GitHub Actions, GitLab CI              |
-| Chain Orchestrator| GitHub Actions, GitLab CI              |
+| Category           | Providers                   |
+| ------------------ | --------------------------- |
+| CI/CD & Pipelines  | GitHub Actions, GitLab CI   |
+| Work Boards        | Azure DevOps, Jira          |
+| Releases           | GitHub, GitLab              |
+| Pull Requests      | GitHub, GitLab              |
+| Chain Builder      | GitHub Actions, GitLab CI   |
+| Chain Orchestrator | GitHub Actions, GitLab CI   |
 
 ---
 
@@ -82,10 +83,19 @@ Go to **Settings → Boards Provider** to switch between Azure DevOps and Jira. 
 ## Features
 
 ### Dashboard
-Overview of recent pipeline runs and the current sprint work items from the configured boards provider.
+Overview of recent pipeline runs and the current sprint work items from the configured boards provider. Includes:
+- **Token health bar** — shows how long ago each provider token was saved, with a warning when approaching the configured maximum age
+- **Recent activity** — last 5 audit log entries and a shortcut to the most recent chain run
 
 ### Pipelines
 Browse repositories and workflows, inspect run history, re-run or cancel jobs, and open runs directly in GitHub or GitLab. Includes a **Pipeline Health** tab with success rate, average duration and a trend sparkline for each workflow.
+
+### Pull Requests
+Browse open and closed pull requests (GitHub) and merge requests (GitLab) per repository.
+
+- Filter by state: Open / Closed / All
+- Client-side filter by author and label (no additional API calls)
+- Direct links to each PR/MR on the provider
 
 ### Chain Builder
 Define ordered sequences of pipelines across multiple repositories and trigger them with a single click.
@@ -131,12 +141,51 @@ Visual dependency graph showing which work items are blocking others and their t
 - Filter by type, state and whether an item blocks others
 - Supports Azure DevOps and Jira
 
+### Audit Log
+Dedicated page for reviewing and exporting the in-browser audit trail.
+
+- Filter by event category (tokens, chains, graphs, session, settings)
+- Full-text search across entries
+- Export as CSV
+- Clear log with confirmation
+
+---
+
+## Settings
+
+### Integrations
+Configure tokens for GitHub, GitLab, Azure DevOps and Jira. Each provider shows connection status, the owner/org, and how long ago the token was saved.
+
+### CI / Boards Provider
+Switch the active provider for pipelines and boards independently.
+
+### Token Storage
+Session-only mode (default) clears tokens when the browser closes or after inactivity. Opt-in persistent storage saves tokens to `localStorage` — requires explicit acceptance of the security risk. Persistent storage can be disabled at the operator level via `config.json`.
+
+### Chain Execution
+Configure the polling interval (default 6 s) and maximum polls per step (default 120) used when monitoring pipeline runs.
+
+### Session Timeout
+Configurable inactivity limit in session-only mode (default 8 h, range 1–24 h).
+
+### Browser Notifications
+Toggle desktop notifications for chain step completion. Includes a browser permission request flow.
+
+### Audit Webhook
+Forward every audit log entry as a JSON POST to a custom HTTP endpoint (SIEM, Slack, n8n, Zapier, etc.). The endpoint must accept CORS POST requests. Includes a test button to verify connectivity.
+
+### Workspace Backup
+Export all chains, graphs, releases and settings to a single JSON file. Import a previously exported workspace. Tokens are never included in the export.
+
 ---
 
 ## Security features
 
 ### Session inactivity timeout
-In session-only mode the app automatically clears all tokens after a configurable period of inactivity (default 8 h, adjustable in **Settings → Chain Execution**). A modal overlay appears when the session expires — no automatic redirect.
+In session-only mode the app automatically clears all tokens after a configurable period of inactivity (default 8 h). A modal overlay appears when the session expires — no automatic redirect.
+
+### PAT age warnings
+The dashboard shows how long ago each provider token was last saved. When the age exceeds the operator-configured threshold (`tokenMaxAgeDays`, default 90 d), the indicator turns red as a rotation reminder.
 
 ### Audit log
 Key actions are logged to the browser's `localStorage` (up to 500 entries, FIFO):
@@ -144,8 +193,24 @@ Key actions are logged to the browser's `localStorage` (up to 500 entries, FIFO)
 - Chain and graph run start and result
 - Session expiry events
 - Execution settings changes
+- Workspace export / import
 
-The log is visible and clearable in **Settings → Audit Log**.
+The log is visible in **Audit Log** and clearable there or in **Settings**.
+
+### Audit webhook
+Each audit entry can optionally be forwarded to an HTTP endpoint configured in Settings. The browser POSTs directly to the endpoint — no intermediate server. Failed posts are silently ignored to keep the audit log functional.
+
+### Operator config (`public/config.json`)
+Served alongside the app at runtime. Supports two flags:
+
+```json
+{
+  "allowPersistentStorage": false,
+  "tokenMaxAgeDays": 60
+}
+```
+
+If the file is absent, defaults apply (`allowPersistentStorage: true`, `tokenMaxAgeDays: 90`).
 
 ### Content Security Policy
 The provided `nginx.conf` enforces a strict CSP:
@@ -154,6 +219,12 @@ The provided `nginx.conf` enforces a strict CSP:
 - `object-src 'none'`
 - `base-uri 'self'`
 - `frame-ancestors 'none'`
+
+---
+
+## Light / Dark theme
+
+Toggle between light and dark themes using the ☀/🌙 button in the sidebar. The preference is saved to `localStorage` and applied immediately on next load (no flash of unstyled content).
 
 ---
 
@@ -203,6 +274,19 @@ Point the platform at the `dist/Central-Data-Manager/browser/` output folder. Fo
 { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
 ```
 
+### Operator config
+
+Place a `config.json` file at the root of the served directory to override defaults:
+
+```json
+{
+  "allowPersistentStorage": false,
+  "tokenMaxAgeDays": 60
+}
+```
+
+The app fetches this file at startup and falls back to defaults if it is absent or invalid.
+
 ### HTTPS
 
 Always serve over HTTPS in production. Tokens are stored in the browser and must not travel over plain HTTP.
@@ -217,22 +301,13 @@ See [SECURITY.md](SECURITY.md) for the full security model, token storage detail
 
 ## Future work (enterprise readiness)
 
-The following items are identified gaps for formal enterprise or compliance deployments. They are tracked here as future work.
-
-### Centralised audit log export
-The current audit log lives in the user's browser (`localStorage`). For SOC 2 / ISO 27001 compliance, events should be forwarded to a SIEM or a configurable HTTP endpoint. Planned: an optional audit webhook setting that POSTs each entry to a URL defined by the operator.
+The following items are identified gaps for formal enterprise or compliance deployments.
 
 ### SSO / SAML / OIDC integration
 The app has no centralised authentication — each user manages their own PATs. Enterprise deployments should be placed behind an identity provider (Azure AD, Okta, etc.). A future reverse-proxy auth layer or OIDC callback page would allow session tokens to be injected automatically, removing the need for manual PAT entry.
 
 ### Role-based access control (RBAC)
-There is currently no distinction between read-only and write users. Anyone with access to the URL can trigger pipelines and modify boards. Planned: an operator-level config (injected at build time or via a `config.json`) that can restrict destructive actions (trigger, cancel, board moves) to specific users or groups.
-
-### PAT expiry enforcement
-The app does not track when tokens expire or enforce a rotation policy. Planned: token expiry warnings based on GitHub / GitLab API responses, and a configurable maximum token age that forces re-entry.
-
-### Persistent storage lockout for shared devices
-The opt-in persistent storage mode can be disabled at the operator level to prevent tokens from surviving browser restarts on shared devices. Planned: a build-time or `config.json` flag `allowPersistentStorage: false` that hides the option in Settings.
+There is currently no distinction between read-only and write users. Anyone with access to the URL can trigger pipelines and modify boards. Planned: an operator-level config that can restrict destructive actions (trigger, cancel, board moves) to specific users or groups.
 
 ---
 
