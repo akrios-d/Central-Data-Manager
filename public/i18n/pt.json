@@ -310,6 +310,32 @@
     "onlyBlockers": "Apenas itens que bloqueiam outros",
     "clearFilters": "Limpar"
   },
+  "onboarding": {
+    "title": "Bem-vindo ao CDM",
+    "subtitle": "Liga pelo menos uma integração para começar.",
+    "github": "GitHub",
+    "githubDesc": "Pipelines CI/CD e repositórios",
+    "gitlab": "GitLab",
+    "gitlabDesc": "Pipelines CI/CD e repositórios",
+    "devops": "Azure DevOps",
+    "devopsDesc": "Boards e itens de trabalho",
+    "jira": "Jira",
+    "jiraDesc": "Boards e gestão de sprints",
+    "save": "Guardar",
+    "enter": "Começar →",
+    "connected": "Ligado",
+    "ownerLabel": "Utilizador / Organização",
+    "tokenLabel": "Personal Access Token",
+    "orgLabel": "Organização",
+    "patLabel": "PAT",
+    "gitlabUrlLabel": "URL GitLab",
+    "jiraUrlLabel": "URL Jira",
+    "jiraEmailLabel": "Email",
+    "savedGitHub": "GitHub ligado.",
+    "savedGitLab": "GitLab ligado.",
+    "savedDevOps": "Azure DevOps ligado.",
+    "savedJira": "Jira ligado."
+  },
   "lang": {
     "en": "EN",
     "pt": "PT"

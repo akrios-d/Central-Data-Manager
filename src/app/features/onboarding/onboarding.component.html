@@ -1,0 +1,195 @@
+<div class="onboarding-page">
+  <div class="onboarding-box">
+    <div class="ob-brand">
+      <span class="ob-icon">⬡</span>
+      <span>CDM</span>
+    </div>
+
+    <h1 class="ob-title">{{ 'onboarding.title' | translate }}</h1>
+    <p class="ob-subtitle">{{ 'onboarding.subtitle' | translate }}</p>
+
+    <div class="provider-list">
+      <!-- GitHub -->
+      <div
+        class="provider-card"
+        [class.connected]="hasGitHub()"
+        [class.open]="expanded() === 'github'"
+      >
+        <button class="provider-header" (click)="toggle('github')" type="button">
+          <span class="provider-icon">🐙</span>
+          <span class="provider-info">
+            <span class="provider-name">{{ 'onboarding.github' | translate }}</span>
+            <span class="provider-desc">{{ 'onboarding.githubDesc' | translate }}</span>
+          </span>
+          @if (hasGitHub()) {
+            <span class="badge-connected">✓ {{ 'onboarding.connected' | translate }}</span>
+          } @else {
+            <span class="chevron">{{ expanded() === 'github' ? '▲' : '▼' }}</span>
+          }
+        </button>
+        @if (expanded() === 'github') {
+          <div class="provider-form">
+            <label class="form-label">{{ 'onboarding.ownerLabel' | translate }}</label>
+            <input
+              class="form-control"
+              [placeholder]="'settings.orgPlaceholder' | translate"
+              [value]="ghOwner()"
+              (input)="ghOwner.set($any($event.target).value)"
+            />
+            <label class="form-label">{{ 'onboarding.tokenLabel' | translate }}</label>
+            <input
+              class="form-control"
+              type="password"
+              placeholder="ghp_..."
+              [value]="ghToken()"
+              (input)="ghToken.set($any($event.target).value)"
+            />
+            <button class="btn btn-primary" [disabled]="!canSaveGitHub()" (click)="saveGitHub()">
+              {{ 'onboarding.save' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- GitLab -->
+      <div
+        class="provider-card"
+        [class.connected]="hasGitLab()"
+        [class.open]="expanded() === 'gitlab'"
+      >
+        <button class="provider-header" (click)="toggle('gitlab')" type="button">
+          <span class="provider-icon">🦊</span>
+          <span class="provider-info">
+            <span class="provider-name">{{ 'onboarding.gitlab' | translate }}</span>
+            <span class="provider-desc">{{ 'onboarding.gitlabDesc' | translate }}</span>
+          </span>
+          @if (hasGitLab()) {
+            <span class="badge-connected">✓ {{ 'onboarding.connected' | translate }}</span>
+          } @else {
+            <span class="chevron">{{ expanded() === 'gitlab' ? '▲' : '▼' }}</span>
+          }
+        </button>
+        @if (expanded() === 'gitlab') {
+          <div class="provider-form">
+            <label class="form-label">{{ 'onboarding.gitlabUrlLabel' | translate }}</label>
+            <input
+              class="form-control"
+              placeholder="https://gitlab.com"
+              [value]="glUrl()"
+              (input)="glUrl.set($any($event.target).value)"
+            />
+            <label class="form-label">{{ 'onboarding.tokenLabel' | translate }}</label>
+            <input
+              class="form-control"
+              type="password"
+              placeholder="glpat-..."
+              [value]="glToken()"
+              (input)="glToken.set($any($event.target).value)"
+            />
+            <button class="btn btn-primary" [disabled]="!canSaveGitLab()" (click)="saveGitLab()">
+              {{ 'onboarding.save' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Azure DevOps -->
+      <div
+        class="provider-card"
+        [class.connected]="hasDevOps()"
+        [class.open]="expanded() === 'devops'"
+      >
+        <button class="provider-header" (click)="toggle('devops')" type="button">
+          <span class="provider-icon">☁</span>
+          <span class="provider-info">
+            <span class="provider-name">{{ 'onboarding.devops' | translate }}</span>
+            <span class="provider-desc">{{ 'onboarding.devopsDesc' | translate }}</span>
+          </span>
+          @if (hasDevOps()) {
+            <span class="badge-connected">✓ {{ 'onboarding.connected' | translate }}</span>
+          } @else {
+            <span class="chevron">{{ expanded() === 'devops' ? '▲' : '▼' }}</span>
+          }
+        </button>
+        @if (expanded() === 'devops') {
+          <div class="provider-form">
+            <label class="form-label">{{ 'onboarding.orgLabel' | translate }}</label>
+            <input
+              class="form-control"
+              [placeholder]="'settings.companyPlaceholder' | translate"
+              [value]="adoOrg()"
+              (input)="adoOrg.set($any($event.target).value)"
+            />
+            <label class="form-label">{{ 'onboarding.patLabel' | translate }}</label>
+            <input
+              class="form-control"
+              type="password"
+              [placeholder]="'settings.patPlaceholder' | translate"
+              [value]="adoToken()"
+              (input)="adoToken.set($any($event.target).value)"
+            />
+            <button class="btn btn-primary" [disabled]="!canSaveDevOps()" (click)="saveDevOps()">
+              {{ 'onboarding.save' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Jira -->
+      <div class="provider-card" [class.connected]="hasJira()" [class.open]="expanded() === 'jira'">
+        <button class="provider-header" (click)="toggle('jira')" type="button">
+          <span class="provider-icon">🔷</span>
+          <span class="provider-info">
+            <span class="provider-name">{{ 'onboarding.jira' | translate }}</span>
+            <span class="provider-desc">{{ 'onboarding.jiraDesc' | translate }}</span>
+          </span>
+          @if (hasJira()) {
+            <span class="badge-connected">✓ {{ 'onboarding.connected' | translate }}</span>
+          } @else {
+            <span class="chevron">{{ expanded() === 'jira' ? '▲' : '▼' }}</span>
+          }
+        </button>
+        @if (expanded() === 'jira') {
+          <div class="provider-form">
+            <label class="form-label">{{ 'onboarding.jiraUrlLabel' | translate }}</label>
+            <input
+              class="form-control"
+              placeholder="https://your-domain.atlassian.net"
+              [value]="jiraUrl()"
+              (input)="jiraUrl.set($any($event.target).value)"
+            />
+            <label class="form-label">{{ 'onboarding.jiraEmailLabel' | translate }}</label>
+            <input
+              class="form-control"
+              type="email"
+              placeholder="you@example.com"
+              [value]="jiraEmail()"
+              (input)="jiraEmail.set($any($event.target).value)"
+            />
+            <label class="form-label">{{ 'onboarding.tokenLabel' | translate }}</label>
+            <input
+              class="form-control"
+              type="password"
+              [placeholder]="'settings.jiraTokenHint' | translate"
+              [value]="jiraToken()"
+              (input)="jiraToken.set($any($event.target).value)"
+            />
+            <button class="btn btn-primary" [disabled]="!canSaveJira()" (click)="saveJira()">
+              {{ 'onboarding.save' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="ob-footer">
+      <div class="lang-switcher">
+        <button [class.active]="currentLang() === 'en'" (click)="setLang('en')">EN</button>
+        <button [class.active]="currentLang() === 'pt'" (click)="setLang('pt')">PT</button>
+      </div>
+      <button class="btn btn-primary ob-enter" [disabled]="!hasAny()" (click)="enter()">
+        {{ 'onboarding.enter' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
