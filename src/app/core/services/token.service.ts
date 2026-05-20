@@ -11,6 +11,7 @@ const GITLAB_URL_KEY         = 'cdm:gitlab:url';
 const JIRA_KEY               = 'cdm:jira';
 const JIRA_EMAIL_KEY         = 'cdm:jira:email';
 const JIRA_URL_KEY           = 'cdm:jira:url';
+const JIRA_PROJECT_KEY       = 'cdm:jira:project';
 const ACTIVE_PROVIDER_KEY    = 'cdm:active-provider';
 const ACTIVE_BOARDS_KEY      = 'cdm:active-boards';
 const TOKEN_EXPIRY_KEY       = 'cdm:expiry';
@@ -22,7 +23,7 @@ const ALL_TOKEN_KEYS = [
   GITHUB_KEY, DEVOPS_KEY, DEVOPS_ORG_KEY,
   DEVOPS_PROJECT_KEY, DEVOPS_TEAM_KEY, GITHUB_OWNER_KEY,
   GITLAB_KEY, GITLAB_URL_KEY,
-  JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY,
+  JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY, JIRA_PROJECT_KEY,
   ACTIVE_PROVIDER_KEY, ACTIVE_BOARDS_KEY,
 ];
 
@@ -58,6 +59,7 @@ export class TokenService {
   private readonly _jiraToken      = signal<string | null>(initRead(JIRA_KEY));
   private readonly _jiraEmail      = signal<string | null>(initRead(JIRA_EMAIL_KEY));
   private readonly _jiraBaseUrl    = signal<string | null>(initRead(JIRA_URL_KEY));
+  private readonly _jiraProject    = signal<string | null>(initRead(JIRA_PROJECT_KEY));
   private readonly _activeProvider = signal<'github' | 'gitlab'>(
     (initRead(ACTIVE_PROVIDER_KEY) as 'github' | 'gitlab') ?? (initRead(GITHUB_KEY) ? 'github' : 'gitlab')
   );
@@ -80,6 +82,7 @@ export class TokenService {
   readonly jiraToken            = this._jiraToken.asReadonly();
   readonly jiraEmail            = this._jiraEmail.asReadonly();
   readonly jiraBaseUrl          = this._jiraBaseUrl.asReadonly();
+  readonly jiraProject          = this._jiraProject.asReadonly();
   readonly persist              = this._persist.asReadonly();
 
   readonly hasGitHub   = computed(() => !!this._githubToken());
@@ -191,11 +194,17 @@ export class TokenService {
     this.refreshSession();
   }
 
+  updateJiraProject(project: string): void {
+    this.store.setItem(JIRA_PROJECT_KEY, project);
+    this._jiraProject.set(project);
+  }
+
   clearJira(): void {
-    [JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY].forEach(k => this.store.removeItem(k));
+    [JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY, JIRA_PROJECT_KEY].forEach(k => this.store.removeItem(k));
     this._jiraToken.set(null);
     this._jiraEmail.set(null);
     this._jiraBaseUrl.set(null);
+    this._jiraProject.set(null);
   }
 
   setActiveBoardsProvider(p: 'devops' | 'jira'): void {

@@ -1,15 +1,12 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { from, forkJoin, switchMap, mergeMap, toArray } from 'rxjs';
-import { DevOpsApiService, DevOpsProject, DevOpsWorkItem } from '../../core/services/devops-api.service';
+import { BoardsProviderService } from '../../core/services/boards-provider.service';
+import { BoardProject, BoardWorkItem } from '../../core/interfaces/boards-provider.interface';
 import { ToastService } from '../../shared/services/toast.service';
 import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
 
-const PREFERRED_STATES = ['New', 'Active', 'Resolved', 'Closed'];
-const TYPE_OPTIONS = ['Epic', 'Feature', 'User Story', 'Product Backlog Item', 'Task', 'Bug', 'Issue', 'Test Case'];
-
-interface Column { state: string; items: DevOpsWorkItem[]; }
+interface Column { state: string; items: BoardWorkItem[]; }
 interface ColumnConfig { state: string; visible: boolean; }
 
 @Component({
@@ -19,28 +16,27 @@ interface ColumnConfig { state: string; visible: boolean; }
   styleUrl: './devops-boards.component.scss',
 })
 export class DevopsBoardsComponent implements OnInit {
-  private readonly ado       = inject(DevOpsApiService);
+  private readonly boards    = inject(BoardsProviderService);
   private readonly toasts    = inject(ToastService);
   private readonly translate = inject(TranslateService);
 
-  readonly typeOptions = TYPE_OPTIONS;
-
-  projects        = signal<DevOpsProject[]>([]);
+  projects        = signal<BoardProject[]>([]);
   selectedProject = signal<string | null>(null);
   columns         = signal<Column[]>([]);
   loading         = signal(true);
   boardLoading    = signal(false);
   boardReady      = signal(false);
   error           = signal<string | null>(null);
-  dragItem        = signal<DevOpsWorkItem | null>(null);
+  dragItem        = signal<BoardWorkItem | null>(null);
   dragOverState   = signal<string | null>(null);
-  saving          = signal<number | null>(null);
-  selectedItem    = signal<DevOpsWorkItem | null>(null);
+  saving          = signal<number | string | null>(null);
+  selectedItem    = signal<BoardWorkItem | null>(null);
 
   teamMembers          = signal<string[]>([]);
   showAssigneeDrop     = signal(false);
   columnConfigs        = signal<ColumnConfig[]>([]);
   showColManager       = signal(false);
+  availableTypes       = signal<string[]>([]);
 
   readonly assigneeSuggestions = computed(() => {
     const q = this.normalize(this.filterAssignee());
@@ -59,7 +55,6 @@ export class DevopsBoardsComponent implements OnInit {
       .filter((c): c is Column => !!c)
   );
 
-  // ── Filters ───────────────────────────────────────────────────────────────────
   filterTypes    = signal<Set<string>>(new Set());
   filterAssignee = signal('');
   filterSprint   = signal<'current' | 'all'>('all');
@@ -69,33 +64,23 @@ export class DevopsBoardsComponent implements OnInit {
   private wasDragging = false;
 
   ngOnInit(): void {
-    this.ado.listProjects().subscribe({
-      next: (res) => {
-        this.projects.set(res.value);
+    this.boards.listProjects().subscribe({
+      next: (ps) => {
+        this.projects.set(ps);
         this.loading.set(false);
-        if (res.value.length) {
-          this.selectedProject.set(res.value[0].name);
-          this.loadTeamMembers(res.value[0].name);
-          this.loadSavedColConfig(res.value[0].name);
+        if (ps.length) {
+          this.selectedProject.set(ps[0].id);
+          this.loadAssignees(ps[0].id);
+          this.loadSavedColConfig(ps[0].id);
         }
       },
       error: (e) => { this.error.set(e?.message); this.loading.set(false); },
     });
   }
 
-  loadTeamMembers(project: string): void {
-    this.ado.listTeams(project).pipe(
-      switchMap(teams => from(teams.value).pipe(
-        mergeMap(t => this.ado.listTeamMembers(project, t.id)),
-        toArray()
-      ))
-    ).subscribe({
-      next: (results) => {
-        const names = [...new Set(
-          results.flatMap(r => r.value.map(m => m.identity.displayName))
-        )].sort((a, b) => a.localeCompare(b));
-        this.teamMembers.set(names);
-      },
+  loadAssignees(projectId: string): void {
+    this.boards.listAssignees(projectId).subscribe({
+      next: (names) => this.teamMembers.set(names),
     });
   }
 
@@ -112,63 +97,30 @@ export class DevopsBoardsComponent implements OnInit {
   }
 
   loadBoard(): void {
-    const name = this.selectedProject();
-    if (!name) return;
+    const projectId = this.selectedProject();
+    if (!projectId) return;
     this.boardLoading.set(true);
     this.boardReady.set(false);
     this.columns.set([]);
 
-    const wiql = this.buildWiql(name);
-
-    this.ado.queryWorkItems(name, wiql).subscribe({
-      next: (res) => {
-        const ids = res.workItems?.slice(0, 500).map(w => w.id) ?? [];
-        if (!ids.length) { this.buildColumns([]); return; }
-        const batches: number[][] = [];
-        for (let i = 0; i < ids.length; i += 200) batches.push(ids.slice(i, i + 200));
-        forkJoin(batches.map(b => this.ado.listWorkItems(name, b))).subscribe({
-          next: (results) => { this.buildColumns(results.flatMap(r => r.value)); },
-          error: () => this.boardLoading.set(false),
-        });
-      },
+    this.boards.listWorkItems(projectId, {
+      sprint: this.filterSprint(),
+      types: [...this.filterTypes()],
+      assignee: this.filterAssignee(),
+      hiddenStates: this.columnConfigs().filter(c => !c.visible).map(c => c.state),
+    }).subscribe({
+      next: (items) => this.buildColumns(items),
       error: (e) => { this.error.set(e?.message); this.boardLoading.set(false); },
     });
-  }
-
-  private buildWiql(project: string): string {
-    const conditions: string[] = [`[System.TeamProject] = '${project}'`];
-
-    if (this.filterSprint() === 'current') {
-      conditions.push(`[System.IterationPath] = @CurrentIteration`);
-    }
-
-    const hiddenStates = this.columnConfigs().filter(c => !c.visible).map(c => c.state);
-    if (hiddenStates.length) {
-      const list = hiddenStates.map(s => `'${s}'`).join(', ');
-      conditions.push(`[System.State] NOT IN (${list})`);
-    }
-
-    const types = [...this.filterTypes()];
-    if (types.length) {
-      const list = types.map(t => `'${t}'`).join(', ');
-      conditions.push(`[System.WorkItemType] IN (${list})`);
-    }
-
-    const assignee = this.filterAssignee().trim();
-    if (assignee) {
-      conditions.push(`[System.AssignedTo] CONTAINS '${assignee}'`);
-    }
-
-    return `SELECT [System.Id] FROM WorkItems WHERE ${conditions.join(' AND ')} ORDER BY [System.ChangedDate] DESC`;
   }
 
   private get colConfigKey(): string {
     return `cdm_col_cfg_${this.selectedProject()}`;
   }
 
-  loadSavedColConfig(project: string): void {
+  loadSavedColConfig(projectId: string): void {
     try {
-      const key = `cdm_col_cfg_${project}`;
+      const key = `cdm_col_cfg_${projectId}`;
       const saved: ColumnConfig[] = JSON.parse(localStorage.getItem(key) ?? 'null');
       if (saved?.length) this.columnConfigs.set(saved);
       else this.columnConfigs.set([]);
@@ -182,7 +134,6 @@ export class DevopsBoardsComponent implements OnInit {
       const saved: ColumnConfig[] = JSON.parse(localStorage.getItem(this.colConfigKey) ?? 'null');
       if (!saved) return states.map(state => ({ state, visible: true }));
       const savedStates = new Set(saved.map(c => c.state));
-      // Keep ALL saved states (hidden ones weren't queried so they're absent from states)
       const newOnes = states.filter(s => !savedStates.has(s)).map(state => ({ state, visible: true }));
       return [...saved, ...newOnes];
     } catch {
@@ -194,27 +145,26 @@ export class DevopsBoardsComponent implements OnInit {
     localStorage.setItem(this.colConfigKey, JSON.stringify(this.columnConfigs()));
   }
 
-  private buildColumns(items: DevOpsWorkItem[]): void {
-    const allStates = [...new Set(items.map(i => i.fields['System.State']))];
+  private buildColumns(items: BoardWorkItem[]): void {
+    const preferred = ['New', 'Active', 'Resolved', 'Closed', 'To Do', 'In Progress', 'Done'];
+    const allStates = [...new Set(items.map(i => i.state))];
     const ordered = [
-      ...PREFERRED_STATES.filter(s => allStates.includes(s)),
-      ...allStates.filter(s => !PREFERRED_STATES.includes(s)),
+      ...preferred.filter(s => allStates.includes(s)),
+      ...allStates.filter(s => !preferred.includes(s)),
     ];
     this.columns.set(ordered.map(state => ({
       state,
-      items: items.filter(i => i.fields['System.State'] === state),
+      items: items.filter(i => i.state === state),
     })));
     this.columnConfigs.set(this.loadColConfig(ordered));
+    this.availableTypes.set([...new Set(items.map(i => i.type))].sort());
     this.boardLoading.set(false);
     this.boardReady.set(true);
   }
 
-  private rebucketItems(items: DevOpsWorkItem[]): void {
+  private rebucketItems(items: BoardWorkItem[]): void {
     this.columns.update(cols =>
-      cols.map(col => ({
-        ...col,
-        items: items.filter(i => i.fields['System.State'] === col.state),
-      }))
+      cols.map(col => ({ ...col, items: items.filter(i => i.state === col.state) }))
     );
   }
 
@@ -228,9 +178,7 @@ export class DevopsBoardsComponent implements OnInit {
     this.saveColConfig();
   }
 
-  onColDragStart(index: number): void {
-    this.dragColIndex.set(index);
-  }
+  onColDragStart(index: number): void { this.dragColIndex.set(index); }
 
   onColDragEnter(index: number): void {
     const from = this.dragColIndex();
@@ -244,10 +192,7 @@ export class DevopsBoardsComponent implements OnInit {
     this.dragColIndex.set(index);
   }
 
-  onColDragEnd(): void {
-    this.dragColIndex.set(null);
-    this.saveColConfig();
-  }
+  onColDragEnd(): void { this.dragColIndex.set(null); this.saveColConfig(); }
 
   onColBoardDragStart(event: DragEvent, state: string): void {
     this.dragColBoardState.set(state);
@@ -260,7 +205,7 @@ export class DevopsBoardsComponent implements OnInit {
     this.columnConfigs.update(cfgs => {
       const next = [...cfgs];
       const fromIdx = next.findIndex(c => c.state === fromState);
-      const toIdx = next.findIndex(c => c.state === toState);
+      const toIdx   = next.findIndex(c => c.state === toState);
       if (fromIdx === -1 || toIdx === -1) return cfgs;
       const [item] = next.splice(fromIdx, 1);
       next.splice(toIdx, 0, item);
@@ -269,10 +214,7 @@ export class DevopsBoardsComponent implements OnInit {
     this.dragColBoardState.set(toState);
   }
 
-  onColBoardDragEnd(): void {
-    this.dragColBoardState.set(null);
-    this.saveColConfig();
-  }
+  onColBoardDragEnd(): void { this.dragColBoardState.set(null); this.saveColConfig(); }
 
   resetColConfig(): void {
     this.toasts.confirm(
@@ -287,14 +229,14 @@ export class DevopsBoardsComponent implements OnInit {
     );
   }
 
-  openItem(wi: DevOpsWorkItem): void {
+  openItem(wi: BoardWorkItem): void {
     if (this.wasDragging) return;
     this.selectedItem.set(wi);
   }
 
   closePanel(): void { this.selectedItem.set(null); }
 
-  onDragStart(event: DragEvent, item: DevOpsWorkItem): void {
+  onDragStart(event: DragEvent, item: BoardWorkItem): void {
     this.wasDragging = true;
     this.dragItem.set(item);
     event.dataTransfer?.setData('text/plain', String(item.id));
@@ -308,11 +250,8 @@ export class DevopsBoardsComponent implements OnInit {
   }
 
   onDragEnter(state: string): void {
-    if (this.dragColBoardState()) {
-      this.reorderColBoard(state);
-    } else {
-      this.dragOverState.set(state);
-    }
+    if (this.dragColBoardState()) this.reorderColBoard(state);
+    else this.dragOverState.set(state);
   }
 
   onDragLeave(event: DragEvent): void {
@@ -326,31 +265,23 @@ export class DevopsBoardsComponent implements OnInit {
     if (this.dragColBoardState()) return;
     this.dragOverState.set(null);
     const item = this.dragItem();
-    if (!item || item.fields['System.State'] === targetState) return;
+    if (!item || item.state === targetState) return;
 
-    const project = this.selectedProject()!;
-    const prevState = item.fields['System.State'];
-    item.fields['System.State'] = targetState;
+    const projectId  = this.selectedProject()!;
+    const prevState  = item.state;
+    item.state       = targetState;
     this.rebucketItems(this.columns().flatMap(c => c.items));
     this.saving.set(item.id);
 
-    this.ado.updateWorkItemState(project, item.id, targetState).subscribe({
+    this.boards.updateItemState(projectId, item.id, targetState).subscribe({
       next: () => { this.saving.set(null); this.toasts.show(`#${item.id} → ${targetState}`, 'success', 2500); },
       error: (e) => {
-        item.fields['System.State'] = prevState;
+        item.state = prevState;
         this.rebucketItems(this.columns().flatMap(c => c.items));
         this.saving.set(null);
-        this.toasts.show(e?.error?.message ?? 'Failed to update work item', 'danger');
+        this.toasts.show(e?.message ?? e?.error?.message ?? 'Failed to update', 'danger');
       },
     });
     this.dragItem.set(null);
-  }
-
-  priority(wi: DevOpsWorkItem): string {
-    const p = wi.fields['Microsoft.VSTS.Common.Priority'];
-    if (!p) return '';
-    if (p <= 1) return '🔴';
-    if (p === 2) return '🟠';
-    return '🟡';
   }
 }

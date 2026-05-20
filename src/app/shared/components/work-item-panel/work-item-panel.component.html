@@ -4,53 +4,53 @@
   @if (item(); as wi) {
     <div class="panel-header">
       <div class="panel-meta">
-        <span class="wi-type-badge">{{ wi.fields['System.WorkItemType'] }}</span>
+        <span class="wi-type-badge">{{ wi.type }}</span>
         <span class="wi-id text-muted">#{{ wi.id }}</span>
       </div>
       <div class="panel-actions">
-        @if (devopsUrl()) {
-          <a [href]="devopsUrl()!" target="_blank" rel="noopener" class="btn btn-sm" [title]="'panel.openTitle' | translate">{{ 'panel.openBtn' | translate }}</a>
+        @if (wi.url) {
+          <a [href]="wi.url" target="_blank" rel="noopener" class="btn btn-sm" [title]="'panel.openTitle' | translate">{{ 'panel.openBtn' | translate }}</a>
         }
         <button class="btn btn-sm" (click)="close()" [title]="'panel.closeTitle' | translate">✕</button>
       </div>
     </div>
 
     <div class="panel-body">
-      <h2 class="wi-title">{{ wi.fields['System.Title'] }}</h2>
+      <h2 class="wi-title">{{ wi.title }}</h2>
 
-      <div class="wi-state" [class]="stateClass(wi.fields['System.State'])">
-        {{ wi.fields['System.State'] }}
+      <div class="wi-state" [class]="stateClass(wi.state)">
+        {{ wi.state }}
       </div>
 
       <dl class="wi-meta-grid">
-        @if (wi.fields['System.AssignedTo']) {
+        @if (wi.assignee) {
           <dt>{{ 'panel.assignedTo' | translate }}</dt>
-          <dd>{{ wi.fields['System.AssignedTo']!.displayName }}</dd>
+          <dd>{{ wi.assignee }}</dd>
         }
-        @if (wi.fields['System.CreatedBy']) {
+        @if (wi.createdBy) {
           <dt>{{ 'panel.createdBy' | translate }}</dt>
-          <dd>{{ wi.fields['System.CreatedBy']!.displayName }}</dd>
+          <dd>{{ wi.createdBy }}</dd>
         }
         @if (priorityLabel()) {
           <dt>{{ 'panel.priority' | translate }}</dt>
           <dd>{{ priorityLabel() }}</dd>
         }
-        @if (wi.fields['Microsoft.VSTS.Common.Severity']) {
+        @if (wi.severity) {
           <dt>{{ 'panel.severity' | translate }}</dt>
-          <dd>{{ wi.fields['Microsoft.VSTS.Common.Severity'] }}</dd>
+          <dd>{{ wi.severity }}</dd>
         }
-        @if (wi.fields['System.IterationPath']) {
+        @if (wi.sprint) {
           <dt>{{ 'panel.sprint' | translate }}</dt>
-          <dd>{{ wi.fields['System.IterationPath'] }}</dd>
+          <dd>{{ wi.sprint }}</dd>
         }
-        @if (wi.fields['System.AreaPath']) {
+        @if (wi.areaPath) {
           <dt>{{ 'panel.area' | translate }}</dt>
-          <dd>{{ wi.fields['System.AreaPath'] }}</dd>
+          <dd>{{ wi.areaPath }}</dd>
         }
         <dt>{{ 'panel.created' | translate }}</dt>
-        <dd>{{ wi.fields['System.CreatedDate'] | date:'dd MMM yyyy HH:mm' }}</dd>
+        <dd>{{ wi.createdDate | date:'dd MMM yyyy HH:mm' }}</dd>
         <dt>{{ 'panel.lastUpdated' | translate }}</dt>
-        <dd>{{ wi.fields['System.ChangedDate'] | date:'dd MMM yyyy HH:mm' }}</dd>
+        <dd>{{ wi.changedDate | date:'dd MMM yyyy HH:mm' }}</dd>
       </dl>
 
       @if (tags().length) {
@@ -61,10 +61,10 @@
         </div>
       }
 
-      @if (wi.fields['System.Description']) {
+      @if (wi.description) {
         <div class="wi-description">
           <h3>{{ 'panel.description' | translate }}</h3>
-          <div class="description-body" [innerHTML]="wi.fields['System.Description'] | markdown"></div>
+          <div class="description-body" [innerHTML]="wi.description | markdown"></div>
         </div>
       } @else {
         <p class="text-muted text-sm wi-no-desc">{{ 'panel.noDescription' | translate }}</p>

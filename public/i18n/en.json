@@ -46,8 +46,8 @@
     "resetConfirmBtn": "Yes, reset"
   },
   "sprint": {
-    "configureIntro": "Configure the Project and Team for Azure DevOps in",
-    "configureOutro": "to see the current sprint.",
+    "configureIntro": "Configure your boards provider in",
+    "configureOutro": "to enable the sprint widget.",
     "noActiveSprint": "No active sprint found.",
     "title": "Current Sprint",
     "daysLeft": "d left",
@@ -179,6 +179,8 @@
     "companyPlaceholder": "my-company",
     "patPlaceholder": "PAT...",
     "sprintWidget": "Project & Team",
+    "jiraSprintProject": "Sprint Project",
+    "jiraProjectNotConfigured": "Not configured — the sprint widget won't work.",
     "project": "Project:",
     "team": "Team:",
     "sprintNotConfigured": "Not configured — Boards and the sprint widget won't work.",

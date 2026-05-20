@@ -47,6 +47,12 @@ export class SettingsComponent implements OnInit {
   showJiraForm = signal(false);
   jiraTest  = signal<ConnectionTest | null>(null);
 
+  readonly jiraProject         = this.tokens.jiraProject;
+  jiraProject2                 = signal('');
+  showJiraProjectEdit          = signal(false);
+  availableJiraProjects        = signal<{ id: string; key: string; name: string }[]>([]);
+  jiraProjectsLoading          = signal(false);
+
   setProvider(p: 'github' | 'gitlab'): void { this.tokens.setActiveCiProvider(p); }
   setBoardsProvider(p: 'devops' | 'jira'): void { this.tokens.setActiveBoardsProvider(p); }
   readonly ghOwner      = this.tokens.githubOwner;
@@ -294,6 +300,26 @@ export class SettingsComponent implements OnInit {
       this.jiraEmail.set('');
       this.showJiraForm.set(false);
       this.jiraTest.set(null);
+    }
+  }
+
+  openJiraProjectEdit(): void {
+    this.jiraProject2.set(this.tokens.jiraProject() ?? '');
+    this.jiraProjectsLoading.set(true);
+    this.availableJiraProjects.set([]);
+    this.showJiraProjectEdit.set(true);
+    this.jira.listProjects().subscribe({
+      next: (ps) => { this.availableJiraProjects.set(ps); this.jiraProjectsLoading.set(false); },
+      error: () => { this.jiraProjectsLoading.set(false); this.toasts.show('Could not load Jira projects.', 'danger'); },
+    });
+  }
+
+  saveJiraProject(): void {
+    const project = this.jiraProject2().trim();
+    if (project) {
+      this.tokens.updateJiraProject(project);
+      this.showJiraProjectEdit.set(false);
+      this.toasts.show('Jira project saved.', 'success');
     }
   }
 

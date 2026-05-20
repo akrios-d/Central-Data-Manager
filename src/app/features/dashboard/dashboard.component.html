@@ -88,9 +88,9 @@
             <li class="wi-item" (click)="selectedItem.set(wi)">
               <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
               <div class="wi-info">
-                <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
+                <span class="wi-title">{{ wi.title }}</span>
                 <span class="wi-meta text-muted text-sm">
-                  {{ wi.fields['System.WorkItemType'] }} · {{ wi.fields['System.State'] }}
+                  {{ wi.type }} · {{ wi.state }}
                 </span>
               </div>
             </li>

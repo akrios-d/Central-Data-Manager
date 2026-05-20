@@ -7,7 +7,9 @@ import { FormsModule } from '@angular/forms';
 import { TokenService } from '../../core/services/token.service';
 import { CiProviderService } from '../../core/services/ci-provider.service';
 import { CiRepo, CiRun } from '../../core/interfaces/ci-provider.interface';
-import { DevOpsApiService, DevOpsWorkItem } from '../../core/services/devops-api.service';
+import { DevOpsApiService } from '../../core/services/devops-api.service';
+import { BoardsProviderService } from '../../core/services/boards-provider.service';
+import { BoardWorkItem } from '../../core/interfaces/boards-provider.interface';
 import { TranslateModule } from '@ngx-translate/core';
 import { SprintWidgetComponent } from '../../shared/components/sprint-widget/sprint-widget.component';
 import { WorkItemPanelComponent } from '../../shared/components/work-item-panel/work-item-panel.component';
@@ -39,32 +41,33 @@ export class DashboardComponent implements OnInit {
   private tokens = inject(TokenService);
   private ci     = inject(CiProviderService);
   private ado    = inject(DevOpsApiService);
+  private boards = inject(BoardsProviderService);
 
   readonly hasCi  = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
   readonly hasAdo = this.tokens.hasDevOps;
 
   allRepos   = signal<CiRepo[]>([]);
   pipelines  = signal<Pipeline[]>([]);
-  workItems  = signal<DevOpsWorkItem[]>([]);
+  workItems  = signal<BoardWorkItem[]>([]);
   ghLoading  = signal(false);
   adoLoading = signal(false);
   ghError    = signal<string | null>(null);
   adoError   = signal<string | null>(null);
 
-  selectedItem    = signal<DevOpsWorkItem | null>(null);
+  selectedItem    = signal<BoardWorkItem | null>(null);
 
   pipelineSearch  = signal('');
   expandedRepos   = signal<Set<string>>(new Set());
   wiStateFilter   = signal<Set<string>>(new Set());
 
   readonly availableWiStates = computed(() =>
-    [...new Set(this.workItems().map(wi => wi.fields['System.State'] as string))].sort()
+    [...new Set(this.workItems().map(wi => wi.state))].sort()
   );
 
   readonly filteredWorkItems = computed(() => {
     const filter = this.wiStateFilter();
     if (!filter.size) return this.workItems();
-    return this.workItems().filter(wi => filter.has(wi.fields['System.State'] as string));
+    return this.workItems().filter(wi => filter.has(wi.state));
   });
 
   toggleWiState(state: string): void {
@@ -215,7 +218,8 @@ export class DashboardComponent implements OnInit {
         return of({ value: [] });
       })
     ).subscribe((res) => {
-      this.workItems.set((res as any).value ?? []);
+      const items = ((res as any).value ?? []);
+      this.workItems.set(items.map((wi: any) => this.boards.normalizeAdoWorkItem(wi)));
       this.adoLoading.set(false);
     });
   }

@@ -46,8 +46,8 @@
     "resetConfirmBtn": "Sim, repor"
   },
   "sprint": {
-    "configureIntro": "Configura o Projecto e o Team do Azure DevOps nas",
-    "configureOutro": "para ver a sprint actual.",
+    "configureIntro": "Configura o teu provider de boards nas",
+    "configureOutro": "para activar o widget de sprint.",
     "noActiveSprint": "Nenhuma sprint activa encontrada.",
     "title": "Sprint actual",
     "daysLeft": "d restantes",
@@ -179,6 +179,8 @@
     "companyPlaceholder": "a-minha-empresa",
     "patPlaceholder": "PAT...",
     "sprintWidget": "Projecto & Team",
+    "jiraSprintProject": "Projecto para Sprint",
+    "jiraProjectNotConfigured": "Não configurado — o widget de sprint não vai funcionar.",
     "project": "Projecto:",
     "team": "Team:",
     "sprintNotConfigured": "Não configurado — o Boards e o widget de sprint não vão funcionar.",

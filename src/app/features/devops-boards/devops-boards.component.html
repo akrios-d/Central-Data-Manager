@@ -5,9 +5,9 @@
   </div>
   @if (projects().length > 1) {
     <select class="form-control" style="width:auto"
-      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event); loadTeamMembers($event); loadSavedColConfig($event)">
+      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event); loadAssignees($event); loadSavedColConfig($event)">
       @for (p of projects(); track p.id) {
-        <option [value]="p.name">{{ p.name }}</option>
+        <option [value]="p.id">{{ p.name }}</option>
       }
     </select>
   }
@@ -26,13 +26,15 @@
         <button class="toggle-btn" [class.active]="filterSprint() === 'current'" (click)="filterSprint.set('current')">{{ 'boards.currentSprint' | translate }}</button>
       </div>
       <div class="filter-divider"></div>
-      <div class="type-chips">
-        @for (t of typeOptions; track t) {
-          <button class="type-chip" [class.active]="isTypeSelected(t)" (click)="toggleType(t)">
-            {{ t }}
-          </button>
-        }
-      </div>
+      @if (availableTypes().length) {
+        <div class="type-chips">
+          @for (t of availableTypes(); track t) {
+            <button class="type-chip" [class.active]="isTypeSelected(t)" (click)="toggleType(t)">
+              {{ t }}
+            </button>
+          }
+        </div>
+      }
       <div class="assignee-wrap">
         <input class="form-control filter-assignee"
           [placeholder]="'boards.assigneePlaceholder' | translate"
@@ -131,14 +133,12 @@
                 (dragstart)="onDragStart($event, wi)"
                 (dragend)="onDragEnd($event)">
                 <div class="wi-card-top">
-                  <span class="wi-type badge badge-muted">{{ wi.fields['System.WorkItemType'] }}</span>
-                  <span class="wi-priority">{{ priority(wi) }}</span>
+                  <span class="wi-type badge badge-muted">{{ wi.type }}</span>
+                  <span class="wi-priority">{{ wi.priorityEmoji }}</span>
                 </div>
-                <p class="wi-card-title">{{ wi.fields['System.Title'] }}</p>
-                @if (wi.fields['System.AssignedTo']) {
-                  <span class="wi-assignee text-muted text-sm">
-                    {{ wi.fields['System.AssignedTo']?.displayName }}
-                  </span>
+                <p class="wi-card-title">{{ wi.title }}</p>
+                @if (wi.assignee) {
+                  <span class="wi-assignee text-muted text-sm">{{ wi.assignee }}</span>
                 }
                 <div class="wi-card-footer">
                   <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>

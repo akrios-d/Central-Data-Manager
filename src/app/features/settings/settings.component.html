@@ -274,6 +274,51 @@
         </button>
       </div>
     }
+
+    @if (hasJira()) {
+      <div class="settings-subsection">
+        <div class="flex-between">
+          <div>
+            <h3 class="subsection-title">{{ 'settings.jiraSprintProject' | translate }}</h3>
+            @if (jiraProject()) {
+              <p class="text-muted text-sm">{{ jiraProject() }}</p>
+            } @else {
+              <p class="text-muted text-sm">{{ 'settings.jiraProjectNotConfigured' | translate }}</p>
+            }
+          </div>
+          <button class="btn btn-sm" (click)="openJiraProjectEdit()">
+            {{ jiraProject() ? ('settings.editBtn' | translate) : ('settings.configureBtn' | translate) }}
+          </button>
+        </div>
+
+        @if (showJiraProjectEdit()) {
+          <div class="settings-form mt-2">
+            <div class="form-group">
+              <label>{{ 'settings.projectLabel' | translate }}</label>
+              @if (jiraProjectsLoading()) {
+                <div class="inline-row mt-1">
+                  <span class="spinner"></span>
+                  <span class="text-muted text-sm">{{ 'settings.loadingProjects' | translate }}</span>
+                </div>
+              } @else {
+                <select class="form-control mt-1" [ngModel]="jiraProject2()" (ngModelChange)="jiraProject2.set($event)">
+                  <option value="">{{ 'settings.selectProject' | translate }}</option>
+                  @for (p of availableJiraProjects(); track p.id) {
+                    <option [value]="p.key">{{ p.name }} ({{ p.key }})</option>
+                  }
+                </select>
+              }
+            </div>
+            <div class="settings-actions mt-2">
+              <button class="btn btn-primary btn-sm" (click)="saveJiraProject()" [disabled]="!jiraProject2().trim()">
+                {{ 'settings.save' | translate }}
+              </button>
+              <button class="btn btn-sm" (click)="showJiraProjectEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
   }
 </div>
 

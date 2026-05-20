@@ -1,4 +1,4 @@
-@if (!project() || !team()) {
+@if (!isConfigured()) {
   <div class="sprint-setup card">
     <p class="text-muted text-sm">
       {{ 'sprint.configureIntro' | translate }}
@@ -10,17 +10,19 @@
   <div class="card sprint-card"><div class="spinner"></div></div>
 } @else if (error()) {
   <div class="card sprint-card"><p class="text-muted text-sm">{{ error() }}</p></div>
-} @else if (!iteration()) {
+} @else if (!sprint()) {
   <div class="card sprint-card"><p class="text-muted text-sm">{{ 'sprint.noActiveSprint' | translate }}</p></div>
 } @else {
   <div class="card sprint-card">
     <div class="sprint-header">
       <div>
         <div class="sprint-label">{{ 'sprint.title' | translate }}</div>
-        <div class="sprint-name">{{ iteration()!.name }}</div>
+        <div class="sprint-name">{{ sprint()!.name }}</div>
         <div class="sprint-dates text-muted text-sm">
-          {{ iteration()!.attributes.startDate | date:'dd MMM' }} →
-          {{ iteration()!.attributes.finishDate | date:'dd MMM yyyy' }}
+          @if (sprint()!.startDate) {
+            {{ sprint()!.startDate | date:'dd MMM' }} →
+          }
+          {{ sprint()!.endDate | date:'dd MMM yyyy' }}
           @if (daysLeft() !== null) {
             <span class="days-left" [class.urgent]="daysLeft()! <= 2">
               · {{ daysLeft() }}{{ 'sprint.daysLeft' | translate }}
@@ -67,9 +69,9 @@
       <ul class="sprint-items">
         @for (wi of filteredItems().slice(0, hasFilter() ? 50 : 8); track wi.id) {
           <li class="sprint-item" (click)="selectedItem.set(wi)">
-            <span class="wi-state-dot" [class]="wi.fields['System.State'].toLowerCase().replace(' ', '-')"></span>
-            <span class="wi-title">{{ wi.fields['System.Title'] }}</span>
-            <span class="wi-type text-muted text-sm">{{ wi.fields['System.WorkItemType'] }}</span>
+            <span class="wi-state-dot" [class]="wi.state.toLowerCase().replace(' ', '-')"></span>
+            <span class="wi-title">{{ wi.title }}</span>
+            <span class="wi-type text-muted text-sm">{{ wi.type }}</span>
           </li>
         }
         @if (filteredItems().length > (hasFilter() ? 50 : 8)) {
