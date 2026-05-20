@@ -135,7 +135,8 @@ export class ChainOrchestratorComponent {
       this.toasts.show('Graph name is required', 'danger');
       return;
     }
-    const id = this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!;
+    const currentId = this.selectedGraphId();
+    const id = currentId === 'new' || !currentId ? crypto.randomUUID() : currentId;
     const graph: OrchGraph = {
       id,
       name,
@@ -246,8 +247,9 @@ export class ChainOrchestratorComponent {
   // ── Export / Import ───────────────────────────────────────────────────────────
   exportGraph(): void {
     const name = this.graphName().trim() || 'graph';
+    const currentId = this.selectedGraphId();
     const graph: OrchGraph = {
-      id: this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!,
+      id: currentId === 'new' || !currentId ? crypto.randomUUID() : currentId,
       name,
       nodes: this.graphNodes(),
       edges: this.graphEdges(),
@@ -262,41 +264,43 @@ export class ChainOrchestratorComponent {
     URL.revokeObjectURL(url);
   }
 
-  importGraph(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
+  async importGraph(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
-    file.text().then((text) => {
-      try {
-        const data = JSON.parse(text);
-        if (!data?.name || !Array.isArray(data?.nodes) || !Array.isArray(data?.edges)) {
-          this.toasts.show('Invalid graph file', 'danger');
-          return;
-        }
-        const idMap = new Map<string, string>();
-        const newId = (old: string) => {
-          if (!idMap.has(old)) idMap.set(old, crypto.randomUUID());
-          return idMap.get(old)!;
-        };
-        const graph: OrchGraph = {
-          id: crypto.randomUUID(),
-          name: data.name,
-          nodes: (data.nodes as OrchNode[]).map((n) => ({ ...n, id: newId(n.id) })),
-          edges: (data.edges as OrchEdge[]).map((e) => ({
-            ...e,
-            id: crypto.randomUUID(),
-            fromId: newId(e.fromId),
-            toId: newId(e.toId),
-          })),
-          createdAt: new Date().toISOString(),
-        };
-        this.orchSvc.saveGraph(graph);
-        this.selectGraph(graph);
-        this.toasts.show(`Graph "${graph.name}" imported`, 'success');
-      } catch {
-        this.toasts.show('Could not read file', 'danger');
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data?.name || !Array.isArray(data?.nodes) || !Array.isArray(data?.edges)) {
+        this.toasts.show('Invalid graph file', 'danger');
+        return;
       }
-      (event.target as HTMLInputElement).value = '';
-    });
+      const idMap = new Map<string, string>();
+      const newId = (old: string): string => {
+        const existing = idMap.get(old);
+        if (existing) return existing;
+        const fresh = crypto.randomUUID();
+        idMap.set(old, fresh);
+        return fresh;
+      };
+      const graph: OrchGraph = {
+        id: crypto.randomUUID(),
+        name: data.name,
+        nodes: (data.nodes as OrchNode[]).map((n) => ({ ...n, id: newId(n.id) })),
+        edges: (data.edges as OrchEdge[]).map((e) => ({
+          ...e,
+          id: crypto.randomUUID(),
+          fromId: newId(e.fromId),
+          toId: newId(e.toId),
+        })),
+        createdAt: new Date().toISOString(),
+      };
+      this.orchSvc.saveGraph(graph);
+      this.selectGraph(graph);
+      this.toasts.show(`Graph "${graph.name}" imported`, 'success');
+    } catch {
+      this.toasts.show('Could not read file', 'danger');
+    }
+    input.value = '';
   }
 
   // ── Global mouse handlers ─────────────────────────────────────────────────────
@@ -368,7 +372,8 @@ export class ChainOrchestratorComponent {
   // ── Run ───────────────────────────────────────────────────────────────────────
   async runGraph(): Promise<void> {
     if (!this.canRun()) return;
-    const id = this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!;
+    const currentId = this.selectedGraphId();
+    const id = currentId === 'new' || !currentId ? crypto.randomUUID() : currentId;
     const graph: OrchGraph = {
       id,
       name: this.graphName().trim() || 'Untitled',
@@ -458,8 +463,8 @@ export class ChainOrchestratorComponent {
 
   getChainStepCount(chainId?: string): string {
     if (!chainId) return '';
-    const c = this.allChains().find((c) => c.id === chainId);
-    return c ? `${c.steps.length} step${c.steps.length === 1 ? '' : 's'}` : '';
+    const chain = this.allChains().find((c) => c.id === chainId);
+    return chain ? `${chain.steps.length} step${chain.steps.length === 1 ? '' : 's'}` : '';
   }
 
   runStatusColor(status: string): string {

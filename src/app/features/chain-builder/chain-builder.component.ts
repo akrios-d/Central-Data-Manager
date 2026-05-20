@@ -253,7 +253,7 @@ export class ChainBuilderComponent {
     // Load branches for ref selection (both providers)
     this.ci.listBranches(repo.full_name, repo.provider).subscribe({
       next: (bs) => this.stepBranches.set(bs.map((b) => b.name)),
-      error: () => {},
+      error: () => { /* branch loading is best-effort */ },
     });
 
     if (repo.provider === 'gitlab') {
@@ -333,7 +333,7 @@ export class ChainBuilderComponent {
 
     this.ci.listBranches(step.repoFullName, provider).subscribe({
       next: (bs) => this.stepBranches.set(bs.map((b) => b.name)),
-      error: () => {},
+      error: () => { /* branch loading is best-effort */ },
     });
 
     const chainDefaultRef = this.chainRef().trim() || 'main';
@@ -476,31 +476,30 @@ export class ChainBuilderComponent {
     URL.revokeObjectURL(url);
   }
 
-  importChain(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
+  async importChain(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
-    file.text().then((text) => {
-      try {
-        const data = JSON.parse(text);
-        if (!data?.name || !Array.isArray(data?.steps)) {
-          this.toasts.show('Invalid chain file', 'danger');
-          return;
-        }
-        const chain: Chain = {
-          id: crypto.randomUUID(),
-          name: data.name,
-          ref: data.ref ?? '',
-          steps: data.steps.map((s: ChainStep) => ({ ...s, id: crypto.randomUUID() })),
-          createdAt: new Date().toISOString(),
-        };
-        this.chainSvc.saveChain(chain);
-        this.selectChain(chain);
-        this.toasts.show(`Chain "${chain.name}" imported`, 'success');
-      } catch {
-        this.toasts.show('Could not read file', 'danger');
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data?.name || !Array.isArray(data?.steps)) {
+        this.toasts.show('Invalid chain file', 'danger');
+        return;
       }
-      (event.target as HTMLInputElement).value = '';
-    });
+      const chain: Chain = {
+        id: crypto.randomUUID(),
+        name: data.name,
+        ref: data.ref ?? '',
+        steps: data.steps.map((s: ChainStep) => ({ ...s, id: crypto.randomUUID() })),
+        createdAt: new Date().toISOString(),
+      };
+      this.chainSvc.saveChain(chain);
+      this.selectChain(chain);
+      this.toasts.show(`Chain "${chain.name}" imported`, 'success');
+    } catch {
+      this.toasts.show('Could not read file', 'danger');
+    }
+    input.value = '';
   }
 
   private buildChainSnapshot(): Chain | null {

@@ -21,7 +21,8 @@ export class OrchestratorExecutorService {
   async execute(graph: OrchGraph, chains: Chain[]): Promise<void> {
     this.stopRequested = false;
     const chainMap = new Map(chains.map((c) => [c.id, c]));
-    const startNode = graph.nodes.find((n) => n.type === 'start')!;
+    const startNode = graph.nodes.find((n) => n.type === 'start');
+    if (!startNode) return;
 
     const run: OrchRun = {
       id: crypto.randomUUID(),
@@ -39,8 +40,10 @@ export class OrchestratorExecutorService {
     promises.set(startNode.id, Promise.resolve(true));
 
     const getPromise = (nodeId: string): Promise<boolean> => {
-      if (promises.has(nodeId)) return promises.get(nodeId)!;
-      const node = graph.nodes.find((n) => n.id === nodeId)!;
+      const cached = promises.get(nodeId);
+      if (cached !== undefined) return cached;
+      const node = graph.nodes.find((n) => n.id === nodeId);
+      if (!node) return Promise.resolve(false);
       const predIds = graph.edges.filter((e) => e.toId === nodeId).map((e) => e.fromId);
 
       const p = Promise.all(predIds.map((id) => getPromise(id))).then(async (results) => {
@@ -105,8 +108,8 @@ export class OrchestratorExecutorService {
     const visited = new Set<string>();
     const queue = [startId];
     while (queue.length) {
-      const id = queue.shift()!;
-      if (visited.has(id)) continue;
+      const id = queue.shift();
+      if (id === undefined || visited.has(id)) continue;
       visited.add(id);
       graph.edges.filter((e) => e.fromId === id).forEach((e) => queue.push(e.toId));
     }

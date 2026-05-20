@@ -16,7 +16,6 @@ export class ChainExecutorService {
   private translate = inject(TranslateService);
 
   readonly activeRuns = signal<Record<string, ChainRun>>({});
-  private timer: ReturnType<typeof setTimeout> | null = null;
   private stopRequested = new Set<string>();
 
   async execute(chain: Chain): Promise<void> {
@@ -207,14 +206,14 @@ export class ChainExecutorService {
               stepRun.runId = run.id;
               stepRun.runUrl = run.html_url;
               if (run.status !== 'completed') {
-                this.timer = setTimeout(tick, pollInterval);
+                setTimeout(tick, pollInterval);
                 return;
               }
               stepRun.status = run.conclusion === 'success' ? 'success' : 'failure';
               resolve(stepRun.status);
             },
             error: () => {
-              this.timer = setTimeout(tick, pollInterval);
+              setTimeout(tick, pollInterval);
             },
           });
         } else {
@@ -222,25 +221,25 @@ export class ChainExecutorService {
             next: (runs) => {
               const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
               if (!run) {
-                this.timer = setTimeout(tick, pollInterval);
+                setTimeout(tick, pollInterval);
                 return;
               }
               stepRun.runId = run.id;
               stepRun.runUrl = run.html_url;
               if (run.status !== 'completed') {
-                this.timer = setTimeout(tick, pollInterval);
+                setTimeout(tick, pollInterval);
                 return;
               }
               stepRun.status = run.conclusion === 'success' ? 'success' : 'failure';
               resolve(stepRun.status);
             },
             error: () => {
-              this.timer = setTimeout(tick, pollInterval);
+              setTimeout(tick, pollInterval);
             },
           });
         }
       };
-      this.timer = setTimeout(tick, 4000);
+      setTimeout(tick, 4000);
     });
   }
 }
