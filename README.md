@@ -1,59 +1,102 @@
-# CentralDataManager
+# Central Data Manager
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+A client-side dashboard for managing CI/CD pipelines, work boards, releases and chain automation across multiple providers — all data stays in your browser, no backend required.
 
-## Development server
+## Supported integrations
 
-To start a local development server, run:
+| Category | Providers |
+|---|---|
+| CI/CD & Pipelines | GitHub Actions, GitLab CI |
+| Work Boards | Azure DevOps *(Jira coming soon)* |
+| Releases | GitHub, GitLab |
+| Chain Builder | GitHub Actions, GitLab CI |
+
+---
+
+## Prerequisites
+
+### 1. Node.js
+
+Download and install **Node.js 20 LTS** (or later) from:
+
+- **Windows / macOS**: https://nodejs.org/en/download — use the LTS installer
+- **Linux**: use your package manager or [nvm](https://github.com/nvm-sh/nvm)
 
 ```bash
+# Verify installation
+node -v   # should print v20.x.x or higher
+npm -v    # should print 10.x.x or higher
+```
+
+### 2. Angular CLI
+
+```bash
+npm install -g @angular/cli
+```
+
+```bash
+# Verify installation
+ng version   # should show Angular CLI 21.x.x
+```
+
+---
+
+## Getting started
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-org/central-data-manager.git
+cd central-data-manager
+
+# 2. Install dependencies
+npm install
+
+# 3. Start the development server
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open your browser at **http://localhost:4200**.
 
-## Code scaffolding
+The app opens directly on the Settings page — configure your tokens there before using any other feature.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+---
+
+## Configuration (tokens)
+
+All tokens are stored locally in your browser (sessionStorage by default, localStorage if you enable persistent storage in Settings). Nothing is sent to any server other than the provider APIs directly.
+
+| Provider | What you need |
+|---|---|
+| **GitHub** | Personal Access Token with `repo` and `workflow` scopes + your username/org |
+| **GitLab** | Personal Access Token with `api` scope + base URL (default `https://gitlab.com`) |
+| **Azure DevOps** | Personal Access Token with full access + organisation name |
+
+Go to **Settings → CI Provider** to switch between GitHub and GitLab. The selected provider is used across Pipelines, Chain Builder and Releases.
+
+---
+
+## Features
+
+- **Pipelines** — browse runs, re-run or cancel, and monitor workflow health (success rate, average duration, trend sparklines)
+- **Chain Builder** — define ordered sequences of pipelines across multiple repos and run them with a single click; supports per-step branch override, latest-tag resolution and cache clearing
+- **Releases** — track which tag/branch is deployed in each environment; compare refs and generate a changelog
+- **Boards** — Kanban view of work items with drag-and-drop state transitions, column visibility config, and filters
+- **Blockers Map** — visual graph of blocking dependencies between work items
+- **Dashboard** — overview of recent pipeline runs and sprint work items
+
+---
+
+## Development
 
 ```bash
-ng generate component component-name
-```
+# Start dev server with hot reload
+ng serve
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
+# Production build
 ng build
-```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
+# Run unit tests
 ng test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Build output goes to `dist/Central-Data-Manager/`.
