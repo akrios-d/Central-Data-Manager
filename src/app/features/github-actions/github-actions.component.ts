@@ -21,35 +21,35 @@ interface WorkflowStat {
   selector: 'app-github-actions',
   imports: [FormsModule, DatePipe, RunStatusPipe, TranslateModule],
   templateUrl: './github-actions.component.html',
-  styleUrl:    './github-actions.component.scss',
+  styleUrl: './github-actions.component.scss',
 })
 export class GithubActionsComponent implements OnInit {
   private ci = inject(CiProviderService);
 
   // ── Shared ────────────────────────────────────────────────────────────────
-  repos        = signal<CiRepo[]>([]);
-  repoSearch   = signal('');
+  repos = signal<CiRepo[]>([]);
+  repoSearch = signal('');
   selectedRepo = signal<CiRepo | null>(null);
-  loading      = signal(true);
-  error        = signal<string | null>(null);
+  loading = signal(true);
+  error = signal<string | null>(null);
 
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase().trim();
-    return q ? this.repos().filter(r => r.full_name.toLowerCase().includes(q)) : this.repos();
+    return q ? this.repos().filter((r) => r.full_name.toLowerCase().includes(q)) : this.repos();
   });
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   activeTab = signal<'runs' | 'health'>('runs');
 
   // ── Runs tab ──────────────────────────────────────────────────────────────
-  runs           = signal<CiRun[]>([]);
-  runsLoading    = signal(false);
+  runs = signal<CiRun[]>([]);
+  runsLoading = signal(false);
   actionFeedback = signal<{ id: number; msg: string } | null>(null);
 
   // ── Health tab ────────────────────────────────────────────────────────────
-  stats        = signal<WorkflowStat[]>([]);
+  stats = signal<WorkflowStat[]>([]);
   statsLoading = signal(false);
-  statsError   = signal('');
+  statsError = signal('');
 
   // ── Init ──────────────────────────────────────────────────────────────────
   ngOnInit(): void {
@@ -59,7 +59,10 @@ export class GithubActionsComponent implements OnInit {
         this.loading.set(false);
         if (repos.length) this.selectRepo(repos[0]);
       },
-      error: (e) => { this.error.set(e?.message); this.loading.set(false); },
+      error: (e) => {
+        this.error.set(e?.message);
+        this.loading.set(false);
+      },
     });
   }
 
@@ -86,7 +89,10 @@ export class GithubActionsComponent implements OnInit {
   private loadRuns(repo: CiRepo): void {
     this.runsLoading.set(true);
     this.ci.listRuns(repo).subscribe({
-      next: (res) => { this.runs.set(res.workflow_runs); this.runsLoading.set(false); },
+      next: (res) => {
+        this.runs.set(res.workflow_runs);
+        this.runsLoading.set(false);
+      },
       error: () => this.runsLoading.set(false),
     });
   }
@@ -135,19 +141,32 @@ export class GithubActionsComponent implements OnInit {
     }
     return [...byWorkflow.entries()]
       .map(([id, wRuns]) => {
-        const completed   = wRuns.filter(r => r.status === 'completed');
-        const successes   = completed.filter(r => r.conclusion === 'success');
-        const successRate = completed.length ? Math.round((successes.length / completed.length) * 100) : 0;
-        const durations   = completed
-          .map(r => new Date(r.updated_at).getTime() - new Date(r.run_started_at ?? r.created_at).getTime())
-          .filter(d => d > 0 && d < 3_600_000);
-        const avgDuration = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
-        const sorted      = [...wRuns].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const completed = wRuns.filter((r) => r.status === 'completed');
+        const successes = completed.filter((r) => r.conclusion === 'success');
+        const successRate = completed.length
+          ? Math.round((successes.length / completed.length) * 100)
+          : 0;
+        const durations = completed
+          .map(
+            (r) =>
+              new Date(r.updated_at).getTime() -
+              new Date(r.run_started_at ?? r.created_at).getTime(),
+          )
+          .filter((d) => d > 0 && d < 3_600_000);
+        const avgDuration = durations.length
+          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+          : 0;
+        const sorted = [...wRuns].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
         return {
-          id, successRate, avgDuration, totalRuns: wRuns.length,
-          name:           sorted[0]?.name ?? `Workflow ${id}`,
+          id,
+          successRate,
+          avgDuration,
+          totalRuns: wRuns.length,
+          name: sorted[0]?.name ?? `Workflow ${id}`,
           lastConclusion: sorted[0]?.conclusion ?? null,
-          recentRuns:     sorted.slice(0, 10),
+          recentRuns: sorted.slice(0, 10),
         } satisfies WorkflowStat;
       })
       .sort((a, b) => a.successRate - b.successRate);
@@ -167,10 +186,14 @@ export class GithubActionsComponent implements OnInit {
 
   sparkClass(run: CiRun): string {
     switch (run.conclusion) {
-      case 'success':   return 'spark-ok';
-      case 'failure':   return 'spark-fail';
-      case 'cancelled': return 'spark-cancel';
-      default: return run.status === 'in_progress' ? 'spark-running' : 'spark-skip';
+      case 'success':
+        return 'spark-ok';
+      case 'failure':
+        return 'spark-fail';
+      case 'cancelled':
+        return 'spark-cancel';
+      default:
+        return run.status === 'in_progress' ? 'spark-running' : 'spark-skip';
     }
   }
 
@@ -182,10 +205,14 @@ export class GithubActionsComponent implements OnInit {
 
   conclusionClass(c: string | null): string {
     switch (c) {
-      case 'success':   return 'dot-ok';
-      case 'failure':   return 'dot-fail';
-      case 'cancelled': return 'dot-cancel';
-      default: return 'dot-other';
+      case 'success':
+        return 'dot-ok';
+      case 'failure':
+        return 'dot-fail';
+      case 'cancelled':
+        return 'dot-cancel';
+      default:
+        return 'dot-other';
     }
   }
 

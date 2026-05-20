@@ -4,10 +4,13 @@
 </div>
 
 <div class="card vtab-card">
-
   <!-- ── Vertical tab strip ───────────────────────────────────────────────────── -->
   <nav class="vtab-strip">
-    <button class="vtab-btn" [class.active]="activeTab() === 'chains'" (click)="activeTab.set('chains')">
+    <button
+      class="vtab-btn"
+      [class.active]="activeTab() === 'chains'"
+      (click)="activeTab.set('chains')"
+    >
       {{ 'builder.tabChains' | translate }}
       @if (chains().length) {
         <span class="vtab-badge">{{ chains().length }}</span>
@@ -17,7 +20,11 @@
       }
     </button>
 
-    <button class="vtab-btn" [class.active]="activeTab() === 'editor'" (click)="activeTab.set('editor')">
+    <button
+      class="vtab-btn"
+      [class.active]="activeTab() === 'editor'"
+      (click)="activeTab.set('editor')"
+    >
       {{ 'builder.tabEditor' | translate }}
       @if (editSteps().length) {
         <span class="vtab-badge">{{ editSteps().length }}</span>
@@ -34,15 +41,16 @@
 
   <!-- ── Tab body ─────────────────────────────────────────────────────────────── -->
   <div class="vtab-body">
-
     <!-- Tab 1: Chains -->
     @if (activeTab() === 'chains') {
       <div class="vtab-actions">
         <label class="btn btn-sm btn-outline">
           {{ 'builder.import' | translate }}
-          <input type="file" accept=".json" style="display:none" (change)="importChain($event)" />
+          <input type="file" accept=".json" style="display: none" (change)="importChain($event)" />
         </label>
-        <button class="btn btn-sm btn-primary" (click)="newChain()">{{ 'builder.new' | translate }}</button>
+        <button class="btn btn-sm btn-primary" (click)="newChain()">
+          {{ 'builder.new' | translate }}
+        </button>
       </div>
 
       @if (chains().length === 0) {
@@ -50,10 +58,19 @@
       } @else {
         <ul class="chain-list">
           @for (c of chains(); track c.id) {
-            <li class="chain-item" [class.selected]="selectedId() === c.id" (click)="selectChain(c)">
+            <li
+              class="chain-item"
+              [class.selected]="selectedId() === c.id"
+              (click)="selectChain(c)"
+            >
               <span class="chain-item-name">{{ c.name }}</span>
               <span class="chain-item-meta text-muted text-sm">
-                {{ c.steps.length }} {{ c.steps.length === 1 ? ('builder.stepOne' | translate) : ('builder.stepMany' | translate) }}
+                {{ c.steps.length }}
+                {{
+                  c.steps.length === 1
+                    ? ('builder.stepOne' | translate)
+                    : ('builder.stepMany' | translate)
+                }}
               </span>
             </li>
           }
@@ -63,7 +80,9 @@
       @if (activeRun()?.status === 'running') {
         <div class="running-notice text-sm">
           <span class="pulse-dot"></span>
-          <span class="text-info">{{ activeRun()!.chainName }} {{ 'builder.running' | translate }}</span>
+          <span class="text-info"
+            >{{ activeRun()!.chainName }} {{ 'builder.running' | translate }}</span
+          >
         </div>
       }
     }
@@ -75,21 +94,31 @@
       } @else {
         <div class="editor-header">
           <div class="editor-inputs">
-            <input class="form-control chain-name-input"
+            <input
+              class="form-control chain-name-input"
               [placeholder]="'builder.chainName' | translate"
               [ngModel]="chainName()"
-              (ngModelChange)="chainName.set($event)" />
-            <input class="form-control chain-ref-input"
+              (ngModelChange)="chainName.set($event)"
+            />
+            <input
+              class="form-control chain-ref-input"
               [placeholder]="'builder.defaultRef' | translate"
               [ngModel]="chainRef()"
-              (ngModelChange)="chainRef.set($event)" />
+              (ngModelChange)="chainRef.set($event)"
+            />
           </div>
           <div class="editor-actions">
             <div class="editor-actions-left">
-              <button class="btn btn-sm btn-outline" (click)="exportChain()">{{ 'builder.export' | translate }}</button>
-              <button class="btn btn-sm btn-outline" (click)="saveChain()">{{ 'builder.save' | translate }}</button>
+              <button class="btn btn-sm btn-outline" (click)="exportChain()">
+                {{ 'builder.export' | translate }}
+              </button>
+              <button class="btn btn-sm btn-outline" (click)="saveChain()">
+                {{ 'builder.save' | translate }}
+              </button>
               @if (selectedId() !== 'new') {
-                <button class="btn btn-sm btn-danger" (click)="deleteChain()">{{ 'builder.delete' | translate }}</button>
+                <button class="btn btn-sm btn-danger" (click)="deleteChain()">
+                  {{ 'builder.delete' | translate }}
+                </button>
               }
             </div>
           </div>
@@ -100,13 +129,15 @@
         } @else {
           <ol class="step-list">
             @for (step of editSteps(); track step.id; let i = $index) {
-              <li class="step-item"
+              <li
+                class="step-item"
                 draggable="true"
                 [class.step-dragging]="dragStepIndex() === i"
                 (dragstart)="onStepDragStart(i)"
                 (dragenter)="onStepDragEnter(i); $event.preventDefault()"
                 (dragover)="$event.preventDefault()"
-                (dragend)="onStepDragEnd()">
+                (dragend)="onStepDragEnd()"
+              >
                 <span class="step-drag-handle">⠿</span>
                 <span class="step-num">{{ i + 1 }}</span>
                 <div class="step-info">
@@ -116,18 +147,34 @@
                     {{ step.repoFullName }} · {{ step.ref }}
                   </span>
                   @if (hasInputs(step.inputs)) {
-                    <span class="text-muted text-sm step-inputs-summary">{{ inputsSummary(step.inputs) }}</span>
+                    <span class="text-muted text-sm step-inputs-summary">{{
+                      inputsSummary(step.inputs)
+                    }}</span>
                   }
                   @if (step.clearCache) {
                     <span class="step-flag-badge">{{ 'builder.clearCacheBadge' | translate }}</span>
                   }
                   @if (step.useLatestTag) {
-                    <span class="step-flag-badge badge-latest-tag">{{ 'builder.useLatestTagBadge' | translate }}</span>
+                    <span class="step-flag-badge badge-latest-tag">{{
+                      'builder.useLatestTagBadge' | translate
+                    }}</span>
                   }
                 </div>
                 <div class="step-controls">
-                  <button class="icon-btn" [title]="'builder.edit' | translate"   (click)="editStep(step)">✎</button>
-                  <button class="icon-btn icon-btn-danger" [title]="'builder.remove' | translate" (click)="removeStep(i)">✕</button>
+                  <button
+                    class="icon-btn"
+                    [title]="'builder.edit' | translate"
+                    (click)="editStep(step)"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    class="icon-btn icon-btn-danger"
+                    [title]="'builder.remove' | translate"
+                    (click)="removeStep(i)"
+                  >
+                    ✕
+                  </button>
                 </div>
               </li>
             }
@@ -135,22 +182,36 @@
         }
 
         @if (!showAddStep()) {
-          <button class="btn btn-sm btn-outline add-step-btn" (click)="openAddStep()">{{ 'builder.addStep' | translate }}</button>
+          <button class="btn btn-sm btn-outline add-step-btn" (click)="openAddStep()">
+            {{ 'builder.addStep' | translate }}
+          </button>
         } @else {
           <div class="add-step-form">
             <div class="add-step-header">
-              <h3 class="add-step-title">{{ editingStepId() ? ('builder.editStepTitle' | translate) : ('builder.addStepTitle' | translate) }}</h3>
-              <button class="btn btn-sm btn-outline" (click)="cancelAddStep()">{{ 'builder.cancel' | translate }}</button>
+              <h3 class="add-step-title">
+                {{
+                  editingStepId()
+                    ? ('builder.editStepTitle' | translate)
+                    : ('builder.addStepTitle' | translate)
+                }}
+              </h3>
+              <button class="btn btn-sm btn-outline" (click)="cancelAddStep()">
+                {{ 'builder.cancel' | translate }}
+              </button>
             </div>
 
             <div class="form-group">
               <label class="form-label">{{ 'builder.repository' | translate }}</label>
               <div class="repo-search-wrap">
-                <input class="form-control"
+                <input
+                  class="form-control"
                   [placeholder]="'builder.searchRepos' | translate"
                   [ngModel]="repoSearch()"
-                  (ngModelChange)="onRepoSearchChange($event)" />
-                @if (reposLoading()) { <div class="spinner-sm"></div> }
+                  (ngModelChange)="onRepoSearchChange($event)"
+                />
+                @if (reposLoading()) {
+                  <div class="spinner-sm"></div>
+                }
                 @if (showRepoDropdown()) {
                   <ul class="repo-dropdown">
                     @for (r of filteredRepos(); track r.id) {
@@ -168,8 +229,14 @@
                   @if (stepWfLoad()) {
                     <div class="spinner-sm"></div>
                   } @else {
-                    <select class="form-control" [ngModel]="stepWf()" (ngModelChange)="onWorkflowSelect($event)">
-                      <option [ngValue]="null" disabled>{{ 'builder.selectWorkflow' | translate }}</option>
+                    <select
+                      class="form-control"
+                      [ngModel]="stepWf()"
+                      (ngModelChange)="onWorkflowSelect($event)"
+                    >
+                      <option [ngValue]="null" disabled>
+                        {{ 'builder.selectWorkflow' | translate }}
+                      </option>
                       @for (wf of stepWfs(); track wf.id) {
                         <option [ngValue]="wf">{{ wf.name }}</option>
                       }
@@ -177,55 +244,91 @@
                   }
                 </div>
               } @else {
-                <p class="text-muted text-sm gitlab-pipeline-note">{{ 'builder.gitlabPipelineNote' | translate }}</p>
+                <p class="text-muted text-sm gitlab-pipeline-note">
+                  {{ 'builder.gitlabPipelineNote' | translate }}
+                </p>
               }
 
               <div class="form-group">
                 <div class="ref-options">
                   <label class="form-label override-label">
-                    <input type="checkbox" [ngModel]="stepOverrideRef()" (ngModelChange)="onOverrideChange($event)" />
+                    <input
+                      type="checkbox"
+                      [ngModel]="stepOverrideRef()"
+                      (ngModelChange)="onOverrideChange($event)"
+                    />
                     {{ 'builder.overrideBranch' | translate }}
                   </label>
                   <label class="form-label override-label">
-                    <input type="checkbox" [ngModel]="stepUseLatestTag()" (ngModelChange)="onUseLatestTagChange($event)" />
+                    <input
+                      type="checkbox"
+                      [ngModel]="stepUseLatestTag()"
+                      (ngModelChange)="onUseLatestTagChange($event)"
+                    />
                     {{ 'builder.useLatestTag' | translate }}
                     @if (stepUseLatestTag()) {
-                      <span class="step-flag-badge badge-latest-tag" style="margin-left:4px">⊛</span>
+                      <span class="step-flag-badge badge-latest-tag" style="margin-left: 4px"
+                        >⊛</span
+                      >
                     }
                   </label>
                 </div>
                 @if (stepOverrideRef()) {
-                  <input class="form-control mt-1" list="branch-list"
-                    [ngModel]="stepRef()" (ngModelChange)="stepRef.set($event)" />
+                  <input
+                    class="form-control mt-1"
+                    list="branch-list"
+                    [ngModel]="stepRef()"
+                    (ngModelChange)="stepRef.set($event)"
+                  />
                   <datalist id="branch-list">
-                    @for (b of stepBranches(); track b) { <option [value]="b"></option> }
+                    @for (b of stepBranches(); track b) {
+                      <option [value]="b"></option>
+                    }
                   </datalist>
                 } @else if (stepUseLatestTag()) {
-                  <p class="text-muted text-sm mt-1">{{ 'builder.useLatestTagHint' | translate }}</p>
+                  <p class="text-muted text-sm mt-1">
+                    {{ 'builder.useLatestTagHint' | translate }}
+                  </p>
                 } @else {
-                  <p class="text-muted text-sm mt-1">{{ 'builder.usesDefault' | translate }} <strong>{{ chainRef() || ('builder.notSet' | translate) }}</strong></p>
+                  <p class="text-muted text-sm mt-1">
+                    {{ 'builder.usesDefault' | translate }}
+                    <strong>{{ chainRef() || ('builder.notSet' | translate) }}</strong>
+                  </p>
                 }
               </div>
 
               <div class="form-group">
                 <label class="form-label override-label">
-                  <input type="checkbox" [ngModel]="stepClearCache()" (ngModelChange)="stepClearCache.set($event)" />
+                  <input
+                    type="checkbox"
+                    [ngModel]="stepClearCache()"
+                    (ngModelChange)="stepClearCache.set($event)"
+                  />
                   {{ 'builder.clearCache' | translate }}
                 </label>
               </div>
 
               <div class="form-group">
                 <label class="form-label">
-                  {{ 'builder.inputs' | translate }} <span class="text-muted">{{ 'builder.optional' | translate }}</span>
-                  @if (wfInputsLoading()) { <span class="spinner-sm" style="margin-left:6px"></span> }
+                  {{ 'builder.inputs' | translate }}
+                  <span class="text-muted">{{ 'builder.optional' | translate }}</span>
+                  @if (wfInputsLoading()) {
+                    <span class="spinner-sm" style="margin-left: 6px"></span>
+                  }
                 </label>
                 @for (inp of stepInputs(); track $index; let i = $index) {
                   <div class="input-row">
-                    <input class="form-control input-key" [placeholder]="'builder.inputKey' | translate" [(ngModel)]="inp.key" />
+                    <input
+                      class="form-control input-key"
+                      [placeholder]="'builder.inputKey' | translate"
+                      [(ngModel)]="inp.key"
+                    />
                     <div class="input-value-wrap">
-                      <input class="form-control"
+                      <input
+                        class="form-control"
                         [placeholder]="inp.description || ('builder.inputValue' | translate)"
-                        [(ngModel)]="inp.value" />
+                        [(ngModel)]="inp.value"
+                      />
                       @if (inp.description) {
                         <span class="input-desc text-muted">{{ inp.description }}</span>
                       }
@@ -233,12 +336,22 @@
                     <button class="icon-btn icon-btn-danger" (click)="removeStepInput(i)">✕</button>
                   </div>
                 }
-                <button class="btn btn-xs btn-outline" (click)="addStepInput()">{{ 'builder.addInput' | translate }}</button>
+                <button class="btn btn-xs btn-outline" (click)="addStepInput()">
+                  {{ 'builder.addInput' | translate }}
+                </button>
               </div>
 
               <div class="add-step-actions">
-                <button class="btn btn-sm btn-primary" [disabled]="!stepRepo() || (!isGitLabRepo() && !stepWf())" (click)="addStep()">
-                  {{ editingStepId() ? ('builder.updateStep' | translate) : ('builder.addStepTitle' | translate) }}
+                <button
+                  class="btn btn-sm btn-primary"
+                  [disabled]="!stepRepo() || (!isGitLabRepo() && !stepWf())"
+                  (click)="addStep()"
+                >
+                  {{
+                    editingStepId()
+                      ? ('builder.updateStep' | translate)
+                      : ('builder.addStepTitle' | translate)
+                  }}
                 </button>
               </div>
             }
@@ -254,7 +367,9 @@
       } @else {
         <div class="run-toolbar">
           @if (isActiveChain() && activeRun()?.status === 'running') {
-            <button class="btn btn-sm btn-danger" (click)="stopChain()">{{ 'builder.stop' | translate }}</button>
+            <button class="btn btn-sm btn-danger" (click)="stopChain()">
+              {{ 'builder.stop' | translate }}
+            </button>
           } @else {
             <button class="btn btn-sm btn-success" [disabled]="!canRun()" (click)="runChain()">
               {{ 'builder.run' | translate }}
@@ -262,11 +377,17 @@
           }
           @if (!running() && activeRun()?.status !== 'running') {
             <button class="btn btn-xs btn-outline step-select-toggle" (click)="toggleAllSteps()">
-              {{ allStepsSelected() ? ('builder.deselectAll' | translate) : ('builder.selectAll' | translate) }}
+              {{
+                allStepsSelected()
+                  ? ('builder.deselectAll' | translate)
+                  : ('builder.selectAll' | translate)
+              }}
             </button>
           }
           @if (isActiveChain() && activeRun()) {
-            <span class="text-muted text-sm">{{ activeRun()!.startedAt | date:'dd MMM HH:mm:ss' }}</span>
+            <span class="text-muted text-sm">{{
+              activeRun()!.startedAt | date: 'dd MMM HH:mm:ss'
+            }}</span>
           }
         </div>
 
@@ -279,23 +400,38 @@
             @for (step of editSteps(); track step.id) {
               @let sr = getStepRun(step.id);
               @let eff = getStepEffectiveStatus(step.id);
-              <li class="run-step-item" [class.step-deselected]="!selectedStepIds().includes(step.id)">
+              <li
+                class="run-step-item"
+                [class.step-deselected]="!selectedStepIds().includes(step.id)"
+              >
                 <label class="step-run-checkbox" [title]="'builder.toggleStep' | translate">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
                     [checked]="selectedStepIds().includes(step.id)"
                     [disabled]="running() || activeRun()?.status === 'running'"
-                    (change)="toggleStepSelection(step.id)" />
+                    (change)="toggleStepSelection(step.id)"
+                  />
                 </label>
                 <span class="run-step-icon" [class]="'status-' + eff">{{ stepIcon(eff) }}</span>
                 <div class="run-step-info">
                   <span class="run-step-name">{{ step.workflowName }}</span>
                   <span class="text-muted text-sm">{{ step.repoFullName }}</span>
                   @if (sr?.runUrl) {
-                    <a [href]="sr!.runUrl" target="_blank" rel="noopener" class="text-sm run-link">{{ 'builder.viewOnGithub' | translate }}</a>
+                    <a
+                      [href]="sr!.runUrl"
+                      target="_blank"
+                      rel="noopener"
+                      class="text-sm run-link"
+                      >{{ 'builder.viewOnGithub' | translate }}</a
+                    >
                   }
-                  @if (sr?.error) { <span class="text-danger text-sm">{{ sr!.error }}</span> }
+                  @if (sr?.error) {
+                    <span class="text-danger text-sm">{{ sr!.error }}</span>
+                  }
                 </div>
-                <span class="run-step-status text-sm" [class]="'text-' + runStatusColor(eff)">{{ eff }}</span>
+                <span class="run-step-status text-sm" [class]="'text-' + runStatusColor(eff)">{{
+                  eff
+                }}</span>
               </li>
             }
           </ol>
@@ -309,8 +445,10 @@
             @for (r of chainRuns(); track r.id) {
               <li class="history-item">
                 <span class="history-dot" [class]="'dot-' + r.status"></span>
-                <span class="text-sm">{{ r.startedAt | date:'dd MMM HH:mm' }}</span>
-                <span class="badge" [class]="'badge-' + runStatusColor(r.status)">{{ r.status }}</span>
+                <span class="text-sm">{{ r.startedAt | date: 'dd MMM HH:mm' }}</span>
+                <span class="badge" [class]="'badge-' + runStatusColor(r.status)">{{
+                  r.status
+                }}</span>
                 <span class="text-muted text-sm">{{ r.steps.length }} steps</span>
               </li>
             }
@@ -318,6 +456,5 @@
         }
       }
     }
-
   </div>
 </div>

@@ -8,97 +8,108 @@ import { ToastService } from '../../shared/services/toast.service';
 import { firstValueFrom } from 'rxjs';
 
 const CONV_TYPES: Record<string, { label: string; icon: string }> = {
-  feat:     { label: 'Features',       icon: '🚀' },
-  fix:      { label: 'Bug Fixes',      icon: '🐛' },
-  perf:     { label: 'Performance',    icon: '⚡' },
-  refactor: { label: 'Refactoring',    icon: '♻️' },
-  docs:     { label: 'Documentation',  icon: '📚' },
-  test:     { label: 'Tests',          icon: '🧪' },
-  ci:       { label: 'CI/CD',          icon: '🔄' },
-  build:    { label: 'Build',          icon: '🏗️' },
-  chore:    { label: 'Chores',         icon: '🔧' },
-  style:    { label: 'Style',          icon: '🎨' },
-  other:    { label: 'Other Changes',  icon: '📦' },
+  feat: { label: 'Features', icon: '🚀' },
+  fix: { label: 'Bug Fixes', icon: '🐛' },
+  perf: { label: 'Performance', icon: '⚡' },
+  refactor: { label: 'Refactoring', icon: '♻️' },
+  docs: { label: 'Documentation', icon: '📚' },
+  test: { label: 'Tests', icon: '🧪' },
+  ci: { label: 'CI/CD', icon: '🔄' },
+  build: { label: 'Build', icon: '🏗️' },
+  chore: { label: 'Chores', icon: '🔧' },
+  style: { label: 'Style', icon: '🎨' },
+  other: { label: 'Other Changes', icon: '📦' },
 };
 
-interface ChangelogSection { type: string; icon: string; label: string; items: string[]; }
-interface EditTarget { repoId: string; envId: string; }
+interface ChangelogSection {
+  type: string;
+  icon: string;
+  label: string;
+  items: string[];
+}
+interface EditTarget {
+  repoId: string;
+  envId: string;
+}
 
 @Component({
   selector: 'app-releases',
   standalone: true,
   imports: [FormsModule, TranslateModule],
   templateUrl: './releases.component.html',
-  styleUrl:    './releases.component.scss',
+  styleUrl: './releases.component.scss',
 })
 export class ReleasesComponent {
-  private readonly svc    = inject(ReleaseService);
-  private readonly ci     = inject(CiProviderService);
+  private readonly svc = inject(ReleaseService);
+  private readonly ci = inject(CiProviderService);
   private readonly toasts = inject(ToastService);
-  private readonly el     = inject(ElementRef);
+  private readonly el = inject(ElementRef);
 
-  readonly envs  = this.svc.envs;
+  readonly envs = this.svc.envs;
   readonly repos = this.svc.repos;
 
   // ── Cell ref popup ──────────────────────────────────────────────────────────
-  editTarget   = signal<EditTarget | null>(null);
-  currentRef   = signal('');
-  popupSearch  = signal('');
+  editTarget = signal<EditTarget | null>(null);
+  currentRef = signal('');
+  popupSearch = signal('');
   showRefPopup = signal(false);
-  refMode      = signal<'tags' | 'branches'>('tags');
+  refMode = signal<'tags' | 'branches'>('tags');
 
-  private tagsCache     = new Map<string, string[]>();
+  private tagsCache = new Map<string, string[]>();
   private branchesCache = new Map<string, string[]>();
-  cellTags        = signal<string[]>([]);
-  cellBranches    = signal<string[]>([]);
-  refsLoading     = signal(false);
+  cellTags = signal<string[]>([]);
+  cellBranches = signal<string[]>([]);
+  refsLoading = signal(false);
   visibleTagCount = signal(5);
   visibleBranchCount = signal(5);
 
   filteredCellTags = computed(() => {
     const q = this.popupSearch().toLowerCase();
-    return q ? this.cellTags().filter(t => t.toLowerCase().includes(q)) : this.cellTags();
+    return q ? this.cellTags().filter((t) => t.toLowerCase().includes(q)) : this.cellTags();
   });
 
   filteredCellBranches = computed(() => {
     const q = this.popupSearch().toLowerCase();
-    return q ? this.cellBranches().filter(b => b.toLowerCase().includes(q)) : this.cellBranches();
+    return q ? this.cellBranches().filter((b) => b.toLowerCase().includes(q)) : this.cellBranches();
   });
 
-  displayedTags     = computed(() => this.filteredCellTags().slice(0, this.visibleTagCount()));
-  displayedBranches = computed(() => this.filteredCellBranches().slice(0, this.visibleBranchCount()));
-  hasMoreTags       = computed(() => this.filteredCellTags().length > this.visibleTagCount());
-  hasMoreBranches   = computed(() => this.filteredCellBranches().length > this.visibleBranchCount());
+  displayedTags = computed(() => this.filteredCellTags().slice(0, this.visibleTagCount()));
+  displayedBranches = computed(() =>
+    this.filteredCellBranches().slice(0, this.visibleBranchCount()),
+  );
+  hasMoreTags = computed(() => this.filteredCellTags().length > this.visibleTagCount());
+  hasMoreBranches = computed(() => this.filteredCellBranches().length > this.visibleBranchCount());
 
   // ── Add-repo form ───────────────────────────────────────────────────────────
-  showAddRepo    = signal(false);
-  ciRepos        = signal<CiRepo[]>([]);
+  showAddRepo = signal(false);
+  ciRepos = signal<CiRepo[]>([]);
   ciReposLoading = signal(false);
-  repoSearch     = signal('');
+  repoSearch = signal('');
   selectedCiRepo = signal<CiRepo | null>(null);
 
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase().trim();
     const list = this.ciRepos();
-    return q ? list.filter(r => r.full_name.toLowerCase().includes(q)) : list;
+    return q ? list.filter((r) => r.full_name.toLowerCase().includes(q)) : list;
   });
 
-  readonly showRepoDropdown = computed(() =>
-    this.repoSearch().trim().length > 0 && !this.selectedCiRepo() && this.filteredRepos().length > 0
+  readonly showRepoDropdown = computed(
+    () =>
+      this.repoSearch().trim().length > 0 &&
+      !this.selectedCiRepo() &&
+      this.filteredRepos().length > 0,
   );
 
-  readonly alreadyAdded = computed(() =>
-    new Set(this.repos().map(r => r.repoName))
-  );
+  readonly alreadyAdded = computed(() => new Set(this.repos().map((r) => r.repoName)));
 
   // ── Compare panel ──────────────────────────────────────────────────────────
-  compareRepoId    = signal<string | null>(null);
+  compareRepoId = signal<string | null>(null);
   compareBaseEnvId = signal('');
   compareHeadEnvId = signal('');
-  comparison       = signal<CiComparison | null>(null);
-  compLoading      = signal(false);
-  compError        = signal('');
-  showChangelog    = signal(false);
+  comparison = signal<CiComparison | null>(null);
+  compLoading = signal(false);
+  compError = signal('');
+  showChangelog = signal(false);
 
   changelog = computed((): ChangelogSection[] => {
     const commits = this.comparison()?.commits ?? [];
@@ -112,31 +123,39 @@ export class ReleasesComponent {
     const order = Object.keys(CONV_TYPES);
     return [...map.entries()]
       .sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]))
-      .map(([type, items]) => ({ type, items, ...CONV_TYPES[type] ?? CONV_TYPES['other'] }));
+      .map(([type, items]) => ({ type, items, ...(CONV_TYPES[type] ?? CONV_TYPES['other']) }));
   });
 
   changelogMarkdown = computed((): string => {
     const comp = this.comparison();
     if (!comp) return '';
-    const base = this.repos().find(r => r.id === this.compareRepoId())?.deployments[this.compareBaseEnvId()] ?? '';
-    const head = this.repos().find(r => r.id === this.compareRepoId())?.deployments[this.compareHeadEnvId()] ?? '';
-    const sections = this.changelog().map(s =>
-      `### ${s.icon} ${s.label}\n${s.items.map(i => `- ${i}`).join('\n')}`
-    ).join('\n\n');
+    const base =
+      this.repos().find((r) => r.id === this.compareRepoId())?.deployments[
+        this.compareBaseEnvId()
+      ] ?? '';
+    const head =
+      this.repos().find((r) => r.id === this.compareRepoId())?.deployments[
+        this.compareHeadEnvId()
+      ] ?? '';
+    const sections = this.changelog()
+      .map((s) => `### ${s.icon} ${s.label}\n${s.items.map((i) => `- ${i}`).join('\n')}`)
+      .join('\n\n');
     return `## What's Changed\n\n> \`${base}\` → \`${head}\`\n\n${sections}`;
   });
 
   // ── Manage environments ─────────────────────────────────────────────────────
-  managingEnvs   = signal(false);
-  newEnvName     = signal('');
-  editingEnvId   = signal<string | null>(null);
+  managingEnvs = signal(false);
+  newEnvName = signal('');
+  editingEnvId = signal<string | null>(null);
   editingEnvName = signal('');
 
   constructor() {
     effect(() => {
       if (this.showRefPopup()) {
         setTimeout(() => {
-          const inp = this.el.nativeElement.querySelector('.ref-popup-input') as HTMLInputElement | null;
+          const inp = this.el.nativeElement.querySelector(
+            '.ref-popup-input',
+          ) as HTMLInputElement | null;
           inp?.focus();
           inp?.select();
         }, 0);
@@ -162,32 +181,52 @@ export class ReleasesComponent {
     this.visibleBranchCount.set(5);
     this.showRefPopup.set(true);
 
-    const repo = this.repos().find(r => r.id === repoId);
+    const repo = this.repos().find((r) => r.id === repoId);
     if (!repo?.repoName.includes('/')) return;
-    const name     = repo.repoName;
+    const name = repo.repoName;
     const provider = repo.provider ?? 'github';
 
-    const tagsReady     = this.tagsCache.has(name);
+    const tagsReady = this.tagsCache.has(name);
     const branchesReady = this.branchesCache.has(name);
 
-    if (tagsReady)     this.cellTags.set(this.tagsCache.get(name)!);
+    if (tagsReady) this.cellTags.set(this.tagsCache.get(name)!);
     if (branchesReady) this.cellBranches.set(this.branchesCache.get(name)!);
     if (tagsReady && branchesReady) return;
 
     this.refsLoading.set(true);
     const pending = { tags: tagsReady, branches: branchesReady };
-    const done = () => { if (pending.tags && pending.branches) this.refsLoading.set(false); };
+    const done = () => {
+      if (pending.tags && pending.branches) this.refsLoading.set(false);
+    };
 
     if (!tagsReady) {
       this.ci.listTags(name, provider).subscribe({
-        next: t => { const n = t.map(x => x.name); this.tagsCache.set(name, n); this.cellTags.set(n); pending.tags = true; done(); },
-        error: () => { pending.tags = true; done(); },
+        next: (t) => {
+          const n = t.map((x) => x.name);
+          this.tagsCache.set(name, n);
+          this.cellTags.set(n);
+          pending.tags = true;
+          done();
+        },
+        error: () => {
+          pending.tags = true;
+          done();
+        },
       });
     }
     if (!branchesReady) {
       this.ci.listBranches(name, provider).subscribe({
-        next: b => { const n = b.map(x => x.name); this.branchesCache.set(name, n); this.cellBranches.set(n); pending.branches = true; done(); },
-        error: () => { pending.branches = true; done(); },
+        next: (b) => {
+          const n = b.map((x) => x.name);
+          this.branchesCache.set(name, n);
+          this.cellBranches.set(n);
+          pending.branches = true;
+          done();
+        },
+        error: () => {
+          pending.branches = true;
+          done();
+        },
       });
     }
   }
@@ -200,7 +239,7 @@ export class ReleasesComponent {
 
   commitManual(): void {
     const val = this.popupSearch().trim();
-    const t   = this.editTarget();
+    const t = this.editTarget();
     if (val && t) this.svc.setDeployment(t.repoId, t.envId, val);
     this.closePopup();
   }
@@ -214,8 +253,8 @@ export class ReleasesComponent {
   onListScroll(event: Event): void {
     const el = event.target as HTMLElement;
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) {
-      if (this.refMode() === 'tags') this.visibleTagCount.update(n => n + 10);
-      else this.visibleBranchCount.update(n => n + 10);
+      if (this.refMode() === 'tags') this.visibleTagCount.update((n) => n + 10);
+      else this.visibleBranchCount.update((n) => n + 10);
     }
   }
 
@@ -231,8 +270,11 @@ export class ReleasesComponent {
     if (!this.ciRepos().length) {
       this.ciReposLoading.set(true);
       this.ci.listRepos().subscribe({
-        next: (r)  => { this.ciRepos.set(r); this.ciReposLoading.set(false); },
-        error: ()  => this.ciReposLoading.set(false),
+        next: (r) => {
+          this.ciRepos.set(r);
+          this.ciReposLoading.set(false);
+        },
+        error: () => this.ciReposLoading.set(false),
       });
     }
   }
@@ -263,7 +305,7 @@ export class ReleasesComponent {
   }
 
   removeRepo(id: string): void {
-    const repo = this.repos().find(r => r.id === id);
+    const repo = this.repos().find((r) => r.id === id);
     if (!repo) return;
     this.toasts.confirm(`Remove "${repo.repoName}"?`, 'Remove', () => {
       this.svc.removeRepo(id);
@@ -285,25 +327,37 @@ export class ReleasesComponent {
   }
 
   commitRenameEnv(): void {
-    const id   = this.editingEnvId();
+    const id = this.editingEnvId();
     const name = this.editingEnvName().trim();
     if (id && name) this.svc.renameEnv(id, name);
     this.editingEnvId.set(null);
   }
 
-  cancelRenameEnv(): void { this.editingEnvId.set(null); }
+  cancelRenameEnv(): void {
+    this.editingEnvId.set(null);
+  }
 
   onEnvRenameKey(event: KeyboardEvent): void {
-    if (event.key === 'Enter')  { event.preventDefault(); this.commitRenameEnv(); }
-    if (event.key === 'Escape') { event.preventDefault(); this.cancelRenameEnv(); }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.commitRenameEnv();
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelRenameEnv();
+    }
   }
 
   removeEnv(id: string): void {
-    const env = this.envs().find(e => e.id === id);
+    const env = this.envs().find((e) => e.id === id);
     if (!env) return;
-    this.toasts.confirm(`Remove environment "${env.name}"? All deployments for this environment will be lost.`, 'Remove', () => {
-      this.svc.removeEnv(id);
-    });
+    this.toasts.confirm(
+      `Remove environment "${env.name}"? All deployments for this environment will be lost.`,
+      'Remove',
+      () => {
+        this.svc.removeEnv(id);
+      },
+    );
   }
 
   // ── Compare ──────────────────────────────────────────────────────────────────
@@ -315,7 +369,10 @@ export class ReleasesComponent {
   }
 
   private parseConvDesc(msg: string): string {
-    return msg.replace(/^\w+(?:\(.*?\))?!?:\s*/, '').split('\n')[0].trim();
+    return msg
+      .replace(/^\w+(?:\(.*?\))?!?:\s*/, '')
+      .split('\n')[0]
+      .trim();
   }
 
   copyChangelog(): void {
@@ -323,11 +380,11 @@ export class ReleasesComponent {
   }
 
   envsWithTag(repoId: string): { envId: string; envName: string; tag: string }[] {
-    const repo = this.repos().find(r => r.id === repoId);
+    const repo = this.repos().find((r) => r.id === repoId);
     if (!repo) return [];
     return this.envs()
-      .filter(e => repo.deployments[e.id])
-      .map(e => ({ envId: e.id, envName: e.name, tag: repo.deployments[e.id] }));
+      .filter((e) => repo.deployments[e.id])
+      .map((e) => ({ envId: e.id, envName: e.name, tag: repo.deployments[e.id] }));
   }
 
   canCompare(repoId: string): boolean {
@@ -367,10 +424,10 @@ export class ReleasesComponent {
   async runCompare(): Promise<void> {
     const repoId = this.compareRepoId();
     if (!repoId) return;
-    const repo = this.repos().find(r => r.id === repoId);
+    const repo = this.repos().find((r) => r.id === repoId);
     if (!repo) return;
-    const base     = repo.deployments[this.compareBaseEnvId()];
-    const head     = repo.deployments[this.compareHeadEnvId()];
+    const base = repo.deployments[this.compareBaseEnvId()];
+    const head = repo.deployments[this.compareHeadEnvId()];
     const provider = repo.provider ?? 'github';
     if (!base || !head) return;
 
@@ -389,7 +446,7 @@ export class ReleasesComponent {
   }
 
   isBranch(val: string): boolean {
-    return !/^v?\d[\d.\-_]*$/.test(val) && !(/^release[-\/]\d/i.test(val));
+    return !/^v?\d[\d.\-_]*$/.test(val) && !/^release[-\/]\d/i.test(val);
   }
 
   shortDate(dateStr: string): string {

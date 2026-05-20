@@ -1,4 +1,8 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -14,7 +18,7 @@ export const appConfig: ApplicationConfig = {
       TranslateModule.forRoot({
         defaultLanguage: 'en',
         loader: { provide: TranslateLoader, useClass: TranslateHttpLoader },
-      })
+      }),
     ),
     provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' }),
   ],

@@ -1,6 +1,15 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, skip, switchMap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  forkJoin,
+  map,
+  of,
+  skip,
+  switchMap,
+} from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -33,48 +42,55 @@ const MAX_REPOS_FOR_RUNS = 15;
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe, RouterLink, FormsModule, SprintWidgetComponent, WorkItemPanelComponent, TranslateModule],
+  imports: [
+    DatePipe,
+    RouterLink,
+    FormsModule,
+    SprintWidgetComponent,
+    WorkItemPanelComponent,
+    TranslateModule,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
   private tokens = inject(TokenService);
-  private ci     = inject(CiProviderService);
-  private ado    = inject(DevOpsApiService);
+  private ci = inject(CiProviderService);
+  private ado = inject(DevOpsApiService);
   private boards = inject(BoardsProviderService);
 
-  readonly hasCi             = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
-  readonly hasAdo            = this.tokens.hasDevOps;
-  readonly hasBoardsProvider = computed(() =>
-    this.tokens.hasDevOps() || (this.tokens.hasJira() && !!this.tokens.jiraProject())
+  readonly hasCi = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
+  readonly hasAdo = this.tokens.hasDevOps;
+  readonly hasBoardsProvider = computed(
+    () => this.tokens.hasDevOps() || (this.tokens.hasJira() && !!this.tokens.jiraProject()),
   );
 
-  allRepos   = signal<CiRepo[]>([]);
-  pipelines  = signal<Pipeline[]>([]);
-  workItems  = signal<BoardWorkItem[]>([]);
-  ghLoading  = signal(false);
+  allRepos = signal<CiRepo[]>([]);
+  pipelines = signal<Pipeline[]>([]);
+  workItems = signal<BoardWorkItem[]>([]);
+  ghLoading = signal(false);
   adoLoading = signal(false);
-  ghError    = signal<string | null>(null);
-  adoError   = signal<string | null>(null);
+  ghError = signal<string | null>(null);
+  adoError = signal<string | null>(null);
 
-  selectedItem    = signal<BoardWorkItem | null>(null);
+  selectedItem = signal<BoardWorkItem | null>(null);
 
-  pipelineSearch  = signal('');
-  expandedRepos   = signal<Set<string>>(new Set());
-  wiStateFilter   = signal<Set<string>>(new Set());
+  pipelineSearch = signal('');
+  expandedRepos = signal<Set<string>>(new Set());
+  wiStateFilter = signal<Set<string>>(new Set());
 
   readonly availableWiStates = computed(() =>
-    [...new Set(this.workItems().map(wi => wi.state))].sort()
+    [...new Set(this.workItems().map((wi) => wi.state))].sort(),
   );
 
   readonly filteredWorkItems = computed(() => {
     const filter = this.wiStateFilter();
     if (!filter.size) return this.workItems();
-    return this.workItems().filter(wi => filter.has(wi.state));
+    return this.workItems().filter((wi) => filter.has(wi.state));
   });
 
   toggleWiState(state: string): void {
-    this.wiStateFilter.update(s => {
+    this.wiStateFilter.update((s) => {
       const next = new Set(s);
       next.has(state) ? next.delete(state) : next.add(state);
       return next;
@@ -87,7 +103,7 @@ export class DashboardComponent implements OnInit {
   }
 
   toggleRepo(fullName: string): void {
-    this.expandedRepos.update(s => {
+    this.expandedRepos.update((s) => {
       const next = new Set(s);
       next.has(fullName) ? next.delete(fullName) : next.add(fullName);
       return next;
@@ -101,16 +117,17 @@ export class DashboardComponent implements OnInit {
   readonly filteredRepos = computed(() => {
     const q = this.pipelineSearch().toLowerCase().trim();
     const repos = this.allRepos();
-    return q ? repos.filter(r => r.full_name.toLowerCase().includes(q)) : repos;
+    return q ? repos.filter((r) => r.full_name.toLowerCase().includes(q)) : repos;
   });
 
   readonly repoGroups = computed((): RepoGroup[] => {
     const q = this.pipelineSearch().toLowerCase().trim();
-    const visibleFullNames = new Set(this.filteredRepos().map(r => r.full_name));
+    const visibleFullNames = new Set(this.filteredRepos().map((r) => r.full_name));
     const map = new Map<string, Pipeline[]>();
     for (const p of this.pipelines()) {
       if (!visibleFullNames.has(p.repoFullName)) continue;
-      if (q && !p.repoFullName.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q)) continue;
+      if (q && !p.repoFullName.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q))
+        continue;
       const list = map.get(p.repoFullName) ?? [];
       list.push(p);
       map.set(p.repoFullName, list);
@@ -124,21 +141,23 @@ export class DashboardComponent implements OnInit {
   });
 
   constructor() {
-    toObservable(this.filteredRepos).pipe(
-      skip(1),
-      debounceTime(500),
-      distinctUntilChanged((a, b) =>
-        a.length === b.length && a.every((r, i) => r.full_name === b[i].full_name)
-      ),
-      switchMap(repos => {
-        this.ghLoading.set(true);
-        return this.fetchRunsForRepos(repos);
-      }),
-      takeUntilDestroyed(),
-    ).subscribe(pipelines => {
-      this.pipelines.set(pipelines);
-      this.ghLoading.set(false);
-    });
+    toObservable(this.filteredRepos)
+      .pipe(
+        skip(1),
+        debounceTime(500),
+        distinctUntilChanged(
+          (a, b) => a.length === b.length && a.every((r, i) => r.full_name === b[i].full_name),
+        ),
+        switchMap((repos) => {
+          this.ghLoading.set(true);
+          return this.fetchRunsForRepos(repos);
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((pipelines) => {
+        this.pipelines.set(pipelines);
+        this.ghLoading.set(false);
+      });
   }
 
   ngOnInit(): void {
@@ -148,18 +167,21 @@ export class DashboardComponent implements OnInit {
 
   private loadCiRepos(): void {
     this.ghLoading.set(true);
-    this.ci.listRepos().pipe(
-      catchError(err => {
-        this.ghError.set(err?.message ?? 'Error loading repositories');
-        return of([] as CiRepo[]);
-      })
-    ).subscribe(repos => {
-      this.allRepos.set(repos);
-      this.fetchRunsForRepos(repos).subscribe(pipelines => {
-        this.pipelines.set(pipelines);
-        this.ghLoading.set(false);
+    this.ci
+      .listRepos()
+      .pipe(
+        catchError((err) => {
+          this.ghError.set(err?.message ?? 'Error loading repositories');
+          return of([] as CiRepo[]);
+        }),
+      )
+      .subscribe((repos) => {
+        this.allRepos.set(repos);
+        this.fetchRunsForRepos(repos).subscribe((pipelines) => {
+          this.pipelines.set(pipelines);
+          this.ghLoading.set(false);
+        });
       });
-    });
   }
 
   private fetchRunsForRepos(repos: CiRepo[]) {
@@ -167,13 +189,11 @@ export class DashboardComponent implements OnInit {
     if (!toFetch.length) return of([] as Pipeline[]);
 
     return forkJoin(
-      toFetch.map(r =>
-        this.ci.listRuns(r).pipe(
-          catchError(() => of({ workflow_runs: [] as CiRun[] }))
-        )
-      )
+      toFetch.map((r) =>
+        this.ci.listRuns(r).pipe(catchError(() => of({ workflow_runs: [] as CiRun[] }))),
+      ),
     ).pipe(
-      map(results => {
+      map((results) => {
         const pipelines: Pipeline[] = [];
         results.forEach((res, i) => {
           const seen = new Set<number>();
@@ -181,11 +201,11 @@ export class DashboardComponent implements OnInit {
             if (!seen.has(run.workflow_id)) {
               seen.add(run.workflow_id);
               pipelines.push({
-                workflowId:   run.workflow_id,
-                name:         run.name,
-                repo:         toFetch[i].name,
+                workflowId: run.workflow_id,
+                name: run.name,
+                repo: toFetch[i].name,
                 repoFullName: toFetch[i].full_name,
-                lastRun:      run,
+                lastRun: run,
               });
             }
           }
@@ -194,37 +214,42 @@ export class DashboardComponent implements OnInit {
           const aActive = a.lastRun.status !== 'completed' ? 1 : 0;
           const bActive = b.lastRun.status !== 'completed' ? 1 : 0;
           if (aActive !== bActive) return bActive - aActive;
-          return new Date(b.lastRun.created_at).getTime() - new Date(a.lastRun.created_at).getTime();
+          return (
+            new Date(b.lastRun.created_at).getTime() - new Date(a.lastRun.created_at).getTime()
+          );
         });
         return pipelines;
-      })
+      }),
     );
   }
 
   private loadDevOps(): void {
     this.adoLoading.set(true);
     let resolvedProject = '';
-    this.ado.listProjects().pipe(
-      switchMap((res) => {
-        resolvedProject = res.value[0]?.name ?? '';
-        if (!resolvedProject) return of({ workItems: [] });
-        const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '${resolvedProject}' ORDER BY [System.ChangedDate] DESC`;
-        return this.ado.queryWorkItems(resolvedProject, wiql);
-      }),
-      switchMap((res) => {
-        const ids = res.workItems?.slice(0, 10).map((w) => w.id) ?? [];
-        if (!ids.length || !resolvedProject) return of({ value: [] });
-        return this.ado.listWorkItems(resolvedProject, ids);
-      }),
-      catchError((err) => {
-        this.adoError.set(err?.message ?? 'Azure DevOps error');
-        return of({ value: [] });
-      })
-    ).subscribe((res) => {
-      const items = ((res as any).value ?? []);
-      this.workItems.set(items.map((wi: any) => this.boards.normalizeAdoWorkItem(wi)));
-      this.adoLoading.set(false);
-    });
+    this.ado
+      .listProjects()
+      .pipe(
+        switchMap((res) => {
+          resolvedProject = res.value[0]?.name ?? '';
+          if (!resolvedProject) return of({ workItems: [] });
+          const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '${resolvedProject}' ORDER BY [System.ChangedDate] DESC`;
+          return this.ado.queryWorkItems(resolvedProject, wiql);
+        }),
+        switchMap((res) => {
+          const ids = res.workItems?.slice(0, 10).map((w) => w.id) ?? [];
+          if (!ids.length || !resolvedProject) return of({ value: [] });
+          return this.ado.listWorkItems(resolvedProject, ids);
+        }),
+        catchError((err) => {
+          this.adoError.set(err?.message ?? 'Azure DevOps error');
+          return of({ value: [] });
+        }),
+      )
+      .subscribe((res) => {
+        const items = (res as any).value ?? [];
+        this.workItems.set(items.map((wi: any) => this.boards.normalizeAdoWorkItem(wi)));
+        this.adoLoading.set(false);
+      });
   }
 
   runClass(run: CiRun): string {
@@ -233,7 +258,7 @@ export class DashboardComponent implements OnInit {
 
   private worstStatus(pipelines: Pipeline[]): string {
     const priority = ['failure', 'in_progress', 'queued', 'success', 'unknown'];
-    const statuses = pipelines.map(p => this.runClass(p.lastRun));
-    return priority.find(s => statuses.includes(s)) ?? 'unknown';
+    const statuses = pipelines.map((p) => this.runClass(p.lastRun));
+    return priority.find((s) => statuses.includes(s)) ?? 'unknown';
   }
 }

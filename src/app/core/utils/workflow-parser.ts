@@ -3,8 +3,8 @@
  * Returns key, default value, and description for each input.
  */
 export interface WorkflowInput {
-  key:         string;
-  value:       string;
+  key: string;
+  value: string;
   description: string;
 }
 
@@ -12,7 +12,7 @@ export function parseDispatchInputs(yaml: string): WorkflowInput[] {
   const lines = yaml.split('\n');
 
   // Locate `workflow_dispatch:` line
-  const wdIdx = lines.findIndex(l => /^\s*workflow_dispatch\s*:/.test(l));
+  const wdIdx = lines.findIndex((l) => /^\s*workflow_dispatch\s*:/.test(l));
   if (wdIdx === -1) return [];
   const wdIndent = lines[wdIdx].search(/\S/);
 
@@ -24,7 +24,11 @@ export function parseDispatchInputs(yaml: string): WorkflowInput[] {
     if (!l.trim() || l.trim().startsWith('#')) continue;
     const ind = l.search(/\S/);
     if (ind <= wdIndent) break;
-    if (/^\s*inputs\s*:/.test(l)) { inputsIdx = i; inputsIndent = ind; break; }
+    if (/^\s*inputs\s*:/.test(l)) {
+      inputsIdx = i;
+      inputsIndent = ind;
+      break;
+    }
   }
   if (inputsIdx === -1) return [];
 

@@ -11,28 +11,28 @@ export const routes: Routes = [
     path: 'github-actions',
     loadComponent: () =>
       import('./features/github-actions/github-actions.component').then(
-        (m) => m.GithubActionsComponent
+        (m) => m.GithubActionsComponent,
       ),
   },
   {
     path: 'devops-boards',
     loadComponent: () =>
       import('./features/devops-boards/devops-boards.component').then(
-        (m) => m.DevopsBoardsComponent
+        (m) => m.DevopsBoardsComponent,
       ),
   },
   {
     path: 'chain-builder',
     loadComponent: () =>
       import('./features/chain-builder/chain-builder.component').then(
-        (m) => m.ChainBuilderComponent
+        (m) => m.ChainBuilderComponent,
       ),
   },
   {
     path: 'chain-orchestrator',
     loadComponent: () =>
       import('./features/chain-orchestrator/chain-orchestrator.component').then(
-        (m) => m.ChainOrchestratorComponent
+        (m) => m.ChainOrchestratorComponent,
       ),
   },
   {

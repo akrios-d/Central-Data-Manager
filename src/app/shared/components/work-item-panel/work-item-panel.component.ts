@@ -19,15 +19,15 @@ export class WorkItemPanelComponent {
 
   stateClass(state: string): string {
     const map: Record<string, string> = {
-      'New': 'state-new',
-      'Active': 'state-active',
-      'Resolved': 'state-resolved',
-      'Closed': 'state-closed',
-      'Removed': 'state-removed',
+      New: 'state-new',
+      Active: 'state-active',
+      Resolved: 'state-resolved',
+      Closed: 'state-closed',
+      Removed: 'state-removed',
       'To Do': 'state-new',
       'In Progress': 'state-active',
-      'Done': 'state-closed',
-      'Backlog': 'state-new',
+      Done: 'state-closed',
+      Backlog: 'state-new',
     };
     return map[state] ?? '';
   }

@@ -26,16 +26,27 @@
   align-items: center;
   gap: 0.4rem;
   color: var(--text-muted);
-  &.ok  { color: var(--success); }
-  &.err { color: var(--danger); }
-  .spinner { width: 0.75rem; height: 0.75rem; border-width: 1.5px; flex-shrink: 0; }
+  &.ok {
+    color: var(--success);
+  }
+  &.err {
+    color: var(--danger);
+  }
+  .spinner {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-width: 1.5px;
+    flex-shrink: 0;
+  }
 }
 
 .inline-row {
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  .form-control { flex: 1; }
+  .form-control {
+    flex: 1;
+  }
 }
 
 .org-row {
@@ -44,7 +55,10 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 
-  .form-control { flex: 1; min-width: 0; }
+  .form-control {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .exec-params {
@@ -77,12 +91,19 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 
-  & + & { border-left: 1px solid var(--border); }
-  &:hover:not(.active) { color: var(--text); background: var(--surface-1); }
+  & + & {
+    border-left: 1px solid var(--border);
+  }
+  &:hover:not(.active) {
+    color: var(--text);
+    background: var(--surface-1);
+  }
   &.active {
-    background: var(--accent-muted, rgba(88,166,255,0.12));
+    background: var(--accent-muted, rgba(88, 166, 255, 0.12));
     color: var(--accent, #58a6ff);
     font-weight: 600;
   }
@@ -93,8 +114,12 @@
   height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
-  &.ps-dot-ok  { background: var(--success, #3fb950); }
-  &.ps-dot-off { background: var(--border); }
+  &.ps-dot-ok {
+    background: var(--success, #3fb950);
+  }
+  &.ps-dot-off {
+    background: var(--border);
+  }
 }
 
 .settings-subsection {

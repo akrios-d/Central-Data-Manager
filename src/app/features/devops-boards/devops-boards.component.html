@@ -4,8 +4,14 @@
     <p>{{ 'boards.subtitle' | translate }}</p>
   </div>
   @if (projects().length > 1) {
-    <select class="form-control" style="width:auto"
-      [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event); loadAssignees($event); loadSavedColConfig($event)">
+    <select
+      class="form-control"
+      style="width: auto"
+      [ngModel]="selectedProject()"
+      (ngModelChange)="
+        selectedProject.set($event); loadAssignees($event); loadSavedColConfig($event)
+      "
+    >
       @for (p of projects(); track p.id) {
         <option [value]="p.id">{{ p.name }}</option>
       }
@@ -14,16 +20,32 @@
 </div>
 
 @if (loading()) {
-  <div class="empty-state"><div class="spinner"></div><p class="mt-2">{{ 'boards.loadingProjects' | translate }}</p></div>
+  <div class="empty-state">
+    <div class="spinner"></div>
+    <p class="mt-2">{{ 'boards.loadingProjects' | translate }}</p>
+  </div>
 } @else if (error()) {
-  <div class="card"><p class="text-muted">{{ error() }}</p></div>
+  <div class="card">
+    <p class="text-muted">{{ error() }}</p>
+  </div>
 } @else {
-
   <div class="card filter-card">
     <div class="filter-row">
       <div class="sprint-toggle">
-        <button class="toggle-btn" [class.active]="filterSprint() === 'all'" (click)="filterSprint.set('all')">{{ 'boards.all' | translate }}</button>
-        <button class="toggle-btn" [class.active]="filterSprint() === 'current'" (click)="filterSprint.set('current')">{{ 'boards.currentSprint' | translate }}</button>
+        <button
+          class="toggle-btn"
+          [class.active]="filterSprint() === 'all'"
+          (click)="filterSprint.set('all')"
+        >
+          {{ 'boards.all' | translate }}
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="filterSprint() === 'current'"
+          (click)="filterSprint.set('current')"
+        >
+          {{ 'boards.currentSprint' | translate }}
+        </button>
       </div>
       <div class="filter-divider"></div>
       @if (availableTypes().length) {
@@ -36,17 +58,26 @@
         </div>
       }
       <div class="assignee-wrap">
-        <input class="form-control filter-assignee"
+        <input
+          class="form-control filter-assignee"
           [placeholder]="'boards.assigneePlaceholder' | translate"
           autocomplete="off"
           [ngModel]="filterAssignee()"
           (ngModelChange)="filterAssignee.set($event); showAssigneeDrop.set(true)"
           (focus)="showAssigneeDrop.set(true)"
-          (blur)="$any($event.relatedTarget)?.closest('.assignee-drop') ? null : showAssigneeDrop.set(false)" />
+          (blur)="
+            $any($event.relatedTarget)?.closest('.assignee-drop')
+              ? null
+              : showAssigneeDrop.set(false)
+          "
+        />
         @if (showAssigneeDrop() && assigneeSuggestions().length) {
           <div class="assignee-drop">
             @for (m of assigneeSuggestions(); track m) {
-              <div class="assignee-option" (mousedown)="filterAssignee.set(m); showAssigneeDrop.set(false)">
+              <div
+                class="assignee-option"
+                (mousedown)="filterAssignee.set(m); showAssigneeDrop.set(false)"
+              >
                 {{ m }}
               </div>
             }
@@ -55,8 +86,11 @@
       </div>
       <div class="filter-divider"></div>
       <div class="col-manager-wrap">
-        <button class="btn-col-manager" (click)="showColManager.set(!showColManager())"
-          [class.active]="showColManager()">
+        <button
+          class="btn-col-manager"
+          (click)="showColManager.set(!showColManager())"
+          [class.active]="showColManager()"
+        >
           {{ 'boards.columnsBtn' | translate }}
           @if (columnConfigs().length) {
             <span class="col-count">{{ columnConfigs().length }}</span>
@@ -69,56 +103,73 @@
             } @else {
               <p class="col-manager-note">{{ 'boards.columnsFilterNote' | translate }}</p>
               @for (cfg of columnConfigs(); track cfg.state; let i = $index) {
-                <div class="col-manager-row"
+                <div
+                  class="col-manager-row"
                   draggable="true"
                   [class.col-dragging]="dragColIndex() === i"
                   (dragstart)="onColDragStart(i)"
                   (dragenter)="onColDragEnter(i); $event.preventDefault()"
                   (dragover)="$event.preventDefault()"
-                  (dragend)="onColDragEnd()">
+                  (dragend)="onColDragEnd()"
+                >
                   <span class="col-drag-handle">⠿</span>
                   <label class="col-manager-label">
-                    <input type="checkbox" [checked]="cfg.visible" (change)="toggleColVisibility(cfg.state)" />
+                    <input
+                      type="checkbox"
+                      [checked]="cfg.visible"
+                      (change)="toggleColVisibility(cfg.state)"
+                    />
                     {{ cfg.state }}
                   </label>
                 </div>
               }
               <div class="col-manager-footer">
-                <button class="col-reset-btn" (click)="resetColConfig()">↺ {{ 'boards.resetColumns' | translate }}</button>
+                <button class="col-reset-btn" (click)="resetColConfig()">
+                  ↺ {{ 'boards.resetColumns' | translate }}
+                </button>
               </div>
             }
           </div>
         }
       </div>
       <button class="btn btn-primary" [disabled]="boardLoading()" (click)="loadBoard()">
-        @if (boardLoading()) { <span class="spinner-inline"></span> }
+        @if (boardLoading()) {
+          <span class="spinner-inline"></span>
+        }
         {{ 'boards.load' | translate }}
       </button>
     </div>
   </div>
 
   @if (boardLoading()) {
-    <div class="empty-state"><div class="spinner"></div><p class="mt-2">{{ 'boards.loadingBoard' | translate }}</p></div>
+    <div class="empty-state">
+      <div class="spinner"></div>
+      <p class="mt-2">{{ 'boards.loadingBoard' | translate }}</p>
+    </div>
   }
 
   @if (boardReady() && !boardLoading()) {
     <div class="board-meta text-muted text-sm">
-      {{ totalItems() }} {{ 'boards.items' | translate }} · {{ visibleColumns().length }} {{ 'boards.of' | translate }} {{ columns().length }} {{ 'boards.visibleColumns' | translate }}
+      {{ totalItems() }} {{ 'boards.items' | translate }} · {{ visibleColumns().length }}
+      {{ 'boards.of' | translate }} {{ columns().length }} {{ 'boards.visibleColumns' | translate }}
     </div>
     <div class="kanban-board">
       @for (col of visibleColumns(); track col.state) {
-        <div class="kanban-col"
+        <div
+          class="kanban-col"
           [class.drag-over]="dragOverState() === col.state"
           [class.col-board-dragging]="dragColBoardState() === col.state"
           (dragover)="$event.preventDefault()"
           (dragenter)="onDragEnter(col.state)"
           (dragleave)="onDragLeave($event)"
-          (drop)="onDrop(col.state)">
-
-          <div class="kanban-col-header"
+          (drop)="onDrop(col.state)"
+        >
+          <div
+            class="kanban-col-header"
             draggable="true"
             (dragstart)="onColBoardDragStart($event, col.state)"
-            (dragend)="onColBoardDragEnd()">
+            (dragend)="onColBoardDragEnd()"
+          >
             <span class="col-header-drag-hint">⠿</span>
             <span>{{ col.state }}</span>
             <span class="badge badge-muted">{{ col.items.length }}</span>
@@ -126,12 +177,14 @@
 
           <div class="kanban-items">
             @for (wi of col.items; track wi.id) {
-              <div class="wi-card"
+              <div
+                class="wi-card"
                 [class.saving]="saving() === wi.id"
                 draggable="true"
                 (click)="openItem(wi)"
                 (dragstart)="onDragStart($event, wi)"
-                (dragend)="onDragEnd($event)">
+                (dragend)="onDragEnd($event)"
+              >
                 <div class="wi-card-top">
                   <span class="wi-type badge badge-muted">{{ wi.type }}</span>
                   <span class="wi-priority">{{ wi.priorityEmoji }}</span>
@@ -142,7 +195,9 @@
                 }
                 <div class="wi-card-footer">
                   <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
-                  @if (saving() === wi.id) { <span class="spinner"></span> }
+                  @if (saving() === wi.id) {
+                    <span class="spinner"></span>
+                  }
                 </div>
               </div>
             }

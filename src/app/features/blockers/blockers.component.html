@@ -4,10 +4,8 @@
 </div>
 
 <div class="card blockers-card">
-
   <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
   <div class="blockers-sidebar">
-
     <!-- Project selector -->
     <div class="sidebar-controls">
       @if (loadingProjects()) {
@@ -15,20 +13,32 @@
       } @else if (!hasProvider()) {
         <p class="text-muted text-sm">{{ noProviderKey() | translate }}</p>
       } @else {
-        <select class="form-control form-control-sm" [ngModel]="selectedProject()" (ngModelChange)="selectedProject.set($event)">
+        <select
+          class="form-control form-control-sm"
+          [ngModel]="selectedProject()"
+          (ngModelChange)="selectedProject.set($event)"
+        >
           <option value="" disabled>{{ 'blockers.selectProject' | translate }}</option>
           @for (p of projects(); track p.id) {
             <option [value]="p.id">{{ p.name }}</option>
           }
         </select>
-        <button class="btn btn-sm btn-primary" [disabled]="loading() || !selectedProject()" (click)="load()">
-          @if (loading()) { {{ 'blockers.loading' | translate }} } @else { {{ 'blockers.load' | translate }} }
+        <button
+          class="btn btn-sm btn-primary"
+          [disabled]="loading() || !selectedProject()"
+          (click)="load()"
+        >
+          @if (loading()) {
+            {{ 'blockers.loading' | translate }}
+          } @else {
+            {{ 'blockers.load' | translate }}
+          }
         </button>
       }
     </div>
 
     @if (error()) {
-      <p class="text-sm" style="color:var(--danger)">{{ error() }}</p>
+      <p class="text-sm" style="color: var(--danger)">{{ error() }}</p>
     }
 
     <!-- Filters -->
@@ -37,7 +47,9 @@
         <div class="filter-header">
           <span class="sidebar-heading">{{ 'blockers.filters' | translate }}</span>
           @if (hasActiveFilters()) {
-            <button class="btn-clear-filters" (click)="clearFilters()">{{ 'blockers.clearFilters' | translate }}</button>
+            <button class="btn-clear-filters" (click)="clearFilters()">
+              {{ 'blockers.clearFilters' | translate }}
+            </button>
           }
         </div>
 
@@ -46,10 +58,14 @@
             <span class="filter-label">{{ 'blockers.filterType' | translate }}</span>
             <div class="filter-chips">
               @for (type of availableTypes(); track type) {
-                <button class="filter-chip"
-                        [class.active]="filterTypes().has(type)"
-                        [style.--chip-color]="typeColor(type)"
-                        (click)="toggleTypeFilter(type)">{{ type }}</button>
+                <button
+                  class="filter-chip"
+                  [class.active]="filterTypes().has(type)"
+                  [style.--chip-color]="typeColor(type)"
+                  (click)="toggleTypeFilter(type)"
+                >
+                  {{ type }}
+                </button>
               }
             </div>
           </div>
@@ -60,16 +76,24 @@
             <span class="filter-label">{{ 'blockers.filterState' | translate }}</span>
             <div class="filter-chips">
               @for (state of availableStates(); track state) {
-                <button class="filter-chip filter-chip-state"
-                        [class.active]="filterStates().has(state)"
-                        (click)="toggleStateFilter(state)">{{ state }}</button>
+                <button
+                  class="filter-chip filter-chip-state"
+                  [class.active]="filterStates().has(state)"
+                  (click)="toggleStateFilter(state)"
+                >
+                  {{ state }}
+                </button>
               }
             </div>
           </div>
         }
 
         <label class="filter-toggle-row">
-          <input type="checkbox" [ngModel]="filterOnlyBlockers()" (ngModelChange)="filterOnlyBlockers.set($event)" />
+          <input
+            type="checkbox"
+            [ngModel]="filterOnlyBlockers()"
+            (ngModelChange)="filterOnlyBlockers.set($event)"
+          />
           <span>{{ 'blockers.onlyBlockers' | translate }}</span>
         </label>
       </div>
@@ -81,9 +105,11 @@
         <h3 class="sidebar-heading">{{ 'blockers.topBlockers' | translate }}</h3>
         <ul class="blocker-list">
           @for (n of topBlockers(); track n.id) {
-            <li class="blocker-item"
-                [class.selected]="selectedNodeId() === n.id"
-                (click)="selectNode(n.id)">
+            <li
+              class="blocker-item"
+              [class.selected]="selectedNodeId() === n.id"
+              (click)="selectNode(n.id)"
+            >
               <span class="type-dot" [style.background]="typeColor(n.item.type)"></span>
               <span class="blocker-title">{{ n.item.title }}</span>
               <span class="impact-badge">{{ n.impactScore }}</span>
@@ -101,19 +127,32 @@
           {{ node.item.title }}
         </a>
         <div class="detail-meta">
-          <span class="type-chip" [style.background]="typeColor(node.item.type) + '22'" [style.color]="typeColor(node.item.type)">
+          <span
+            class="type-chip"
+            [style.background]="typeColor(node.item.type) + '22'"
+            [style.color]="typeColor(node.item.type)"
+          >
             {{ node.item.type }}
           </span>
           <span class="state-chip">{{ node.item.state }}</span>
         </div>
         @if (node.item.assignee) {
-          <p class="detail-row"><span class="detail-label">{{ 'blockers.assignedTo' | translate }}:</span> {{ node.item.assignee }}</p>
+          <p class="detail-row">
+            <span class="detail-label">{{ 'blockers.assignedTo' | translate }}:</span>
+            {{ node.item.assignee }}
+          </p>
         }
         @if (node.item.sprint) {
-          <p class="detail-row"><span class="detail-label">{{ 'blockers.sprint' | translate }}:</span> {{ node.item.sprint }}</p>
+          <p class="detail-row">
+            <span class="detail-label">{{ 'blockers.sprint' | translate }}:</span>
+            {{ node.item.sprint }}
+          </p>
         }
         @if (node.impactScore > 0) {
-          <p class="detail-row"><span class="detail-label">{{ 'blockers.impact' | translate }}:</span> <strong>{{ node.impactScore }}</strong></p>
+          <p class="detail-row">
+            <span class="detail-label">{{ 'blockers.impact' | translate }}:</span>
+            <strong>{{ node.impactScore }}</strong>
+          </p>
         }
         @if (node.blocks.length) {
           <div class="detail-links">
@@ -133,12 +172,10 @@
         }
       </div>
     }
-
   </div>
 
   <!-- ── Canvas ───────────────────────────────────────────────────────────── -->
   <div class="blockers-canvas-wrap">
-
     @if (loading()) {
       <div class="canvas-overlay">
         <div class="spinner-sm"></div>
@@ -155,39 +192,70 @@
         </p>
       </div>
     } @else if (nodes().length) {
-      <div class="blockers-canvas"
-           [style.width.px]="canvasWidth()"
-           [style.height.px]="canvasHeight()">
-
+      <div
+        class="blockers-canvas"
+        [style.width.px]="canvasWidth()"
+        [style.height.px]="canvasHeight()"
+      >
         <!-- SVG edge layer -->
-        <svg class="blockers-svg"
-             [attr.width]="canvasWidth()"
-             [attr.height]="canvasHeight()">
+        <svg class="blockers-svg" [attr.width]="canvasWidth()" [attr.height]="canvasHeight()">
           <defs>
-            <marker id="block-arr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <marker
+              id="block-arr"
+              markerWidth="9"
+              markerHeight="7"
+              refX="8"
+              refY="3.5"
+              orient="auto"
+            >
               <polygon points="0 0, 9 3.5, 0 7" class="block-arr-fill" />
             </marker>
-            <marker id="block-arr-active" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <marker
+              id="block-arr-active"
+              markerWidth="9"
+              markerHeight="7"
+              refX="8"
+              refY="3.5"
+              orient="auto"
+            >
               <polygon points="0 0, 9 3.5, 0 7" class="block-arr-fill-active" />
             </marker>
           </defs>
           @for (edge of filteredEdges(); track edge.id) {
-            <path [class]="'block-edge' + (isEdgeInSubgraph(edge) ? ' edge-active' : (selectedNodeId() !== null && filteredNodeIds().has(selectedNodeId()!) ? ' edge-dimmed' : ''))"
-                  [attr.d]="getEdgePath(edge)"
-                  [attr.marker-end]="isEdgeInSubgraph(edge) ? 'url(#block-arr-active)' : 'url(#block-arr)'" />
+            <path
+              [class]="
+                'block-edge' +
+                (isEdgeInSubgraph(edge)
+                  ? ' edge-active'
+                  : selectedNodeId() !== null && filteredNodeIds().has(selectedNodeId()!)
+                    ? ' edge-dimmed'
+                    : '')
+              "
+              [attr.d]="getEdgePath(edge)"
+              [attr.marker-end]="
+                isEdgeInSubgraph(edge) ? 'url(#block-arr-active)' : 'url(#block-arr)'
+              "
+            />
           }
         </svg>
 
         <!-- Nodes -->
         @for (node of filteredNodes(); track node.id) {
-          <div class="block-node"
-               [class.selected]="selectedNodeId() === node.id"
-               [class.node-direct-blocked]="affectedNodes().get(node.id) === 'direct'"
-               [class.node-indirect-blocked]="affectedNodes().get(node.id) === 'indirect'"
-               [class.node-dimmed]="selectedNodeId() !== null && filteredNodeIds().has(selectedNodeId()!) && selectedNodeId() !== node.id && !affectedNodes().has(node.id)"
-               [style.left.px]="node.x"
-               [style.top.px]="node.y"
-               (click)="selectNode(node.id)">
+          <div
+            class="block-node"
+            [class.selected]="selectedNodeId() === node.id"
+            [class.node-direct-blocked]="affectedNodes().get(node.id) === 'direct'"
+            [class.node-indirect-blocked]="affectedNodes().get(node.id) === 'indirect'"
+            [class.node-dimmed]="
+              selectedNodeId() !== null &&
+              filteredNodeIds().has(selectedNodeId()!) &&
+              selectedNodeId() !== node.id &&
+              !affectedNodes().has(node.id)
+            "
+            [style.left.px]="node.x"
+            [style.top.px]="node.y"
+            (click)="selectNode(node.id)"
+          >
             <div class="node-type-bar" [style.background]="typeColor(node.item.type)"></div>
             <div class="node-body">
               <div class="node-top">
@@ -195,7 +263,9 @@
                   {{ node.item.type }}
                 </span>
                 @if (node.impactScore > 0) {
-                  <span class="node-impact-badge" title="{{ 'blockers.impact' | translate }}">⚠ {{ node.impactScore }}</span>
+                  <span class="node-impact-badge" title="{{ 'blockers.impact' | translate }}"
+                    >⚠ {{ node.impactScore }}</span
+                  >
                 }
               </div>
               <div class="node-title">{{ node.item.title }}</div>
@@ -203,9 +273,7 @@
             </div>
           </div>
         }
-
       </div>
     }
-
   </div>
 </div>

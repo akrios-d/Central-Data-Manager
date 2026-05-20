@@ -1,6 +1,8 @@
 .sprint-section {
   margin-bottom: 1.5rem;
-  .section-title { margin-bottom: 0.75rem; }
+  .section-title {
+    margin-bottom: 0.75rem;
+  }
 }
 
 .dashboard-grid {
@@ -10,9 +12,14 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 
-  .section-header { flex-wrap: wrap; gap: 0.25rem; }
+  .section-header {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
 
   .repo-group-name {
     min-width: 0;
@@ -21,7 +28,9 @@
     text-overflow: ellipsis;
   }
 
-  .pipeline-meta { white-space: normal; }
+  .pipeline-meta {
+    white-space: normal;
+  }
 }
 
 .section-header {
@@ -71,7 +80,9 @@
   text-align: left;
   color: inherit;
   border-radius: 4px;
-  &:hover { background: var(--surface-hover, rgba(255,255,255,0.04)); }
+  &:hover {
+    background: var(--surface-hover, rgba(255, 255, 255, 0.04));
+  }
 }
 
 .repo-group-name {
@@ -83,7 +94,9 @@
   text-align: left;
 }
 
-.repo-group-meta { font-size: 0.72rem; }
+.repo-group-meta {
+  font-size: 0.72rem;
+}
 
 .expand-icon {
   font-size: 0.75rem;
@@ -121,19 +134,38 @@
   text-overflow: ellipsis;
 }
 
-.pipeline-meta { font-size: 0.75rem; }
+.pipeline-meta {
+  font-size: 0.75rem;
+}
 
 // ── Run status dot ────────────────────────────────────────────────────────────
 
 .run-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
   background: var(--text-muted);
-  &.success     { background: var(--success); }
-  &.failure     { background: var(--danger); }
-  &.in_progress { background: var(--info); box-shadow: 0 0 0 3px rgba(88,166,255,0.2); }
-  &.queued      { background: var(--warning); }
-  &.cancelled   { background: var(--text-muted); }
-  &.sm          { width: 7px; height: 7px; }
+  &.success {
+    background: var(--success);
+  }
+  &.failure {
+    background: var(--danger);
+  }
+  &.in_progress {
+    background: var(--info);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+  }
+  &.queued {
+    background: var(--warning);
+  }
+  &.cancelled {
+    background: var(--text-muted);
+  }
+  &.sm {
+    width: 7px;
+    height: 7px;
+  }
 }
 
 // ── Work item filters ─────────────────────────────────────────────────────────
@@ -153,16 +185,21 @@
   font-size: 0.75rem;
   cursor: pointer;
   color: var(--text-muted);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   opacity: 0.5;
 
   &.active {
     opacity: 1;
     color: var(--text);
     border-color: var(--accent, #58a6ff);
-    background: var(--accent-muted, rgba(88,166,255,0.1));
+    background: var(--accent-muted, rgba(88, 166, 255, 0.1));
   }
-  &:hover { opacity: 1; }
+  &:hover {
+    opacity: 1;
+  }
 }
 
 // ── Work items ────────────────────────────────────────────────────────────────
@@ -184,17 +221,30 @@
   margin: 0 -0.4rem;
   transition: background 0.12s;
 
-  &:hover { background: var(--surface-2); }
+  &:hover {
+    background: var(--surface-2);
+  }
 }
-.wi-id   { flex-shrink: 0; padding-top: 0.1rem; font-size: 0.75rem; }
+.wi-id {
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+  font-size: 0.75rem;
+}
 
 .wi-info {
-  flex: 1; display: flex; flex-direction: column; min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .wi-title {
   font-size: 0.875rem;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.wi-meta { font-size: 0.75rem; }
+.wi-meta {
+  font-size: 0.75rem;
+}

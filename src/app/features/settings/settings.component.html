@@ -6,11 +6,19 @@
 <!-- ── CI Provider ────────────────────────────────────────────────────────── -->
 <div class="card">
   <div class="provider-switch">
-    <button class="ps-btn" [class.active]="activeCiProvider() === 'github'" (click)="setProvider('github')">
+    <button
+      class="ps-btn"
+      [class.active]="activeCiProvider() === 'github'"
+      (click)="setProvider('github')"
+    >
       GitHub
       <span class="ps-dot" [class.ps-dot-ok]="hasGh()" [class.ps-dot-off]="!hasGh()"></span>
     </button>
-    <button class="ps-btn" [class.active]="activeCiProvider() === 'gitlab'" (click)="setProvider('gitlab')">
+    <button
+      class="ps-btn"
+      [class.active]="activeCiProvider() === 'gitlab'"
+      (click)="setProvider('gitlab')"
+    >
       GitLab
       <span class="ps-dot" [class.ps-dot-ok]="hasGl()" [class.ps-dot-off]="!hasGl()"></span>
     </button>
@@ -19,19 +27,37 @@
   <!-- GitHub panel -->
   @if (activeCiProvider() === 'github') {
     @if (hasGh()) {
-      <p class="text-muted text-sm mt-2">{{ 'settings.owner' | translate }} <strong>{{ ghOwner() }}</strong></p>
+      <p class="text-muted text-sm mt-2">
+        {{ 'settings.owner' | translate }} <strong>{{ ghOwner() }}</strong>
+      </p>
 
       @if (ghTest()) {
-        <p class="test-result mt-1" [class.ok]="ghTest()!.status === 'ok'" [class.err]="ghTest()!.status === 'error'">
-          @if (ghTest()!.status === 'testing') { <span class="spinner"></span> }
+        <p
+          class="test-result mt-1"
+          [class.ok]="ghTest()!.status === 'ok'"
+          [class.err]="ghTest()!.status === 'error'"
+        >
+          @if (ghTest()!.status === 'testing') {
+            <span class="spinner"></span>
+          }
           {{ ghTest()!.detail }}
         </p>
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testGitHub()" [disabled]="ghTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
-        <button class="btn btn-sm" (click)="showGhForm.set(!showGhForm())">{{ 'settings.updateToken' | translate }}</button>
-        <button class="btn btn-sm btn-danger" (click)="clearGh()">{{ 'settings.remove' | translate }}</button>
+        <button
+          class="btn btn-sm"
+          (click)="testGitHub()"
+          [disabled]="ghTest()?.status === 'testing'"
+        >
+          {{ 'settings.test' | translate }}
+        </button>
+        <button class="btn btn-sm" (click)="showGhForm.set(!showGhForm())">
+          {{ 'settings.updateToken' | translate }}
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="clearGh()">
+          {{ 'settings.remove' | translate }}
+        </button>
       </div>
     }
 
@@ -39,13 +65,31 @@
       <div class="settings-form mt-2">
         <div class="form-group">
           <label>{{ 'settings.username' | translate }}</label>
-          <input class="form-control" type="text" [ngModel]="ghOwner2()" (ngModelChange)="ghOwner2.set($event)" [placeholder]="'settings.orgPlaceholder' | translate" />
+          <input
+            class="form-control"
+            type="text"
+            [ngModel]="ghOwner2()"
+            (ngModelChange)="ghOwner2.set($event)"
+            [placeholder]="'settings.orgPlaceholder' | translate"
+          />
         </div>
         <div class="form-group mt-1">
           <label>{{ 'settings.pat' | translate }}</label>
-          <input class="form-control" type="password" [ngModel]="ghToken()" (ngModelChange)="ghToken.set($event)" [placeholder]="'settings.githubTokenHint' | translate" />
+          <input
+            class="form-control"
+            type="password"
+            [ngModel]="ghToken()"
+            (ngModelChange)="ghToken.set($event)"
+            [placeholder]="'settings.githubTokenHint' | translate"
+          />
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveGh()" [disabled]="!ghToken().trim() || !ghOwner2().trim()">{{ 'settings.save' | translate }}</button>
+        <button
+          class="btn btn-primary btn-sm mt-2"
+          (click)="saveGh()"
+          [disabled]="!ghToken().trim() || !ghOwner2().trim()"
+        >
+          {{ 'settings.save' | translate }}
+        </button>
       </div>
     }
   }
@@ -53,19 +97,38 @@
   <!-- GitLab panel -->
   @if (activeCiProvider() === 'gitlab') {
     @if (hasGl()) {
-      <p class="text-muted text-sm mt-2">{{ 'settings.gitlabUrl' | translate }}: <strong>{{ glBaseUrl() ?? 'https://gitlab.com' }}</strong></p>
+      <p class="text-muted text-sm mt-2">
+        {{ 'settings.gitlabUrl' | translate }}:
+        <strong>{{ glBaseUrl() ?? 'https://gitlab.com' }}</strong>
+      </p>
 
       @if (glTest()) {
-        <p class="test-result mt-1" [class.ok]="glTest()!.status === 'ok'" [class.err]="glTest()!.status === 'error'">
-          @if (glTest()!.status === 'testing') { <span class="spinner"></span> }
+        <p
+          class="test-result mt-1"
+          [class.ok]="glTest()!.status === 'ok'"
+          [class.err]="glTest()!.status === 'error'"
+        >
+          @if (glTest()!.status === 'testing') {
+            <span class="spinner"></span>
+          }
           {{ glTest()!.detail }}
         </p>
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testGitLab()" [disabled]="glTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
-        <button class="btn btn-sm" (click)="showGlForm.set(!showGlForm())">{{ 'settings.updateToken' | translate }}</button>
-        <button class="btn btn-sm btn-danger" (click)="clearGl()">{{ 'settings.remove' | translate }}</button>
+        <button
+          class="btn btn-sm"
+          (click)="testGitLab()"
+          [disabled]="glTest()?.status === 'testing'"
+        >
+          {{ 'settings.test' | translate }}
+        </button>
+        <button class="btn btn-sm" (click)="showGlForm.set(!showGlForm())">
+          {{ 'settings.updateToken' | translate }}
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="clearGl()">
+          {{ 'settings.remove' | translate }}
+        </button>
       </div>
     }
 
@@ -73,14 +136,32 @@
       <div class="settings-form mt-2">
         <div class="form-group">
           <label>{{ 'settings.gitlabSelfHosted' | translate }}</label>
-          <input class="form-control" type="url" [ngModel]="glUrl()" (ngModelChange)="glUrl.set($event)" placeholder="https://gitlab.com" />
+          <input
+            class="form-control"
+            type="url"
+            [ngModel]="glUrl()"
+            (ngModelChange)="glUrl.set($event)"
+            placeholder="https://gitlab.com"
+          />
           <span class="text-muted text-sm">{{ 'settings.gitlabUrlHint' | translate }}</span>
         </div>
         <div class="form-group mt-1">
           <label>{{ 'settings.pat' | translate }}</label>
-          <input class="form-control" type="password" [ngModel]="glToken()" (ngModelChange)="glToken.set($event)" [placeholder]="'settings.gitlabTokenHint' | translate" />
+          <input
+            class="form-control"
+            type="password"
+            [ngModel]="glToken()"
+            (ngModelChange)="glToken.set($event)"
+            [placeholder]="'settings.gitlabTokenHint' | translate"
+          />
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveGl()" [disabled]="!glToken().trim()">{{ 'settings.save' | translate }}</button>
+        <button
+          class="btn btn-primary btn-sm mt-2"
+          (click)="saveGl()"
+          [disabled]="!glToken().trim()"
+        >
+          {{ 'settings.save' | translate }}
+        </button>
       </div>
     }
   }
@@ -93,32 +174,56 @@
       <div class="form-group">
         <label class="form-label">{{ 'settings.pollInterval' | translate }}</label>
         <div class="inline-row mt-1">
-          <input class="form-control exec-input" type="number" min="2" max="60"
-            [ngModel]="editPollInterval()" (ngModelChange)="editPollInterval.set(+$event)" />
+          <input
+            class="form-control exec-input"
+            type="number"
+            min="2"
+            max="60"
+            [ngModel]="editPollInterval()"
+            (ngModelChange)="editPollInterval.set(+$event)"
+          />
           <span class="text-muted text-sm">{{ 'settings.seconds' | translate }}</span>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">{{ 'settings.maxPolls' | translate }}</label>
         <div class="inline-row mt-1">
-          <input class="form-control exec-input" type="number" min="10" max="500"
-            [ngModel]="editMaxPolls()" (ngModelChange)="editMaxPolls.set(+$event)" />
-          <span class="text-muted text-sm">≈ {{ maxPollMinutes() }} {{ 'settings.minutes' | translate }}</span>
+          <input
+            class="form-control exec-input"
+            type="number"
+            min="10"
+            max="500"
+            [ngModel]="editMaxPolls()"
+            (ngModelChange)="editMaxPolls.set(+$event)"
+          />
+          <span class="text-muted text-sm"
+            >≈ {{ maxPollMinutes() }} {{ 'settings.minutes' | translate }}</span
+          >
         </div>
       </div>
     </div>
-    <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">{{ 'settings.save' | translate }}</button>
+    <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">
+      {{ 'settings.save' | translate }}
+    </button>
   </div>
 </div>
 
 <!-- ── Boards Provider ───────────────────────────────────────────────────── -->
 <div class="card mt-3">
   <div class="provider-switch">
-    <button class="ps-btn" [class.active]="activeBoardsProvider() === 'devops'" (click)="setBoardsProvider('devops')">
+    <button
+      class="ps-btn"
+      [class.active]="activeBoardsProvider() === 'devops'"
+      (click)="setBoardsProvider('devops')"
+    >
       Azure DevOps
       <span class="ps-dot" [class.ps-dot-ok]="hasAdo()" [class.ps-dot-off]="!hasAdo()"></span>
     </button>
-    <button class="ps-btn" [class.active]="activeBoardsProvider() === 'jira'" (click)="setBoardsProvider('jira')">
+    <button
+      class="ps-btn"
+      [class.active]="activeBoardsProvider() === 'jira'"
+      (click)="setBoardsProvider('jira')"
+    >
       Jira
       <span class="ps-dot" [class.ps-dot-ok]="hasJira()" [class.ps-dot-off]="!hasJira()"></span>
     </button>
@@ -129,26 +234,59 @@
     @if (hasAdo()) {
       <div class="org-row mt-2">
         @if (!showAdoOrgEdit()) {
-          <span class="text-muted text-sm">{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span>
-          <button class="btn btn-sm" (click)="openAdoOrgEdit()">{{ 'settings.editOrg' | translate }}</button>
+          <span class="text-muted text-sm"
+            >{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span
+          >
+          <button class="btn btn-sm" (click)="openAdoOrgEdit()">
+            {{ 'settings.editOrg' | translate }}
+          </button>
         } @else {
-          <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
-          <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">{{ 'settings.save' | translate }}</button>
-          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+          <input
+            class="form-control"
+            type="text"
+            [ngModel]="editAdoOrg()"
+            (ngModelChange)="editAdoOrg.set($event)"
+          />
+          <button
+            class="btn btn-primary btn-sm"
+            (click)="saveAdoOrg()"
+            [disabled]="!editAdoOrg().trim()"
+          >
+            {{ 'settings.save' | translate }}
+          </button>
+          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">
+            {{ 'settings.cancel' | translate }}
+          </button>
         }
       </div>
 
       @if (adoTest()) {
-        <p class="test-result mt-1" [class.ok]="adoTest()!.status === 'ok'" [class.err]="adoTest()!.status === 'error'">
-          @if (adoTest()!.status === 'testing') { <span class="spinner"></span> }
+        <p
+          class="test-result mt-1"
+          [class.ok]="adoTest()!.status === 'ok'"
+          [class.err]="adoTest()!.status === 'error'"
+        >
+          @if (adoTest()!.status === 'testing') {
+            <span class="spinner"></span>
+          }
           {{ adoTest()!.detail }}
         </p>
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
-        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">{{ 'settings.updateToken' | translate }}</button>
-        <button class="btn btn-sm btn-danger" (click)="clearAdo()">{{ 'settings.remove' | translate }}</button>
+        <button
+          class="btn btn-sm"
+          (click)="testDevOps()"
+          [disabled]="adoTest()?.status === 'testing'"
+        >
+          {{ 'settings.test' | translate }}
+        </button>
+        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">
+          {{ 'settings.updateToken' | translate }}
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="clearAdo()">
+          {{ 'settings.remove' | translate }}
+        </button>
       </div>
     }
 
@@ -156,13 +294,31 @@
       <div class="settings-form mt-2">
         <div class="form-group">
           <label>{{ 'settings.orgName' | translate }}</label>
-          <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" [placeholder]="'settings.companyPlaceholder' | translate" />
+          <input
+            class="form-control"
+            type="text"
+            [ngModel]="adoOrg2()"
+            (ngModelChange)="adoOrg2.set($event)"
+            [placeholder]="'settings.companyPlaceholder' | translate"
+          />
         </div>
         <div class="form-group mt-1">
           <label>{{ 'settings.pat' | translate }}</label>
-          <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" [placeholder]="'settings.patPlaceholder' | translate" />
+          <input
+            class="form-control"
+            type="password"
+            [ngModel]="adoToken()"
+            (ngModelChange)="adoToken.set($event)"
+            [placeholder]="'settings.patPlaceholder' | translate"
+          />
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
+        <button
+          class="btn btn-primary btn-sm mt-2"
+          (click)="saveAdo()"
+          [disabled]="!adoToken().trim() || !adoOrg2().trim()"
+        >
+          {{ 'settings.save' | translate }}
+        </button>
       </div>
     }
 
@@ -174,14 +330,19 @@
             <h3 class="subsection-title">{{ 'settings.sprintWidget' | translate }}</h3>
             @if (adoProject() && adoTeam()) {
               <p class="text-muted text-sm">
-                {{ 'settings.project' | translate }} <strong>{{ adoProject() }}</strong> · {{ 'settings.team' | translate }} <strong>{{ adoTeam() }}</strong>
+                {{ 'settings.project' | translate }} <strong>{{ adoProject() }}</strong> ·
+                {{ 'settings.team' | translate }} <strong>{{ adoTeam() }}</strong>
               </p>
             } @else {
               <p class="text-muted text-sm">{{ 'settings.sprintNotConfigured' | translate }}</p>
             }
           </div>
           <button class="btn btn-sm" (click)="openSprintEdit()">
-            {{ adoProject() ? ('settings.editBtn' | translate) : ('settings.configureBtn' | translate) }}
+            {{
+              adoProject()
+                ? ('settings.editBtn' | translate)
+                : ('settings.configureBtn' | translate)
+            }}
           </button>
         </div>
 
@@ -192,12 +353,16 @@
               @if (projectsLoading()) {
                 <div class="inline-row mt-1">
                   <span class="spinner"></span>
-                  <span class="text-muted text-sm">{{ 'settings.loadingProjects' | translate }}</span>
+                  <span class="text-muted text-sm">{{
+                    'settings.loadingProjects' | translate
+                  }}</span>
                 </div>
               } @else {
-                <select class="form-control mt-1"
+                <select
+                  class="form-control mt-1"
                   [ngModel]="editAdoProject()"
-                  (ngModelChange)="onProjectChange($event)">
+                  (ngModelChange)="onProjectChange($event)"
+                >
                   <option value="">{{ 'settings.selectProject' | translate }}</option>
                   @for (p of availableProjects(); track p.id) {
                     <option [value]="p.name">{{ p.name }}</option>
@@ -214,7 +379,11 @@
             } @else if (availableTeams().length > 0) {
               <div class="form-group mt-1">
                 <label>{{ 'settings.teamLabel' | translate }}</label>
-                <select class="form-control" [ngModel]="editAdoTeam()" (ngModelChange)="editAdoTeam.set($event)">
+                <select
+                  class="form-control"
+                  [ngModel]="editAdoTeam()"
+                  (ngModelChange)="editAdoTeam.set($event)"
+                >
                   <option value="">{{ 'settings.selectTeam' | translate }}</option>
                   @for (t of availableTeams(); track t.id) {
                     <option [value]="t.name">{{ t.name }}</option>
@@ -224,9 +393,16 @@
             }
 
             <div class="settings-actions mt-2">
-              <button class="btn btn-primary btn-sm" (click)="saveSprintConfig()"
-                [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()">{{ 'settings.save' | translate }}</button>
-              <button class="btn btn-sm" (click)="showSprintEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+              <button
+                class="btn btn-primary btn-sm"
+                (click)="saveSprintConfig()"
+                [disabled]="!editAdoProject().trim() || !editAdoTeam().trim()"
+              >
+                {{ 'settings.save' | translate }}
+              </button>
+              <button class="btn btn-sm" (click)="showSprintEdit.set(false)">
+                {{ 'settings.cancel' | translate }}
+              </button>
             </div>
           </div>
         }
@@ -240,16 +416,32 @@
       <p class="text-muted text-sm mt-2">{{ jiraEmail2() }} · {{ jiraBaseUrl2() }}</p>
 
       @if (jiraTest()) {
-        <p class="test-result mt-1" [class.ok]="jiraTest()!.status === 'ok'" [class.err]="jiraTest()!.status === 'error'">
-          @if (jiraTest()!.status === 'testing') { <span class="spinner"></span> }
+        <p
+          class="test-result mt-1"
+          [class.ok]="jiraTest()!.status === 'ok'"
+          [class.err]="jiraTest()!.status === 'error'"
+        >
+          @if (jiraTest()!.status === 'testing') {
+            <span class="spinner"></span>
+          }
           {{ jiraTest()!.detail }}
         </p>
       }
 
       <div class="settings-actions mt-2">
-        <button class="btn btn-sm" (click)="testJira()" [disabled]="jiraTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
-        <button class="btn btn-sm" (click)="showJiraForm.set(!showJiraForm())">{{ 'settings.updateToken' | translate }}</button>
-        <button class="btn btn-sm btn-danger" (click)="clearJira()">{{ 'settings.remove' | translate }}</button>
+        <button
+          class="btn btn-sm"
+          (click)="testJira()"
+          [disabled]="jiraTest()?.status === 'testing'"
+        >
+          {{ 'settings.test' | translate }}
+        </button>
+        <button class="btn btn-sm" (click)="showJiraForm.set(!showJiraForm())">
+          {{ 'settings.updateToken' | translate }}
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="clearJira()">
+          {{ 'settings.remove' | translate }}
+        </button>
       </div>
     }
 
@@ -257,19 +449,40 @@
       <div class="settings-form mt-2">
         <div class="form-group">
           <label>{{ 'settings.jiraUrl' | translate }}</label>
-          <input class="form-control" type="url" [ngModel]="jiraUrl()" (ngModelChange)="jiraUrl.set($event)" placeholder="https://your-domain.atlassian.net" />
+          <input
+            class="form-control"
+            type="url"
+            [ngModel]="jiraUrl()"
+            (ngModelChange)="jiraUrl.set($event)"
+            placeholder="https://your-domain.atlassian.net"
+          />
         </div>
         <div class="form-group mt-1">
           <label>{{ 'settings.jiraEmail' | translate }}</label>
-          <input class="form-control" type="email" [ngModel]="jiraEmail()" (ngModelChange)="jiraEmail.set($event)" placeholder="you@company.com" />
+          <input
+            class="form-control"
+            type="email"
+            [ngModel]="jiraEmail()"
+            (ngModelChange)="jiraEmail.set($event)"
+            placeholder="you@company.com"
+          />
         </div>
         <div class="form-group mt-1">
           <label>{{ 'settings.pat' | translate }}</label>
-          <input class="form-control" type="password" [ngModel]="jiraToken()" (ngModelChange)="jiraToken.set($event)" [placeholder]="'settings.jiraTokenHint' | translate" />
+          <input
+            class="form-control"
+            type="password"
+            [ngModel]="jiraToken()"
+            (ngModelChange)="jiraToken.set($event)"
+            [placeholder]="'settings.jiraTokenHint' | translate"
+          />
           <span class="text-muted text-sm">{{ 'settings.jiraTokenHint2' | translate }}</span>
         </div>
-        <button class="btn btn-primary btn-sm mt-2" (click)="saveJira()"
-          [disabled]="!jiraToken().trim() || !jiraEmail().trim() || !jiraUrl().trim()">
+        <button
+          class="btn btn-primary btn-sm mt-2"
+          (click)="saveJira()"
+          [disabled]="!jiraToken().trim() || !jiraEmail().trim() || !jiraUrl().trim()"
+        >
           {{ 'settings.save' | translate }}
         </button>
       </div>
@@ -283,11 +496,17 @@
             @if (jiraProject()) {
               <p class="text-muted text-sm">{{ jiraProject() }}</p>
             } @else {
-              <p class="text-muted text-sm">{{ 'settings.jiraProjectNotConfigured' | translate }}</p>
+              <p class="text-muted text-sm">
+                {{ 'settings.jiraProjectNotConfigured' | translate }}
+              </p>
             }
           </div>
           <button class="btn btn-sm" (click)="openJiraProjectEdit()">
-            {{ jiraProject() ? ('settings.editBtn' | translate) : ('settings.configureBtn' | translate) }}
+            {{
+              jiraProject()
+                ? ('settings.editBtn' | translate)
+                : ('settings.configureBtn' | translate)
+            }}
           </button>
         </div>
 
@@ -298,10 +517,16 @@
               @if (jiraProjectsLoading()) {
                 <div class="inline-row mt-1">
                   <span class="spinner"></span>
-                  <span class="text-muted text-sm">{{ 'settings.loadingProjects' | translate }}</span>
+                  <span class="text-muted text-sm">{{
+                    'settings.loadingProjects' | translate
+                  }}</span>
                 </div>
               } @else {
-                <select class="form-control mt-1" [ngModel]="jiraProject2()" (ngModelChange)="jiraProject2.set($event)">
+                <select
+                  class="form-control mt-1"
+                  [ngModel]="jiraProject2()"
+                  (ngModelChange)="jiraProject2.set($event)"
+                >
                   <option value="">{{ 'settings.selectProject' | translate }}</option>
                   @for (p of availableJiraProjects(); track p.id) {
                     <option [value]="p.key">{{ p.name }} ({{ p.key }})</option>
@@ -310,10 +535,16 @@
               }
             </div>
             <div class="settings-actions mt-2">
-              <button class="btn btn-primary btn-sm" (click)="saveJiraProject()" [disabled]="!jiraProject2().trim()">
+              <button
+                class="btn btn-primary btn-sm"
+                (click)="saveJiraProject()"
+                [disabled]="!jiraProject2().trim()"
+              >
                 {{ 'settings.save' | translate }}
               </button>
-              <button class="btn btn-sm" (click)="showJiraProjectEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+              <button class="btn btn-sm" (click)="showJiraProjectEdit.set(false)">
+                {{ 'settings.cancel' | translate }}
+              </button>
             </div>
           </div>
         }
@@ -328,15 +559,21 @@
     <div>
       <h2 class="section-title">{{ 'settings.storageTitle' | translate }}</h2>
       @if (persist()) {
-        <p class="text-sm mt-1 storage-persist-label">{{ 'settings.storagePersistActive' | translate }}</p>
+        <p class="text-sm mt-1 storage-persist-label">
+          {{ 'settings.storagePersistActive' | translate }}
+        </p>
       } @else {
         <p class="text-muted text-sm mt-1">{{ 'settings.storageSessionActive' | translate }}</p>
       }
     </div>
     @if (persist()) {
-      <button class="btn btn-sm" (click)="disablePersist()">{{ 'settings.storageDisable' | translate }}</button>
+      <button class="btn btn-sm" (click)="disablePersist()">
+        {{ 'settings.storageDisable' | translate }}
+      </button>
     } @else {
-      <button class="btn btn-sm btn-outline" (click)="requestEnablePersist()">{{ 'settings.storageEnable' | translate }}</button>
+      <button class="btn btn-sm btn-outline" (click)="requestEnablePersist()">
+        {{ 'settings.storageEnable' | translate }}
+      </button>
     }
   </div>
 </div>
@@ -345,5 +582,7 @@
 <div class="danger-zone card mt-3">
   <h2 class="section-title">{{ 'settings.dangerZone' | translate }}</h2>
   <p class="text-muted text-sm">{{ 'settings.dangerWarning' | translate }}</p>
-  <button class="btn btn-danger mt-2" (click)="clearAll()">{{ 'settings.clearAll' | translate }}</button>
+  <button class="btn btn-danger mt-2" (click)="clearAll()">
+    {{ 'settings.clearAll' | translate }}
+  </button>
 </div>

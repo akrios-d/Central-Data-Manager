@@ -2,15 +2,15 @@ import { Injectable, signal } from '@angular/core';
 import { Chain, ChainRun } from '../models/chain.model';
 
 const CHAINS_KEY = 'cdm:chains';
-const RUNS_KEY   = 'cdm:chain-runs';
+const RUNS_KEY = 'cdm:chain-runs';
 
 @Injectable({ providedIn: 'root' })
 export class ChainService {
   private _chains = signal<Chain[]>(this.loadChains());
-  private _runs   = signal<ChainRun[]>(this.loadRuns());
+  private _runs = signal<ChainRun[]>(this.loadRuns());
 
   readonly chains = this._chains.asReadonly();
-  readonly runs   = this._runs.asReadonly();
+  readonly runs = this._runs.asReadonly();
 
   saveChain(chain: Chain): void {
     const list = this._chains().filter((c) => c.id !== chain.id);
@@ -37,12 +37,18 @@ export class ChainService {
   }
 
   private loadChains(): Chain[] {
-    try { return JSON.parse(localStorage.getItem(CHAINS_KEY) ?? '[]'); }
-    catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem(CHAINS_KEY) ?? '[]');
+    } catch {
+      return [];
+    }
   }
 
   private loadRuns(): ChainRun[] {
-    try { return JSON.parse(localStorage.getItem(RUNS_KEY) ?? '[]'); }
-    catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem(RUNS_KEY) ?? '[]');
+    } catch {
+      return [];
+    }
   }
 }

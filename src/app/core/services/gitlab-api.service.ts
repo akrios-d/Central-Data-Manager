@@ -2,7 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { TokenService } from './token.service';
-import { CiRepo, CiRun, CiTag, CiBranch, CiComparison, CiCommit } from '../interfaces/ci-provider.interface';
+import {
+  CiRepo,
+  CiRun,
+  CiTag,
+  CiBranch,
+  CiComparison,
+  CiCommit,
+} from '../interfaces/ci-provider.interface';
 
 interface GlProject {
   id: number;
@@ -23,8 +30,12 @@ interface GlPipeline {
   name?: string;
 }
 
-interface GlTag    { name: string; }
-interface GlBranch { name: string; }
+interface GlTag {
+  name: string;
+}
+interface GlBranch {
+  name: string;
+}
 
 interface GlCommit {
   id: string;
@@ -41,7 +52,7 @@ interface GlComparison {
 
 @Injectable({ providedIn: 'root' })
 export class GitLabApiService {
-  private http   = inject(HttpClient);
+  private http = inject(HttpClient);
   private tokens = inject(TokenService);
 
   private get base(): string {
@@ -56,38 +67,43 @@ export class GitLabApiService {
     return new HttpHeaders({ 'PRIVATE-TOKEN': this.tokens.gitlabToken() ?? '' });
   }
 
-  private enc(p: string): string { return encodeURIComponent(p); }
+  private enc(p: string): string {
+    return encodeURIComponent(p);
+  }
 
   // ── Projects ──────────────────────────────────────────────────────────────────
 
   listProjects(): Observable<CiRepo[]> {
-    return this.http.get<GlProject[]>(
-      `${this.base}/projects?membership=true&per_page=100&order_by=last_activity_at`,
-      { headers: this.headers }
-    ).pipe(map(ps => ps.map(p => this.toRepo(p))));
+    return this.http
+      .get<
+        GlProject[]
+      >(`${this.base}/projects?membership=true&per_page=100&order_by=last_activity_at`, { headers: this.headers })
+      .pipe(map((ps) => ps.map((p) => this.toRepo(p))));
   }
 
   testConnection(): Observable<{ count: number }> {
-    return this.http.get<GlProject[]>(
-      `${this.base}/projects?membership=true&per_page=1`,
-      { headers: this.headers }
-    ).pipe(map(ps => ({ count: ps.length })));
+    return this.http
+      .get<
+        GlProject[]
+      >(`${this.base}/projects?membership=true&per_page=1`, { headers: this.headers })
+      .pipe(map((ps) => ({ count: ps.length })));
   }
 
   // ── Pipelines ─────────────────────────────────────────────────────────────────
 
   listPipelines(fullPath: string, perPage = 20): Observable<{ workflow_runs: CiRun[] }> {
-    return this.http.get<GlPipeline[]>(
-      `${this.base}/projects/${this.enc(fullPath)}/pipelines?per_page=${perPage}&order_by=id&sort=desc`,
-      { headers: this.headers }
-    ).pipe(map(ps => ({ workflow_runs: ps.map(p => this.toRun(p)) })));
+    return this.http
+      .get<
+        GlPipeline[]
+      >(`${this.base}/projects/${this.enc(fullPath)}/pipelines?per_page=${perPage}&order_by=id&sort=desc`, { headers: this.headers })
+      .pipe(map((ps) => ({ workflow_runs: ps.map((p) => this.toRun(p)) })));
   }
 
   retryPipeline(fullPath: string, pipelineId: number): Observable<void> {
     return this.http.post<void>(
       `${this.base}/projects/${this.enc(fullPath)}/pipelines/${pipelineId}/retry`,
       {},
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -95,115 +111,138 @@ export class GitLabApiService {
     return this.http.post<void>(
       `${this.base}/projects/${this.enc(fullPath)}/pipelines/${pipelineId}/cancel`,
       {},
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
-  triggerPipeline(fullPath: string, ref: string, variables: Record<string, string>): Observable<GlPipeline> {
-    const vars = Object.entries(variables).map(([key, value]) => ({ key, value, variable_type: 'env_var' }));
+  triggerPipeline(
+    fullPath: string,
+    ref: string,
+    variables: Record<string, string>,
+  ): Observable<GlPipeline> {
+    const vars = Object.entries(variables).map(([key, value]) => ({
+      key,
+      value,
+      variable_type: 'env_var',
+    }));
     return this.http.post<GlPipeline>(
       `${this.base}/projects/${this.enc(fullPath)}/pipeline`,
       { ref, variables: vars },
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
   getPipelineRun(fullPath: string, pipelineId: number): Observable<CiRun> {
-    return this.http.get<GlPipeline>(
-      `${this.base}/projects/${this.enc(fullPath)}/pipelines/${pipelineId}`,
-      { headers: this.headers }
-    ).pipe(map(p => this.toRun(p)));
+    return this.http
+      .get<GlPipeline>(`${this.base}/projects/${this.enc(fullPath)}/pipelines/${pipelineId}`, {
+        headers: this.headers,
+      })
+      .pipe(map((p) => this.toRun(p)));
   }
 
   // ── Tags & Branches ───────────────────────────────────────────────────────────
 
   listTags(fullPath: string): Observable<CiTag[]> {
-    return this.http.get<GlTag[]>(
-      `${this.base}/projects/${this.enc(fullPath)}/repository/tags?per_page=50`,
-      { headers: this.headers }
-    ).pipe(map(ts => ts.map(t => ({ name: t.name }))));
+    return this.http
+      .get<
+        GlTag[]
+      >(`${this.base}/projects/${this.enc(fullPath)}/repository/tags?per_page=50`, { headers: this.headers })
+      .pipe(map((ts) => ts.map((t) => ({ name: t.name }))));
   }
 
   listBranches(fullPath: string): Observable<CiBranch[]> {
-    return this.http.get<GlBranch[]>(
-      `${this.base}/projects/${this.enc(fullPath)}/repository/branches?per_page=100`,
-      { headers: this.headers }
-    ).pipe(map(bs => bs.map(b => ({ name: b.name }))));
+    return this.http
+      .get<
+        GlBranch[]
+      >(`${this.base}/projects/${this.enc(fullPath)}/repository/branches?per_page=100`, { headers: this.headers })
+      .pipe(map((bs) => bs.map((b) => ({ name: b.name }))));
   }
 
   compareRefs(fullPath: string, from: string, to: string): Observable<CiComparison> {
-    return this.http.get<GlComparison>(
-      `${this.base}/projects/${this.enc(fullPath)}/repository/compare?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-      { headers: this.headers }
-    ).pipe(map(c => {
-      const commits: CiCommit[] = c.commits.map(cm => ({
-        sha:     cm.id,
-        message: cm.message,
-        author:  cm.author_name,
-        date:    cm.created_at,
-        url:     cm.web_url ?? `${this.host}/${fullPath}/-/commit/${cm.id}`,
-      }));
-      return {
-        status:    commits.length === 0 ? 'identical' : 'ahead',
-        ahead_by:  commits.length,
-        behind_by: 0,
-        commits,
-        html_url:  `${this.host}/${fullPath}/-/compare/${encodeURIComponent(from)}...${encodeURIComponent(to)}`,
-      } as CiComparison;
-    }));
+    return this.http
+      .get<GlComparison>(
+        `${this.base}/projects/${this.enc(fullPath)}/repository/compare?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+        { headers: this.headers },
+      )
+      .pipe(
+        map((c) => {
+          const commits: CiCommit[] = c.commits.map((cm) => ({
+            sha: cm.id,
+            message: cm.message,
+            author: cm.author_name,
+            date: cm.created_at,
+            url: cm.web_url ?? `${this.host}/${fullPath}/-/commit/${cm.id}`,
+          }));
+          return {
+            status: commits.length === 0 ? 'identical' : 'ahead',
+            ahead_by: commits.length,
+            behind_by: 0,
+            commits,
+            html_url: `${this.host}/${fullPath}/-/compare/${encodeURIComponent(from)}...${encodeURIComponent(to)}`,
+          } as CiComparison;
+        }),
+      );
   }
 
   getLatestTag(fullPath: string): Observable<string | null> {
-    return this.listTags(fullPath).pipe(map(ts => ts[0]?.name ?? null));
+    return this.listTags(fullPath).pipe(map((ts) => ts[0]?.name ?? null));
   }
 
   // ── Mappers ───────────────────────────────────────────────────────────────────
 
   private toRepo(p: GlProject): CiRepo {
     return {
-      id:             p.id,
-      name:           p.name,
-      full_name:      p.path_with_namespace,
-      private:        p.visibility === 'private' || p.visibility === 'internal',
+      id: p.id,
+      name: p.name,
+      full_name: p.path_with_namespace,
+      private: p.visibility === 'private' || p.visibility === 'internal',
       default_branch: p.default_branch ?? 'main',
-      provider:       'gitlab',
-      html_url:       p.web_url,
+      provider: 'gitlab',
+      html_url: p.web_url,
     };
   }
 
   toRun(p: GlPipeline): CiRun {
     return {
-      id:          p.id,
-      name:        p.name || 'Pipeline',
-      status:      this.normalizeStatus(p.status),
-      conclusion:  this.normalizeConclusion(p.status),
-      html_url:    p.web_url,
-      created_at:  p.created_at,
-      updated_at:  p.updated_at,
+      id: p.id,
+      name: p.name || 'Pipeline',
+      status: this.normalizeStatus(p.status),
+      conclusion: this.normalizeConclusion(p.status),
+      html_url: p.web_url,
+      created_at: p.created_at,
+      updated_at: p.updated_at,
       head_branch: p.ref,
       workflow_id: 0,
-      provider:    'gitlab',
+      provider: 'gitlab',
     };
   }
 
   private normalizeStatus(status: string): string {
     switch (status) {
-      case 'running':  return 'in_progress';
+      case 'running':
+        return 'in_progress';
       case 'success':
       case 'failed':
       case 'canceled':
-      case 'skipped':  return 'completed';
-      default:          return 'queued';
+      case 'skipped':
+        return 'completed';
+      default:
+        return 'queued';
     }
   }
 
   private normalizeConclusion(status: string): CiRun['conclusion'] {
     switch (status) {
-      case 'success':  return 'success';
-      case 'failed':   return 'failure';
-      case 'canceled': return 'cancelled';
-      case 'skipped':  return 'skipped';
-      default:          return null;
+      case 'success':
+        return 'success';
+      case 'failed':
+        return 'failure';
+      case 'canceled':
+        return 'cancelled';
+      case 'skipped':
+        return 'skipped';
+      default:
+        return null;
     }
   }
 }

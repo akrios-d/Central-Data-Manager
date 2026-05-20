@@ -1,30 +1,39 @@
 import { Injectable, signal, computed } from '@angular/core';
 
-const GITHUB_KEY          = 'cdm:github';
-const DEVOPS_KEY          = 'cdm:devops';
-const DEVOPS_ORG_KEY      = 'cdm:devops:org';
-const DEVOPS_PROJECT_KEY  = 'cdm:devops:project';
-const DEVOPS_TEAM_KEY     = 'cdm:devops:team';
-const GITHUB_OWNER_KEY    = 'cdm:github:owner';
-const GITLAB_KEY             = 'cdm:gitlab';
-const GITLAB_URL_KEY         = 'cdm:gitlab:url';
-const JIRA_KEY               = 'cdm:jira';
-const JIRA_EMAIL_KEY         = 'cdm:jira:email';
-const JIRA_URL_KEY           = 'cdm:jira:url';
-const JIRA_PROJECT_KEY       = 'cdm:jira:project';
-const ACTIVE_PROVIDER_KEY    = 'cdm:active-provider';
-const ACTIVE_BOARDS_KEY      = 'cdm:active-boards';
-const TOKEN_EXPIRY_KEY       = 'cdm:expiry';
-const PERSIST_KEY            = 'cdm:persist';
+const GITHUB_KEY = 'cdm:github';
+const DEVOPS_KEY = 'cdm:devops';
+const DEVOPS_ORG_KEY = 'cdm:devops:org';
+const DEVOPS_PROJECT_KEY = 'cdm:devops:project';
+const DEVOPS_TEAM_KEY = 'cdm:devops:team';
+const GITHUB_OWNER_KEY = 'cdm:github:owner';
+const GITLAB_KEY = 'cdm:gitlab';
+const GITLAB_URL_KEY = 'cdm:gitlab:url';
+const JIRA_KEY = 'cdm:jira';
+const JIRA_EMAIL_KEY = 'cdm:jira:email';
+const JIRA_URL_KEY = 'cdm:jira:url';
+const JIRA_PROJECT_KEY = 'cdm:jira:project';
+const ACTIVE_PROVIDER_KEY = 'cdm:active-provider';
+const ACTIVE_BOARDS_KEY = 'cdm:active-boards';
+const TOKEN_EXPIRY_KEY = 'cdm:expiry';
+const PERSIST_KEY = 'cdm:persist';
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 8;
 
 const ALL_TOKEN_KEYS = [
-  GITHUB_KEY, DEVOPS_KEY, DEVOPS_ORG_KEY,
-  DEVOPS_PROJECT_KEY, DEVOPS_TEAM_KEY, GITHUB_OWNER_KEY,
-  GITLAB_KEY, GITLAB_URL_KEY,
-  JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY, JIRA_PROJECT_KEY,
-  ACTIVE_PROVIDER_KEY, ACTIVE_BOARDS_KEY,
+  GITHUB_KEY,
+  DEVOPS_KEY,
+  DEVOPS_ORG_KEY,
+  DEVOPS_PROJECT_KEY,
+  DEVOPS_TEAM_KEY,
+  GITHUB_OWNER_KEY,
+  GITLAB_KEY,
+  GITLAB_URL_KEY,
+  JIRA_KEY,
+  JIRA_EMAIL_KEY,
+  JIRA_URL_KEY,
+  JIRA_PROJECT_KEY,
+  ACTIVE_PROVIDER_KEY,
+  ACTIVE_BOARDS_KEY,
 ];
 
 function initRead(key: string): string | null {
@@ -33,7 +42,6 @@ function initRead(key: string): string | null {
 
 @Injectable({ providedIn: 'root' })
 export class TokenService {
-
   constructor() {
     if (!this._persist()) this.validateSession();
   }
@@ -46,52 +54,58 @@ export class TokenService {
   // Signals
   // =========================================================
 
-  private readonly _persist        = signal<boolean>(localStorage.getItem(PERSIST_KEY) === '1');
+  private readonly _persist = signal<boolean>(localStorage.getItem(PERSIST_KEY) === '1');
 
-  private readonly _githubToken    = signal<string | null>(initRead(GITHUB_KEY));
-  private readonly _devopsToken    = signal<string | null>(initRead(DEVOPS_KEY));
-  private readonly _devopsOrg      = signal<string | null>(initRead(DEVOPS_ORG_KEY));
-  private readonly _devopsProject  = signal<string | null>(initRead(DEVOPS_PROJECT_KEY));
-  private readonly _devopsTeam     = signal<string | null>(initRead(DEVOPS_TEAM_KEY));
-  private readonly _githubOwner    = signal<string | null>(initRead(GITHUB_OWNER_KEY));
-  private readonly _gitlabToken    = signal<string | null>(initRead(GITLAB_KEY));
-  private readonly _gitlabBaseUrl  = signal<string | null>(initRead(GITLAB_URL_KEY));
-  private readonly _jiraToken      = signal<string | null>(initRead(JIRA_KEY));
-  private readonly _jiraEmail      = signal<string | null>(initRead(JIRA_EMAIL_KEY));
-  private readonly _jiraBaseUrl    = signal<string | null>(initRead(JIRA_URL_KEY));
-  private readonly _jiraProject    = signal<string | null>(initRead(JIRA_PROJECT_KEY));
+  private readonly _githubToken = signal<string | null>(initRead(GITHUB_KEY));
+  private readonly _devopsToken = signal<string | null>(initRead(DEVOPS_KEY));
+  private readonly _devopsOrg = signal<string | null>(initRead(DEVOPS_ORG_KEY));
+  private readonly _devopsProject = signal<string | null>(initRead(DEVOPS_PROJECT_KEY));
+  private readonly _devopsTeam = signal<string | null>(initRead(DEVOPS_TEAM_KEY));
+  private readonly _githubOwner = signal<string | null>(initRead(GITHUB_OWNER_KEY));
+  private readonly _gitlabToken = signal<string | null>(initRead(GITLAB_KEY));
+  private readonly _gitlabBaseUrl = signal<string | null>(initRead(GITLAB_URL_KEY));
+  private readonly _jiraToken = signal<string | null>(initRead(JIRA_KEY));
+  private readonly _jiraEmail = signal<string | null>(initRead(JIRA_EMAIL_KEY));
+  private readonly _jiraBaseUrl = signal<string | null>(initRead(JIRA_URL_KEY));
+  private readonly _jiraProject = signal<string | null>(initRead(JIRA_PROJECT_KEY));
   private readonly _activeProvider = signal<'github' | 'gitlab'>(
-    (initRead(ACTIVE_PROVIDER_KEY) as 'github' | 'gitlab') ?? (initRead(GITHUB_KEY) ? 'github' : 'gitlab')
+    (initRead(ACTIVE_PROVIDER_KEY) as 'github' | 'gitlab') ??
+      (initRead(GITHUB_KEY) ? 'github' : 'gitlab'),
   );
   private readonly _activeBoardsProvider = signal<'devops' | 'jira'>(
-    (initRead(ACTIVE_BOARDS_KEY) as 'devops' | 'jira') ?? (initRead(DEVOPS_KEY) ? 'devops' : 'jira')
+    (initRead(ACTIVE_BOARDS_KEY) as 'devops' | 'jira') ??
+      (initRead(DEVOPS_KEY) ? 'devops' : 'jira'),
   );
 
   // =========================================================
   // Readonly state
   // =========================================================
 
-  readonly githubToken   = this._githubToken.asReadonly();
-  readonly devopsToken   = this._devopsToken.asReadonly();
-  readonly devopsOrg     = this._devopsOrg.asReadonly();
+  readonly githubToken = this._githubToken.asReadonly();
+  readonly devopsToken = this._devopsToken.asReadonly();
+  readonly devopsOrg = this._devopsOrg.asReadonly();
   readonly devopsProject = this._devopsProject.asReadonly();
-  readonly devopsTeam    = this._devopsTeam.asReadonly();
-  readonly githubOwner   = this._githubOwner.asReadonly();
-  readonly gitlabToken          = this._gitlabToken.asReadonly();
-  readonly gitlabBaseUrl        = this._gitlabBaseUrl.asReadonly();
-  readonly jiraToken            = this._jiraToken.asReadonly();
-  readonly jiraEmail            = this._jiraEmail.asReadonly();
-  readonly jiraBaseUrl          = this._jiraBaseUrl.asReadonly();
-  readonly jiraProject          = this._jiraProject.asReadonly();
-  readonly persist              = this._persist.asReadonly();
+  readonly devopsTeam = this._devopsTeam.asReadonly();
+  readonly githubOwner = this._githubOwner.asReadonly();
+  readonly gitlabToken = this._gitlabToken.asReadonly();
+  readonly gitlabBaseUrl = this._gitlabBaseUrl.asReadonly();
+  readonly jiraToken = this._jiraToken.asReadonly();
+  readonly jiraEmail = this._jiraEmail.asReadonly();
+  readonly jiraBaseUrl = this._jiraBaseUrl.asReadonly();
+  readonly jiraProject = this._jiraProject.asReadonly();
+  readonly persist = this._persist.asReadonly();
 
-  readonly hasGitHub   = computed(() => !!this._githubToken());
-  readonly hasDevOps   = computed(() => !!this._devopsToken() && !!this._devopsOrg());
-  readonly hasGitLab   = computed(() => !!this._gitlabToken());
-  readonly hasJira     = computed(() => !!this._jiraToken() && !!this._jiraEmail() && !!this._jiraBaseUrl());
-  readonly hasAnyToken = computed(() => this.hasGitHub() || this.hasDevOps() || this.hasGitLab() || this.hasJira());
+  readonly hasGitHub = computed(() => !!this._githubToken());
+  readonly hasDevOps = computed(() => !!this._devopsToken() && !!this._devopsOrg());
+  readonly hasGitLab = computed(() => !!this._gitlabToken());
+  readonly hasJira = computed(
+    () => !!this._jiraToken() && !!this._jiraEmail() && !!this._jiraBaseUrl(),
+  );
+  readonly hasAnyToken = computed(
+    () => this.hasGitHub() || this.hasDevOps() || this.hasGitLab() || this.hasJira(),
+  );
 
-  readonly activeCiProvider     = this._activeProvider.asReadonly();
+  readonly activeCiProvider = this._activeProvider.asReadonly();
   readonly activeBoardsProvider = this._activeBoardsProvider.asReadonly();
 
   // =========================================================
@@ -116,7 +130,7 @@ export class TokenService {
   // =========================================================
 
   enablePersist(): void {
-    ALL_TOKEN_KEYS.forEach(k => {
+    ALL_TOKEN_KEYS.forEach((k) => {
       const v = sessionStorage.getItem(k);
       if (v !== null) localStorage.setItem(k, v);
     });
@@ -125,7 +139,7 @@ export class TokenService {
   }
 
   disablePersist(): void {
-    ALL_TOKEN_KEYS.forEach(k => {
+    ALL_TOKEN_KEYS.forEach((k) => {
       const v = localStorage.getItem(k);
       if (v !== null) sessionStorage.setItem(k, v);
       localStorage.removeItem(k);
@@ -200,7 +214,9 @@ export class TokenService {
   }
 
   clearJira(): void {
-    [JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY, JIRA_PROJECT_KEY].forEach(k => this.store.removeItem(k));
+    [JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY, JIRA_PROJECT_KEY].forEach((k) =>
+      this.store.removeItem(k),
+    );
     this._jiraToken.set(null);
     this._jiraEmail.set(null);
     this._jiraBaseUrl.set(null);
@@ -243,8 +259,9 @@ export class TokenService {
   }
 
   clearDevOps(): void {
-    [DEVOPS_KEY, DEVOPS_ORG_KEY, DEVOPS_PROJECT_KEY, DEVOPS_TEAM_KEY]
-      .forEach(k => this.store.removeItem(k));
+    [DEVOPS_KEY, DEVOPS_ORG_KEY, DEVOPS_PROJECT_KEY, DEVOPS_TEAM_KEY].forEach((k) =>
+      this.store.removeItem(k),
+    );
     this._devopsToken.set(null);
     this._devopsOrg.set(null);
     this._devopsProject.set(null);

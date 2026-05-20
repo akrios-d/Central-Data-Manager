@@ -11,7 +11,11 @@ import { CiRepo, CiWorkflow } from '../../core/interfaces/ci-provider.interface'
 import { ToastService } from '../../shared/services/toast.service';
 import { NotificationService } from '../../core/services/notification.service';
 
-interface StepInput { key: string; value: string; description?: string; }
+interface StepInput {
+  key: string;
+  value: string;
+  description?: string;
+}
 
 @Component({
   selector: 'app-chain-builder',
@@ -21,62 +25,62 @@ interface StepInput { key: string; value: string; description?: string; }
   styleUrl: './chain-builder.component.scss',
 })
 export class ChainBuilderComponent {
-  private readonly ci       = inject(CiProviderService);
+  private readonly ci = inject(CiProviderService);
   private readonly chainSvc = inject(ChainService);
   private readonly executor = inject(ChainExecutorService);
-  private readonly toasts   = inject(ToastService);
-  private readonly notif    = inject(NotificationService);
+  private readonly toasts = inject(ToastService);
+  private readonly notif = inject(NotificationService);
 
   // ── Data ──────────────────────────────────────────────────────────────────────
   readonly chains = this.chainSvc.chains;
-  readonly runs   = this.chainSvc.runs;
+  readonly runs = this.chainSvc.runs;
 
   // ── Selection / Editor ────────────────────────────────────────────────────────
   selectedId = signal<string | null>(null);
-  chainName  = signal('');
-  chainRef   = signal('');
-  editSteps  = signal<ChainStep[]>([]);
-  activeTab  = signal<'chains' | 'editor' | 'run'>('chains');
+  chainName = signal('');
+  chainRef = signal('');
+  editSteps = signal<ChainStep[]>([]);
+  activeTab = signal<'chains' | 'editor' | 'run'>('chains');
 
   // ── Add-step form ─────────────────────────────────────────────────────────────
-  repos        = signal<CiRepo[]>([]);
+  repos = signal<CiRepo[]>([]);
   reposLoading = signal(false);
-  repoSearch   = signal('');
-  stepRepo     = signal<CiRepo | null>(null);
-  stepWfs      = signal<CiWorkflow[]>([]);
-  stepWfLoad   = signal(false);
-  stepWf          = signal<CiWorkflow | null>(null);
-  stepRef         = signal('main');
+  repoSearch = signal('');
+  stepRepo = signal<CiRepo | null>(null);
+  stepWfs = signal<CiWorkflow[]>([]);
+  stepWfLoad = signal(false);
+  stepWf = signal<CiWorkflow | null>(null);
+  stepRef = signal('main');
   stepOverrideRef = signal(false);
-  stepBranches    = signal<string[]>([]);
-  stepInputs          = signal<StepInput[]>([]);
-  stepClearCache    = signal(false);
-  stepUseLatestTag  = signal(false);
-  wfInputsLoading  = signal(false);
-  showAddStep      = signal(false);
-  editingStepId    = signal<string | null>(null);
+  stepBranches = signal<string[]>([]);
+  stepInputs = signal<StepInput[]>([]);
+  stepClearCache = signal(false);
+  stepUseLatestTag = signal(false);
+  wfInputsLoading = signal(false);
+  showAddStep = signal(false);
+  editingStepId = signal<string | null>(null);
 
   // ── Executor ──────────────────────────────────────────────────────────────────
-  readonly activeRun  = this.executor.activeRun;
-  running             = signal(false);
-  dragStepIndex       = signal<number | null>(null);
-  selectedStepIds     = signal<string[]>([]);
+  readonly activeRun = this.executor.activeRun;
+  running = signal(false);
+  dragStepIndex = signal<number | null>(null);
+  selectedStepIds = signal<string[]>([]);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase().trim();
     const list = this.repos();
-    return q ? list.filter(r => r.full_name.toLowerCase().includes(q)) : list;
+    return q ? list.filter((r) => r.full_name.toLowerCase().includes(q)) : list;
   });
 
   readonly selectedChain = computed(() => {
     const id = this.selectedId();
-    return id && id !== 'new' ? (this.chains().find(c => c.id === id) ?? null) : null;
+    return id && id !== 'new' ? (this.chains().find((c) => c.id === id) ?? null) : null;
   });
 
   readonly chainRuns = computed(() => {
     const id = this.selectedId();
-    return id && id !== 'new' ? this.runs().filter(r => r.chainId === id) : [];
+    return id && id !== 'new' ? this.runs().filter((r) => r.chainId === id) : [];
   });
 
   readonly canRun = computed(() => {
@@ -86,7 +90,7 @@ export class ChainBuilderComponent {
 
   readonly allStepsSelected = computed(() => {
     const ids = this.selectedStepIds();
-    return this.editSteps().length > 0 && this.editSteps().every(s => ids.includes(s.id));
+    return this.editSteps().length > 0 && this.editSteps().every((s) => ids.includes(s.id));
   });
 
   readonly showRepoDropdown = computed(() => {
@@ -101,8 +105,8 @@ export class ChainBuilderComponent {
     this.selectedId.set(chain.id);
     this.chainName.set(chain.name);
     this.chainRef.set(chain.ref ?? '');
-    this.editSteps.set(chain.steps.map(s => ({ ...s })));
-    this.selectedStepIds.set(chain.steps.map(s => s.id));
+    this.editSteps.set(chain.steps.map((s) => ({ ...s })));
+    this.selectedStepIds.set(chain.steps.map((s) => s.id));
     this.showAddStep.set(false);
     this.activeTab.set('editor');
     this.resetStepForm();
@@ -122,13 +126,20 @@ export class ChainBuilderComponent {
   // ── Editor ────────────────────────────────────────────────────────────────────
   saveChain(): void {
     const name = this.chainName().trim();
-    if (!name) { this.toasts.show('Chain name is required', 'danger'); return; }
-    if (!this.editSteps().length) { this.toasts.show('Add at least one step', 'danger'); return; }
+    if (!name) {
+      this.toasts.show('Chain name is required', 'danger');
+      return;
+    }
+    if (!this.editSteps().length) {
+      this.toasts.show('Add at least one step', 'danger');
+      return;
+    }
     const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
-      id, name,
-      ref:       this.chainRef().trim(),
-      steps:     this.editSteps(),
+      id,
+      name,
+      ref: this.chainRef().trim(),
+      steps: this.editSteps(),
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
     this.chainSvc.saveChain(chain);
@@ -139,18 +150,21 @@ export class ChainBuilderComponent {
   deleteChain(): void {
     const id = this.selectedId();
     if (!id || id === 'new') return;
-    this.toasts.confirm(
-      `Delete chain "${this.chainName()}"?`, 'Delete',
-      () => { this.chainSvc.deleteChain(id); this.selectedId.set(null); this.toasts.show('Chain deleted', 'success'); }
-    );
+    this.toasts.confirm(`Delete chain "${this.chainName()}"?`, 'Delete', () => {
+      this.chainSvc.deleteChain(id);
+      this.selectedId.set(null);
+      this.toasts.show('Chain deleted', 'success');
+    });
   }
 
-  onStepDragStart(index: number): void { this.dragStepIndex.set(index); }
+  onStepDragStart(index: number): void {
+    this.dragStepIndex.set(index);
+  }
 
   onStepDragEnter(index: number): void {
     const from = this.dragStepIndex();
     if (from === null || from === index) return;
-    this.editSteps.update(steps => {
+    this.editSteps.update((steps) => {
       const next = [...steps];
       const [item] = next.splice(from, 1);
       next.splice(index, 0, item);
@@ -159,13 +173,15 @@ export class ChainBuilderComponent {
     this.dragStepIndex.set(index);
   }
 
-  onStepDragEnd(): void { this.dragStepIndex.set(null); }
+  onStepDragEnd(): void {
+    this.dragStepIndex.set(null);
+  }
 
   removeStep(i: number): void {
     const step = this.editSteps()[i];
     this.toasts.confirm(`Remove step "${step.workflowName}"?`, 'Remove', () => {
-      this.editSteps.update(list => list.filter((_, idx) => idx !== i));
-      this.selectedStepIds.update(ids => ids.filter(id => id !== step.id));
+      this.editSteps.update((list) => list.filter((_, idx) => idx !== i));
+      this.selectedStepIds.update((ids) => ids.filter((id) => id !== step.id));
       this.toasts.show('Step removed', 'success');
     });
   }
@@ -179,8 +195,11 @@ export class ChainBuilderComponent {
   loadRepos(): void {
     this.reposLoading.set(true);
     this.ci.listRepos().subscribe({
-      next: (r)  => { this.repos.set(r); this.reposLoading.set(false); },
-      error: ()  => this.reposLoading.set(false),
+      next: (r) => {
+        this.repos.set(r);
+        this.reposLoading.set(false);
+      },
+      error: () => this.reposLoading.set(false),
     });
   }
 
@@ -219,8 +238,8 @@ export class ChainBuilderComponent {
 
     // Load branches for ref selection (both providers)
     this.ci.listBranches(repo.full_name, repo.provider).subscribe({
-      next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
-      error: ()  => {},
+      next: (bs) => this.stepBranches.set(bs.map((b) => b.name)),
+      error: () => {},
     });
 
     if (repo.provider === 'gitlab') {
@@ -232,8 +251,11 @@ export class ChainBuilderComponent {
     } else {
       this.stepWfLoad.set(true);
       this.ci.listWorkflows(repo).subscribe({
-        next: (wfs) => { this.stepWfs.set(wfs); this.stepWfLoad.set(false); },
-        error: ()   => this.stepWfLoad.set(false),
+        next: (wfs) => {
+          this.stepWfs.set(wfs);
+          this.stepWfLoad.set(false);
+        },
+        error: () => this.stepWfLoad.set(false),
       });
     }
   }
@@ -253,8 +275,12 @@ export class ChainBuilderComponent {
     });
   }
 
-  addStepInput(): void             { this.stepInputs.update(a => [...a, { key: '', value: '' }]); }
-  removeStepInput(i: number): void { this.stepInputs.update(a => a.filter((_, idx) => idx !== i)); }
+  addStepInput(): void {
+    this.stepInputs.update((a) => [...a, { key: '', value: '' }]);
+  }
+  removeStepInput(i: number): void {
+    this.stepInputs.update((a) => a.filter((_, idx) => idx !== i));
+  }
 
   editStep(step: ChainStep): void {
     this.editingStepId.set(step.id);
@@ -263,8 +289,12 @@ export class ChainBuilderComponent {
 
     const provider = step.provider ?? 'github';
     const fakeRepo: CiRepo = {
-      id: 0, name: step.repoName, full_name: step.repoFullName,
-      private: false, html_url: '', default_branch: step.ref,
+      id: 0,
+      name: step.repoName,
+      full_name: step.repoFullName,
+      private: false,
+      html_url: '',
+      default_branch: step.ref,
       provider,
     };
     this.stepRepo.set(fakeRepo);
@@ -280,7 +310,7 @@ export class ChainBuilderComponent {
       this.ci.listWorkflows(fakeRepo).subscribe({
         next: (wfs) => {
           this.stepWfs.set(wfs);
-          this.stepWf.set(wfs.find(w => w.id === step.workflowId) ?? null);
+          this.stepWf.set(wfs.find((w) => w.id === step.workflowId) ?? null);
           this.stepWfLoad.set(false);
         },
         error: () => this.stepWfLoad.set(false),
@@ -288,8 +318,8 @@ export class ChainBuilderComponent {
     }
 
     this.ci.listBranches(step.repoFullName, provider).subscribe({
-      next: (bs) => this.stepBranches.set(bs.map(b => b.name)),
-      error: ()  => {},
+      next: (bs) => this.stepBranches.set(bs.map((b) => b.name)),
+      error: () => {},
     });
 
     const chainDefaultRef = this.chainRef().trim() || 'main';
@@ -302,40 +332,69 @@ export class ChainBuilderComponent {
 
   addStep(): void {
     const repo = this.stepRepo();
-    const wf   = this.stepWf();
-    if (!repo || !wf) { this.toasts.show('Select a repo', 'danger'); return; }
+    const wf = this.stepWf();
+    if (!repo || !wf) {
+      this.toasts.show('Select a repo', 'danger');
+      return;
+    }
     const inputs = this.stepInputs()
-      .filter(p => p.key.trim() && p.value.trim())
-      .reduce((acc, p) => ({ ...acc, [p.key.trim()]: p.value.trim() }), {} as Record<string, string>);
-    const ref          = this.stepOverrideRef() ? (this.stepRef().trim() || 'main') : (this.chainRef().trim() || 'main');
-    const clearCache   = this.stepClearCache();
+      .filter((p) => p.key.trim() && p.value.trim())
+      .reduce(
+        (acc, p) => ({ ...acc, [p.key.trim()]: p.value.trim() }),
+        {} as Record<string, string>,
+      );
+    const ref = this.stepOverrideRef()
+      ? this.stepRef().trim() || 'main'
+      : this.chainRef().trim() || 'main';
+    const clearCache = this.stepClearCache();
     const useLatestTag = this.stepUseLatestTag();
-    const editingId    = this.editingStepId();
+    const editingId = this.editingStepId();
 
     if (editingId) {
-      this.editSteps.update(list => list.map(s => s.id === editingId ? {
-        ...s, repoFullName: repo.full_name, repoName: repo.name,
-        workflowId: wf.id, workflowName: wf.name, ref, inputs, clearCache, useLatestTag,
-        provider: repo.provider,
-      } : s));
+      this.editSteps.update((list) =>
+        list.map((s) =>
+          s.id === editingId
+            ? {
+                ...s,
+                repoFullName: repo.full_name,
+                repoName: repo.name,
+                workflowId: wf.id,
+                workflowName: wf.name,
+                ref,
+                inputs,
+                clearCache,
+                useLatestTag,
+                provider: repo.provider,
+              }
+            : s,
+        ),
+      );
       this.toasts.show(`Step "${wf.name}" updated`, 'success');
     } else {
       const step: ChainStep = {
         id: crypto.randomUUID(),
-        repoFullName: repo.full_name, repoName: repo.name,
-        workflowId: wf.id, workflowName: wf.name,
-        ref, inputs, clearCache, useLatestTag,
+        repoFullName: repo.full_name,
+        repoName: repo.name,
+        workflowId: wf.id,
+        workflowName: wf.name,
+        ref,
+        inputs,
+        clearCache,
+        useLatestTag,
         provider: repo.provider,
       };
-      this.editSteps.update(list => [...list, step]);
-      this.selectedStepIds.update(ids => [...ids, step.id]);
+      this.editSteps.update((list) => [...list, step]);
+      this.selectedStepIds.update((ids) => [...ids, step.id]);
       this.toasts.show(`Step "${wf.name}" added`, 'success');
     }
     this.resetStepForm();
     this.showAddStep.set(false);
   }
 
-  cancelAddStep(): void { this.showAddStep.set(false); this.resetStepForm(); }
+  cancelAddStep(): void {
+    this.showAddStep.set(false);
+    this.resetStepForm();
+  }
 
   private resetStepForm(): void {
     this.repoSearch.set('');
@@ -355,15 +414,16 @@ export class ChainBuilderComponent {
   async runChain(): Promise<void> {
     if (!this.canRun()) return;
     await this.notif.requestPermission();
-    const name     = this.chainName().trim();
+    const name = this.chainName().trim();
     const allSteps = this.editSteps();
     const selected = new Set(this.selectedStepIds());
-    const steps    = allSteps.filter(s => selected.has(s.id));
+    const steps = allSteps.filter((s) => selected.has(s.id));
     if (!name || !steps.length) return;
     const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
     const chain: Chain = {
-      id, name,
-      ref:       this.chainRef().trim(),
+      id,
+      name,
+      ref: this.chainRef().trim(),
       steps,
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
@@ -379,26 +439,28 @@ export class ChainBuilderComponent {
   }
 
   toggleStepSelection(stepId: string): void {
-    this.selectedStepIds.update(ids =>
-      ids.includes(stepId) ? ids.filter(id => id !== stepId) : [...ids, stepId]
+    this.selectedStepIds.update((ids) =>
+      ids.includes(stepId) ? ids.filter((id) => id !== stepId) : [...ids, stepId],
     );
   }
 
   toggleAllSteps(): void {
-    const all = this.editSteps().map(s => s.id);
+    const all = this.editSteps().map((s) => s.id);
     this.selectedStepIds.set(this.allStepsSelected() ? [] : all);
   }
 
-  stopChain(): void { this.executor.stop(); }
+  stopChain(): void {
+    this.executor.stop();
+  }
 
   // ── Export / Import ───────────────────────────────────────────────────────────
   exportChain(): void {
     const chain = this.buildChainSnapshot();
     if (!chain) return;
     const blob = new Blob([JSON.stringify(chain, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
     a.download = `chain-${chain.name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
@@ -407,52 +469,80 @@ export class ChainBuilderComponent {
   importChain(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    file.text().then(text => {
+    file.text().then((text) => {
       try {
         const data = JSON.parse(text);
-        if (!data?.name || !Array.isArray(data?.steps)) { this.toasts.show('Invalid chain file', 'danger'); return; }
+        if (!data?.name || !Array.isArray(data?.steps)) {
+          this.toasts.show('Invalid chain file', 'danger');
+          return;
+        }
         const chain: Chain = {
-          id: crypto.randomUUID(), name: data.name, ref: data.ref ?? '',
+          id: crypto.randomUUID(),
+          name: data.name,
+          ref: data.ref ?? '',
           steps: data.steps.map((s: ChainStep) => ({ ...s, id: crypto.randomUUID() })),
           createdAt: new Date().toISOString(),
         };
         this.chainSvc.saveChain(chain);
         this.selectChain(chain);
         this.toasts.show(`Chain "${chain.name}" imported`, 'success');
-      } catch { this.toasts.show('Could not read file', 'danger'); }
+      } catch {
+        this.toasts.show('Could not read file', 'danger');
+      }
       (event.target as HTMLInputElement).value = '';
     });
   }
 
   private buildChainSnapshot(): Chain | null {
     const name = this.chainName().trim();
-    if (!name) { this.toasts.show('Save the chain first', 'danger'); return null; }
+    if (!name) {
+      this.toasts.show('Save the chain first', 'danger');
+      return null;
+    }
     return {
-      id:        this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!,
+      id: this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!,
       name,
-      ref:       this.chainRef().trim(),
-      steps:     this.editSteps(),
+      ref: this.chainRef().trim(),
+      steps: this.editSteps(),
       createdAt: this.selectedChain()?.createdAt ?? new Date().toISOString(),
     };
   }
 
   // ── Template helpers ──────────────────────────────────────────────────────────
   stepIcon(status: string): string {
-    return ({ pending: '○', running: '◌', success: '✓', failure: '✕', skipped: '–' } as Record<string, string>)[status] ?? '○';
+    return (
+      (
+        { pending: '○', running: '◌', success: '✓', failure: '✕', skipped: '–' } as Record<
+          string,
+          string
+        >
+      )[status] ?? '○'
+    );
   }
 
   runStatusColor(status: string): string {
-    return ({ running: 'info', success: 'success', failure: 'danger', stopped: 'muted' } as Record<string, string>)[status] ?? 'muted';
+    return (
+      (
+        { running: 'info', success: 'success', failure: 'danger', stopped: 'muted' } as Record<
+          string,
+          string
+        >
+      )[status] ?? 'muted'
+    );
   }
 
-  hasInputs(inputs: Record<string, string>): boolean { return Object.keys(inputs).length > 0; }
+  hasInputs(inputs: Record<string, string>): boolean {
+    return Object.keys(inputs).length > 0;
+  }
 
   inputsSummary(inputs: Record<string, string>): string {
-    return Object.entries(inputs).map(([k, v]) => `${k}=${v}`).join(', ');
+    return Object.entries(inputs)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(', ');
   }
 
   getStepRun(stepId: string): ChainStepRun | undefined {
-    return this.activeRun()?.steps.find(sr => sr.stepId === stepId);
+    return this.activeRun()?.steps.find((sr) => sr.stepId === stepId);
   }
 
   getStepEffectiveStatus(stepId: string): StepStatus {

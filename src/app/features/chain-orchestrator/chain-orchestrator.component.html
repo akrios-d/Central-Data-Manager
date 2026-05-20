@@ -4,34 +4,46 @@
 </div>
 
 <div class="card vtab-card">
-
   <!-- ── Vertical tab strip ───────────────────────────────────────────────────── -->
   <nav class="vtab-strip">
-    <button class="vtab-btn" [class.active]="activeTab() === 'graphs'" (click)="activeTab.set('graphs')">
+    <button
+      class="vtab-btn"
+      [class.active]="activeTab() === 'graphs'"
+      (click)="activeTab.set('graphs')"
+    >
       {{ 'orch.tabGraphs' | translate }}
       @if (allGraphs().length) {
         <span class="vtab-badge">{{ allGraphs().length }}</span>
       }
     </button>
-    <button class="vtab-btn" [class.active]="activeTab() === 'canvas'" (click)="activeTab.set('canvas')">
+    <button
+      class="vtab-btn"
+      [class.active]="activeTab() === 'canvas'"
+      (click)="activeTab.set('canvas')"
+    >
       {{ 'orch.tabCanvas' | translate }}
     </button>
-    <button class="vtab-btn" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
+    <button
+      class="vtab-btn"
+      [class.active]="activeTab() === 'history'"
+      (click)="activeTab.set('history')"
+    >
       {{ 'orch.tabHistory' | translate }}
     </button>
   </nav>
 
   <!-- ── Tab body ─────────────────────────────────────────────────────────────── -->
   <div class="vtab-body" [class.vtab-body-canvas]="activeTab() === 'canvas'">
-
     <!-- Tab 1: Graphs list -->
     @if (activeTab() === 'graphs') {
       <div class="vtab-actions">
         <label class="btn btn-sm btn-outline">
           {{ 'orch.import' | translate }}
-          <input type="file" accept=".json" style="display:none" (change)="importGraph($event)" />
+          <input type="file" accept=".json" style="display: none" (change)="importGraph($event)" />
         </label>
-        <button class="btn btn-sm btn-primary" (click)="newGraph()">{{ 'orch.new' | translate }}</button>
+        <button class="btn btn-sm btn-primary" (click)="newGraph()">
+          {{ 'orch.new' | translate }}
+        </button>
       </div>
 
       @if (allGraphs().length === 0) {
@@ -39,7 +51,11 @@
       } @else {
         <ul class="chain-list">
           @for (g of allGraphs(); track g.id) {
-            <li class="chain-item" [class.selected]="selectedGraphId() === g.id" (click)="selectGraph(g)">
+            <li
+              class="chain-item"
+              [class.selected]="selectedGraphId() === g.id"
+              (click)="selectGraph(g)"
+            >
               <span class="chain-item-name">{{ g.name }}</span>
               <span class="chain-item-meta text-muted text-sm">
                 {{ g.nodes.length - 1 }} {{ 'orch.chainsCount' | translate }}
@@ -57,33 +73,46 @@
           <p class="text-muted text-sm">{{ 'orch.emptyState' | translate }}</p>
         </div>
       } @else {
-
         <!-- Toolbar -->
         <div class="orch-toolbar">
-          <input class="form-control orch-name-input"
-                 [placeholder]="'orch.graphName' | translate"
-                 [ngModel]="graphName()"
-                 (ngModelChange)="graphName.set($event)"
-                 (click)="$event.stopPropagation()" />
+          <input
+            class="form-control orch-name-input"
+            [placeholder]="'orch.graphName' | translate"
+            [ngModel]="graphName()"
+            (ngModelChange)="graphName.set($event)"
+            (click)="$event.stopPropagation()"
+          />
 
           <div class="orch-toolbar-right">
-            <button class="btn btn-sm btn-outline" (click)="exportGraph()">{{ 'orch.export' | translate }}</button>
-            <button class="btn btn-sm btn-outline" (click)="saveGraph()">{{ 'orch.save' | translate }}</button>
+            <button class="btn btn-sm btn-outline" (click)="exportGraph()">
+              {{ 'orch.export' | translate }}
+            </button>
+            <button class="btn btn-sm btn-outline" (click)="saveGraph()">
+              {{ 'orch.save' | translate }}
+            </button>
 
             @if (selectedGraphId() !== 'new') {
-              <button class="btn btn-sm btn-danger" (click)="deleteGraph()">{{ 'orch.delete' | translate }}</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteGraph()">
+                {{ 'orch.delete' | translate }}
+              </button>
             }
 
             <div class="orch-add-wrap" (click)="$event.stopPropagation()">
-              <button class="btn btn-sm btn-outline" (click)="toggleAddChain()">{{ 'orch.addChain' | translate }}</button>
+              <button class="btn btn-sm btn-outline" (click)="toggleAddChain()">
+                {{ 'orch.addChain' | translate }}
+              </button>
               @if (showAddChain()) {
                 <div class="orch-add-dropdown">
-                  <input class="form-control form-control-sm orch-add-search"
-                         [placeholder]="'orch.searchChains' | translate"
-                         [ngModel]="chainSearch()"
-                         (ngModelChange)="chainSearch.set($event)" />
+                  <input
+                    class="form-control form-control-sm orch-add-search"
+                    [placeholder]="'orch.searchChains' | translate"
+                    [ngModel]="chainSearch()"
+                    (ngModelChange)="chainSearch.set($event)"
+                  />
                   @if (filteredChains().length === 0) {
-                    <p class="text-muted text-sm orch-add-empty">{{ 'orch.noChains' | translate }}</p>
+                    <p class="text-muted text-sm orch-add-empty">
+                      {{ 'orch.noChains' | translate }}
+                    </p>
                   } @else {
                     @for (c of filteredChains(); track c.id) {
                       <div class="orch-add-item" (click)="addChainNode(c)">
@@ -99,7 +128,9 @@
             <div class="orch-sep"></div>
 
             @if (isRunning()) {
-              <button class="btn btn-sm btn-danger" (click)="stopGraph()">{{ 'orch.stop' | translate }}</button>
+              <button class="btn btn-sm btn-danger" (click)="stopGraph()">
+                {{ 'orch.stop' | translate }}
+              </button>
             } @else {
               <button class="btn btn-sm btn-success" [disabled]="!canRun()" (click)="runGraph()">
                 {{ 'orch.run' | translate }}
@@ -109,32 +140,47 @@
         </div>
 
         <!-- Canvas area -->
-        <div class="orch-canvas-wrapper"
-             #canvasWrapper>
-
-          <div class="orch-canvas"
-               #canvas
-               (mousedown)="onCanvasMouseDown($event)">
-
+        <div class="orch-canvas-wrapper" #canvasWrapper>
+          <div class="orch-canvas" #canvas (mousedown)="onCanvasMouseDown($event)">
             <!-- SVG edges layer -->
             <svg class="orch-svg">
               <defs>
-                <marker id="orch-arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <marker
+                  id="orch-arr"
+                  markerWidth="10"
+                  markerHeight="7"
+                  refX="9"
+                  refY="3.5"
+                  orient="auto"
+                >
                   <polygon points="0 0, 10 3.5, 0 7" class="orch-arrow-fill" />
                 </marker>
-                <marker id="orch-arr-sel" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <marker
+                  id="orch-arr-sel"
+                  markerWidth="10"
+                  markerHeight="7"
+                  refX="9"
+                  refY="3.5"
+                  orient="auto"
+                >
                   <polygon points="0 0, 10 3.5, 0 7" class="orch-arrow-fill-sel" />
                 </marker>
               </defs>
 
               @for (edge of graphEdges(); track edge.id) {
-                <path class="orch-edge-hit"
-                      [attr.d]="getEdgePath(edge)"
-                      (click)="onEdgeClick(edge.id, $event)" />
-                <path class="orch-edge"
-                      [class.orch-edge-selected]="selectedEdgeId() === edge.id"
-                      [attr.d]="getEdgePath(edge)"
-                      [attr.marker-end]="selectedEdgeId() === edge.id ? 'url(#orch-arr-sel)' : 'url(#orch-arr)'" />
+                <path
+                  class="orch-edge-hit"
+                  [attr.d]="getEdgePath(edge)"
+                  (click)="onEdgeClick(edge.id, $event)"
+                />
+                <path
+                  class="orch-edge"
+                  [class.orch-edge-selected]="selectedEdgeId() === edge.id"
+                  [attr.d]="getEdgePath(edge)"
+                  [attr.marker-end]="
+                    selectedEdgeId() === edge.id ? 'url(#orch-arr-sel)' : 'url(#orch-arr)'
+                  "
+                />
               }
 
               @if (isDrawingEdge()) {
@@ -144,51 +190,70 @@
 
             <!-- Nodes -->
             @for (node of graphNodes(); track node.id) {
-              <div class="orch-node"
-                   [class.orch-node-start]="node.type === 'start'"
-                   [class.orch-node-selected]="selectedNodeId() === node.id"
-                   [class.orch-node-disabled]="node.disabled"
-                   [class.orch-node-idle]="getNodeRunStatus(node.id) === 'idle'"
-                   [class.orch-node-running]="getNodeRunStatus(node.id) === 'running'"
-                   [class.orch-node-success]="getNodeRunStatus(node.id) === 'success'"
-                   [class.orch-node-failure]="getNodeRunStatus(node.id) === 'failure'"
-                   [class.orch-node-skipped]="getNodeRunStatus(node.id) === 'skipped'"
-                   [style.left.px]="node.x"
-                   [style.top.px]="node.y"
-                   (mousedown)="onNodeMouseDown($event, node)">
-
+              <div
+                class="orch-node"
+                [class.orch-node-start]="node.type === 'start'"
+                [class.orch-node-selected]="selectedNodeId() === node.id"
+                [class.orch-node-disabled]="node.disabled"
+                [class.orch-node-idle]="getNodeRunStatus(node.id) === 'idle'"
+                [class.orch-node-running]="getNodeRunStatus(node.id) === 'running'"
+                [class.orch-node-success]="getNodeRunStatus(node.id) === 'success'"
+                [class.orch-node-failure]="getNodeRunStatus(node.id) === 'failure'"
+                [class.orch-node-skipped]="getNodeRunStatus(node.id) === 'skipped'"
+                [style.left.px]="node.x"
+                [style.top.px]="node.y"
+                (mousedown)="onNodeMouseDown($event, node)"
+              >
                 <!-- Input port (not on start node) -->
                 @if (node.type !== 'start') {
-                  <div class="orch-port orch-port-in"
-                       (mousedown)="$event.stopPropagation()"
-                       (mouseenter)="hoveredInPortNodeId.set(node.id)"
-                       (mouseleave)="hoveredInPortNodeId.set(null)">
-                  </div>
+                  <div
+                    class="orch-port orch-port-in"
+                    (mousedown)="$event.stopPropagation()"
+                    (mouseenter)="hoveredInPortNodeId.set(node.id)"
+                    (mouseleave)="hoveredInPortNodeId.set(null)"
+                  ></div>
                 }
 
                 <!-- Node content -->
                 @if (node.type === 'start') {
                   <span class="orch-start-label">▷ {{ 'orch.startNode' | translate }}</span>
                 } @else {
-                  <span class="orch-node-icon">{{ nodeStatusIcon(getNodeRunStatus(node.id)) }}</span>
+                  <span class="orch-node-icon">{{
+                    nodeStatusIcon(getNodeRunStatus(node.id))
+                  }}</span>
                   <div class="orch-node-text">
                     <span class="orch-node-name">{{ node.label }}</span>
-                    <span class="orch-node-meta text-muted text-sm">{{ getChainStepCount(node.chainId) }}</span>
+                    <span class="orch-node-meta text-muted text-sm">{{
+                      getChainStepCount(node.chainId)
+                    }}</span>
                   </div>
-                  <button class="orch-node-toggle icon-btn"
-                          [title]="node.disabled ? ('orch.enableNode' | translate) : ('orch.disableNode' | translate)"
-                          (mousedown)="$event.stopPropagation()"
-                          (click)="toggleNodeDisabled(node.id, $event)">{{ node.disabled ? '○' : '●' }}</button>
-                  <button class="orch-node-del icon-btn icon-btn-danger"
-                          [title]="'orch.removeNode' | translate"
-                          (mousedown)="$event.stopPropagation()"
-                          (click)="removeNode(node.id, $event)">✕</button>
+                  <button
+                    class="orch-node-toggle icon-btn"
+                    [title]="
+                      node.disabled
+                        ? ('orch.enableNode' | translate)
+                        : ('orch.disableNode' | translate)
+                    "
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="toggleNodeDisabled(node.id, $event)"
+                  >
+                    {{ node.disabled ? '○' : '●' }}
+                  </button>
+                  <button
+                    class="orch-node-del icon-btn icon-btn-danger"
+                    [title]="'orch.removeNode' | translate"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="removeNode(node.id, $event)"
+                  >
+                    ✕
+                  </button>
                 }
 
                 <!-- Output port -->
-                <div class="orch-port orch-port-out"
-                     (mousedown)="onOutPortMouseDown($event, node)">
-                </div>
+                <div
+                  class="orch-port orch-port-out"
+                  (mousedown)="onOutPortMouseDown($event, node)"
+                ></div>
               </div>
             }
           </div>
@@ -201,11 +266,14 @@
             <span class="orch-run-status" [class]="'text-' + runStatusColor(run.status)">
               {{ run.status }}
             </span>
-            <span class="text-muted text-sm">{{ run.startedAt | date:'dd MMM HH:mm:ss' }}</span>
+            <span class="text-muted text-sm">{{ run.startedAt | date: 'dd MMM HH:mm:ss' }}</span>
             <div class="orch-run-nodes">
               @for (nr of run.nodes; track nr.nodeId) {
-                <span class="orch-run-chip" [class]="'chip-' + nr.status"
-                      [title]="getNodeLabel(nr.nodeId) + ': ' + nr.status">
+                <span
+                  class="orch-run-chip"
+                  [class]="'chip-' + nr.status"
+                  [title]="getNodeLabel(nr.nodeId) + ': ' + nr.status"
+                >
                   {{ nodeStatusIcon(nr.status) }} {{ getNodeLabel(nr.nodeId) }}
                 </span>
               }
@@ -226,14 +294,17 @@
           @for (r of graphRuns(); track r.id) {
             <li class="history-item">
               <span class="history-dot" [class]="'dot-' + r.status"></span>
-              <span class="text-sm">{{ r.startedAt | date:'dd MMM HH:mm' }}</span>
-              <span class="badge" [class]="'badge-' + runStatusColor(r.status)">{{ r.status }}</span>
-              <span class="text-muted text-sm">{{ r.nodes.length }} {{ 'orch.chainsCount' | translate }}</span>
+              <span class="text-sm">{{ r.startedAt | date: 'dd MMM HH:mm' }}</span>
+              <span class="badge" [class]="'badge-' + runStatusColor(r.status)">{{
+                r.status
+              }}</span>
+              <span class="text-muted text-sm"
+                >{{ r.nodes.length }} {{ 'orch.chainsCount' | translate }}</span
+              >
             </li>
           }
         </ul>
       }
     }
-
   </div>
 </div>

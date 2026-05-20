@@ -25,7 +25,9 @@
   align-items: center;
   gap: 0.4rem;
 
-  .form-control { width: 260px; }
+  .form-control {
+    width: 260px;
+  }
 }
 
 .repo-dropdown {
@@ -40,7 +42,7 @@
   min-width: 260px;
   max-height: 220px;
   overflow-y: auto;
-  box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 
   li {
     padding: 0.45rem 0.75rem;
@@ -51,8 +53,13 @@
     align-items: center;
     gap: 0.4rem;
 
-    &:hover:not(.already-added) { background: rgba(255,255,255,.06); }
-    &.already-added { cursor: default; opacity: 0.45; }
+    &:hover:not(.already-added) {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    &.already-added {
+      cursor: default;
+      opacity: 0.45;
+    }
   }
 }
 
@@ -89,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--bg-raised, rgba(255,255,255,.04));
+  background: var(--bg-raised, rgba(255, 255, 255, 0.04));
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.2rem 0.5rem;
@@ -100,7 +107,9 @@
   font-weight: 500;
   cursor: pointer;
 
-  &:hover { text-decoration: underline; }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .env-hint {
@@ -116,7 +125,9 @@
   align-items: center;
   gap: 0.5rem;
 
-  .form-control { width: 180px; }
+  .form-control {
+    width: 180px;
+  }
 }
 
 // ── Table ─────────────────────────────────────────────────────────────────────
@@ -135,7 +146,8 @@
   border-collapse: collapse;
   font-size: 0.85rem;
 
-  th, td {
+  th,
+  td {
     padding: 0.55rem 0.75rem;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
@@ -151,12 +163,22 @@
     color: var(--text-muted);
   }
 
-  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
 }
 
-.col-repo    { width: 220px; min-width: 160px; }
-.col-env     { min-width: 160px; }
-.col-actions { width: 40px; text-align: right; }
+.col-repo {
+  width: 220px;
+  min-width: 160px;
+}
+.col-env {
+  min-width: 160px;
+}
+.col-actions {
+  width: 40px;
+  text-align: right;
+}
 
 .cell-repo {
   .repo-name {
@@ -169,7 +191,10 @@
   cursor: pointer;
   user-select: none;
 
-  &:hover .tag-empty { color: var(--text-muted); opacity: 0.7; }
+  &:hover .tag-empty {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
 
   &:hover:not(:has(.cell-edit-input))::after {
     content: ' ✎';
@@ -200,7 +225,9 @@
 
 // ── Ref picker popup ──────────────────────────────────────────────────────────
 
-.cell-active { background: color-mix(in srgb, var(--accent, #58a6ff) 8%, transparent); }
+.cell-active {
+  background: color-mix(in srgb, var(--accent, #58a6ff) 8%, transparent);
+}
 
 .ref-popup-backdrop {
   position: fixed;
@@ -231,7 +258,11 @@
   padding: 0.65rem 0.75rem;
   border-bottom: 1px solid var(--border);
 
-  .ref-popup-input { flex: 1; font-family: monospace; font-size: 0.82rem; }
+  .ref-popup-input {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.82rem;
+  }
 }
 
 .ref-popup-close {
@@ -247,9 +278,14 @@
   border-radius: 5px;
   color: var(--text-muted);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 
-  &:hover { background: rgba(255,255,255,.08); color: var(--text); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
 }
 
 .ref-tab-toggle {
@@ -270,10 +306,17 @@
   letter-spacing: 0.04em;
   cursor: pointer;
   color: var(--text-muted);
-  transition: color 0.12s, border-color 0.12s;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
 
-  &:hover  { color: var(--text); }
-  &.active { color: var(--accent, #58a6ff); border-bottom-color: var(--accent, #58a6ff); }
+  &:hover {
+    color: var(--text);
+  }
+  &.active {
+    color: var(--accent, #58a6ff);
+    border-bottom-color: var(--accent, #58a6ff);
+  }
 }
 
 .ref-popup-list {
@@ -309,7 +352,9 @@
   color: var(--text);
   transition: background 0.1s;
 
-  &:hover { background: rgba(255, 255, 255, 0.06); }
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
 
   &.ref-item-current {
     color: var(--accent, #58a6ff);
@@ -324,7 +369,11 @@
   }
 }
 
-.ref-icon { font-size: 0.72rem; flex-shrink: 0; opacity: 0.75; }
+.ref-icon {
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
 
 .ref-more-hint {
   padding: 0.35rem 0.85rem 0.5rem;
@@ -343,7 +392,11 @@
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .branch-badge {
   display: inline-flex;
@@ -359,7 +412,9 @@
   cursor: pointer;
 }
 
-.ref-icon-sm { font-size: 0.7rem; }
+.ref-icon-sm {
+  font-size: 0.7rem;
+}
 
 .cell-actions {
   opacity: 0;
@@ -378,7 +433,9 @@
   color: var(--info, #58a6ff);
   border-color: transparent;
 
-  &:hover:not(:disabled) { border-color: var(--info, #58a6ff); }
+  &:hover:not(:disabled) {
+    border-color: var(--info, #58a6ff);
+  }
   &.active {
     color: var(--accent, #58a6ff);
     background: color-mix(in srgb, var(--accent, #58a6ff) 15%, transparent);
@@ -464,7 +521,9 @@
   color: var(--color-warning, #f59e0b);
 }
 
-.comp-msg { margin: 0; }
+.comp-msg {
+  margin: 0;
+}
 
 // ── Commit list ───────────────────────────────────────────────────────────────
 
@@ -488,7 +547,9 @@
   border-radius: 4px;
   font-size: 0.8rem;
 
-  &:hover { background: var(--surface-2); }
+  &:hover {
+    background: var(--surface-2);
+  }
 }
 
 .comp-sha {
@@ -528,10 +589,18 @@
   font-size: 0.75rem;
   cursor: pointer;
   color: var(--text-muted);
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 
-  &:hover    { background: var(--surface-2); color: var(--text); }
-  &.active   { background: var(--accent, #58a6ff); color: #fff; }
+  &:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  &.active {
+    background: var(--accent, #58a6ff);
+    color: #fff;
+  }
 }
 
 // ── Changelog ─────────────────────────────────────────────────────────────────
@@ -549,7 +618,11 @@
   font-size: 0.75rem;
 }
 
-.cl-section { display: flex; flex-direction: column; gap: 0.2rem; }
+.cl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
 
 .cl-heading {
   font-size: 0.8rem;
@@ -571,7 +644,10 @@
   font-size: 0.78rem;
   padding-left: 0.75rem;
   color: var(--text);
-  &::before { content: '- '; color: var(--text-muted); }
+  &::before {
+    content: '- ';
+    color: var(--text-muted);
+  }
 }
 
 // ── Button active state ───────────────────────────────────────────────────────
@@ -590,23 +666,37 @@
     align-items: flex-start;
   }
 
-  .add-repo-inline { flex-wrap: wrap; }
+  .add-repo-inline {
+    flex-wrap: wrap;
+  }
 
   .repo-search-wrap {
     width: 100%;
-    .form-control { width: 100%; }
+    .form-control {
+      width: 100%;
+    }
   }
 
   .env-add-row {
     flex-wrap: wrap;
-    .form-control { width: 100%; }
+    .form-control {
+      width: 100%;
+    }
   }
 
-  .comp-toolbar { flex-direction: column; align-items: flex-start; }
-  .comp-select  { min-width: 0; width: 100%; }
+  .comp-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .comp-select {
+    min-width: 0;
+    width: 100%;
+  }
 
   .comp-commit {
     grid-template-columns: 48px 1fr;
-    .comp-meta { display: none; }
+    .comp-meta {
+      display: none;
+    }
   }
 }

@@ -9,9 +9,7 @@ export class MarkdownPipe implements PipeTransform {
   transform(value: string | null | undefined): SafeHtml {
     if (!value) return '';
     // If it already looks like HTML, render it directly
-    const html = value.trimStart().startsWith('<')
-      ? value
-      : (marked.parse(value) as string);
+    const html = value.trimStart().startsWith('<') ? value : (marked.parse(value) as string);
     return this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
   }
 }

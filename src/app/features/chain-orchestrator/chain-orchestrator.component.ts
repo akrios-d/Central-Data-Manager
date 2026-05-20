@@ -1,6 +1,11 @@
 import {
-  Component, ElementRef, HostListener, ViewChild,
-  computed, inject, signal,
+  Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  computed,
+  inject,
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -13,14 +18,21 @@ import { ChainService } from '../../core/services/chain.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 // Node visual dimensions (must match SCSS)
-const NODE_W  = 200;
-const NODE_H  = 72;
+const NODE_W = 200;
+const NODE_H = 72;
 const START_W = 90;
 const START_H = 40;
 
 type Interaction =
   | { type: 'dragging-node'; nodeId: string; offsetX: number; offsetY: number }
-  | { type: 'drawing-edge'; fromNodeId: string; fromX: number; fromY: number; curX: number; curY: number };
+  | {
+      type: 'drawing-edge';
+      fromNodeId: string;
+      fromX: number;
+      fromY: number;
+      curX: number;
+      curY: number;
+    };
 
 @Component({
   selector: 'app-chain-orchestrator',
@@ -30,13 +42,13 @@ type Interaction =
   styleUrl: './chain-orchestrator.component.scss',
 })
 export class ChainOrchestratorComponent {
-  private readonly orchSvc  = inject(OrchestratorService);
+  private readonly orchSvc = inject(OrchestratorService);
   private readonly executor = inject(OrchestratorExecutorService);
   private readonly chainSvc = inject(ChainService);
-  private readonly toasts   = inject(ToastService);
+  private readonly toasts = inject(ToastService);
 
   @ViewChild('canvasWrapper') canvasWrapperRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('canvas')        canvasRef!:        ElementRef<HTMLDivElement>;
+  @ViewChild('canvas') canvasRef!: ElementRef<HTMLDivElement>;
 
   // ── Data ──────────────────────────────────────────────────────────────────────
   readonly allGraphs = this.orchSvc.graphs;
@@ -48,19 +60,19 @@ export class ChainOrchestratorComponent {
 
   // ── Graph editor state ────────────────────────────────────────────────────────
   selectedGraphId = signal<string | null>(null);
-  graphName       = signal('');
-  graphNodes      = signal<OrchNode[]>([]);
-  graphEdges      = signal<OrchEdge[]>([]);
+  graphName = signal('');
+  graphNodes = signal<OrchNode[]>([]);
+  graphEdges = signal<OrchEdge[]>([]);
 
   // ── Canvas interaction ────────────────────────────────────────────────────────
-  interaction         = signal<Interaction | null>(null);
+  interaction = signal<Interaction | null>(null);
   hoveredInPortNodeId = signal<string | null>(null);
-  selectedNodeId      = signal<string | null>(null);
-  selectedEdgeId      = signal<string | null>(null);
+  selectedNodeId = signal<string | null>(null);
+  selectedEdgeId = signal<string | null>(null);
 
   // ── Add-chain panel ───────────────────────────────────────────────────────────
   showAddChain = signal(false);
-  chainSearch  = signal('');
+  chainSearch = signal('');
 
   // ── Run state ─────────────────────────────────────────────────────────────────
   running = signal(false);
@@ -68,17 +80,17 @@ export class ChainOrchestratorComponent {
   // ── Computed ──────────────────────────────────────────────────────────────────
   readonly selectedGraph = computed(() => {
     const id = this.selectedGraphId();
-    return id && id !== 'new' ? (this.allGraphs().find(g => g.id === id) ?? null) : null;
+    return id && id !== 'new' ? (this.allGraphs().find((g) => g.id === id) ?? null) : null;
   });
 
   readonly graphRuns = computed(() => {
     const id = this.selectedGraphId();
-    return id && id !== 'new' ? this.orchSvc.runs().filter(r => r.graphId === id) : [];
+    return id && id !== 'new' ? this.orchSvc.runs().filter((r) => r.graphId === id) : [];
   });
 
   readonly filteredChains = computed(() => {
     const q = this.chainSearch().toLowerCase().trim();
-    return q ? this.allChains().filter(c => c.name.toLowerCase().includes(q)) : this.allChains();
+    return q ? this.allChains().filter((c) => c.name.toLowerCase().includes(q)) : this.allChains();
   });
 
   readonly isActiveGraph = computed(() => {
@@ -86,15 +98,16 @@ export class ChainOrchestratorComponent {
     return !!run && run.graphId === this.selectedGraphId();
   });
 
-  readonly isRunning = computed(() =>
-    this.running() || (this.isActiveGraph() && this.activeRun()?.status === 'running')
+  readonly isRunning = computed(
+    () => this.running() || (this.isActiveGraph() && this.activeRun()?.status === 'running'),
   );
 
-  readonly canRun = computed(() =>
-    !this.isRunning() &&
-    !!this.selectedGraphId() &&
-    this.selectedGraphId() !== 'new' &&
-    this.graphNodes().some(n => n.type !== 'start')
+  readonly canRun = computed(
+    () =>
+      !this.isRunning() &&
+      !!this.selectedGraphId() &&
+      this.selectedGraphId() !== 'new' &&
+      this.graphNodes().some((n) => n.type !== 'start'),
   );
 
   // ── Graph list ────────────────────────────────────────────────────────────────
@@ -110,15 +123,18 @@ export class ChainOrchestratorComponent {
   selectGraph(graph: OrchGraph): void {
     this.selectedGraphId.set(graph.id);
     this.graphName.set(graph.name);
-    this.graphNodes.set(graph.nodes.map(n => ({ ...n })));
-    this.graphEdges.set(graph.edges.map(e => ({ ...e })));
+    this.graphNodes.set(graph.nodes.map((n) => ({ ...n })));
+    this.graphEdges.set(graph.edges.map((e) => ({ ...e })));
     this.activeTab.set('canvas');
   }
 
   // ── Editor ────────────────────────────────────────────────────────────────────
   saveGraph(): void {
     const name = this.graphName().trim();
-    if (!name) { this.toasts.show('Graph name is required', 'danger'); return; }
+    if (!name) {
+      this.toasts.show('Graph name is required', 'danger');
+      return;
+    }
     const id = this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!;
     const graph: OrchGraph = {
       id,
@@ -145,31 +161,46 @@ export class ChainOrchestratorComponent {
   }
 
   // ── Add chain node ────────────────────────────────────────────────────────────
-  toggleAddChain(): void { this.showAddChain.update(v => !v); this.chainSearch.set(''); }
+  toggleAddChain(): void {
+    this.showAddChain.update((v) => !v);
+    this.chainSearch.set('');
+  }
 
   addChainNode(chain: Chain): void {
     const wrapper = this.canvasWrapperRef?.nativeElement;
-    const stagger = this.graphNodes().filter(n => n.type === 'chain').length;
-    const x = wrapper ? Math.round(wrapper.scrollLeft + wrapper.clientWidth  / 2 - NODE_W / 2 + stagger * 12) : 400;
-    const y = wrapper ? Math.round(wrapper.scrollTop  + 140 + stagger * 24) : 200 + stagger * 24;
-    this.graphNodes.update(ns => [...ns, {
-      id: crypto.randomUUID(), type: 'chain', chainId: chain.id, label: chain.name, x, y,
-    }]);
+    const stagger = this.graphNodes().filter((n) => n.type === 'chain').length;
+    const x = wrapper
+      ? Math.round(wrapper.scrollLeft + wrapper.clientWidth / 2 - NODE_W / 2 + stagger * 12)
+      : 400;
+    const y = wrapper ? Math.round(wrapper.scrollTop + 140 + stagger * 24) : 200 + stagger * 24;
+    this.graphNodes.update((ns) => [
+      ...ns,
+      {
+        id: crypto.randomUUID(),
+        type: 'chain',
+        chainId: chain.id,
+        label: chain.name,
+        x,
+        y,
+      },
+    ]);
     this.showAddChain.set(false);
   }
 
   removeNode(nodeId: string, e?: MouseEvent): void {
     e?.stopPropagation();
-    const startId = this.graphNodes().find(n => n.type === 'start')?.id;
+    const startId = this.graphNodes().find((n) => n.type === 'start')?.id;
     if (nodeId === startId) return;
-    this.graphNodes.update(ns => ns.filter(n => n.id !== nodeId));
-    this.graphEdges.update(es => es.filter(e => e.fromId !== nodeId && e.toId !== nodeId));
+    this.graphNodes.update((ns) => ns.filter((n) => n.id !== nodeId));
+    this.graphEdges.update((es) => es.filter((e) => e.fromId !== nodeId && e.toId !== nodeId));
     if (this.selectedNodeId() === nodeId) this.selectedNodeId.set(null);
   }
 
   toggleNodeDisabled(nodeId: string, e?: MouseEvent): void {
     e?.stopPropagation();
-    this.graphNodes.update(ns => ns.map(n => n.id === nodeId ? { ...n, disabled: !n.disabled } : n));
+    this.graphNodes.update((ns) =>
+      ns.map((n) => (n.id === nodeId ? { ...n, disabled: !n.disabled } : n)),
+    );
   }
 
   // ── Canvas events ─────────────────────────────────────────────────────────────
@@ -184,7 +215,12 @@ export class ChainOrchestratorComponent {
     this.selectedNodeId.set(node.id);
     this.selectedEdgeId.set(null);
     const { x, y } = this.canvasCoords(e);
-    this.interaction.set({ type: 'dragging-node', nodeId: node.id, offsetX: x - node.x, offsetY: y - node.y });
+    this.interaction.set({
+      type: 'dragging-node',
+      nodeId: node.id,
+      offsetX: x - node.x,
+      offsetY: y - node.y,
+    });
   }
 
   onOutPortMouseDown(e: MouseEvent, node: OrchNode): void {
@@ -192,9 +228,12 @@ export class ChainOrchestratorComponent {
     const w = node.type === 'start' ? START_W : NODE_W;
     const h = node.type === 'start' ? START_H : NODE_H;
     this.interaction.set({
-      type: 'drawing-edge', fromNodeId: node.id,
-      fromX: node.x + w, fromY: node.y + h / 2,
-      curX:  node.x + w, curY:  node.y + h / 2,
+      type: 'drawing-edge',
+      fromNodeId: node.id,
+      fromX: node.x + w,
+      fromY: node.y + h / 2,
+      curX: node.x + w,
+      curY: node.y + h / 2,
     });
   }
 
@@ -208,16 +247,16 @@ export class ChainOrchestratorComponent {
   exportGraph(): void {
     const name = this.graphName().trim() || 'graph';
     const graph: OrchGraph = {
-      id:        this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!,
+      id: this.selectedGraphId() === 'new' ? crypto.randomUUID() : this.selectedGraphId()!,
       name,
-      nodes:     this.graphNodes(),
-      edges:     this.graphEdges(),
+      nodes: this.graphNodes(),
+      edges: this.graphEdges(),
       createdAt: this.selectedGraph()?.createdAt ?? new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(graph, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
     a.download = `graph-${name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(url);
@@ -226,7 +265,7 @@ export class ChainOrchestratorComponent {
   importGraph(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    file.text().then(text => {
+    file.text().then((text) => {
       try {
         const data = JSON.parse(text);
         if (!data?.name || !Array.isArray(data?.nodes) || !Array.isArray(data?.edges)) {
@@ -234,12 +273,20 @@ export class ChainOrchestratorComponent {
           return;
         }
         const idMap = new Map<string, string>();
-        const newId = (old: string) => { if (!idMap.has(old)) idMap.set(old, crypto.randomUUID()); return idMap.get(old)!; };
+        const newId = (old: string) => {
+          if (!idMap.has(old)) idMap.set(old, crypto.randomUUID());
+          return idMap.get(old)!;
+        };
         const graph: OrchGraph = {
-          id:        crypto.randomUUID(),
-          name:      data.name,
-          nodes:     (data.nodes as OrchNode[]).map(n  => ({ ...n,  id: newId(n.id) })),
-          edges:     (data.edges as OrchEdge[]).map(e  => ({ ...e,  id: crypto.randomUUID(), fromId: newId(e.fromId), toId: newId(e.toId) })),
+          id: crypto.randomUUID(),
+          name: data.name,
+          nodes: (data.nodes as OrchNode[]).map((n) => ({ ...n, id: newId(n.id) })),
+          edges: (data.edges as OrchEdge[]).map((e) => ({
+            ...e,
+            id: crypto.randomUUID(),
+            fromId: newId(e.fromId),
+            toId: newId(e.toId),
+          })),
           createdAt: new Date().toISOString(),
         };
         this.orchSvc.saveGraph(graph);
@@ -262,7 +309,9 @@ export class ChainOrchestratorComponent {
     if (mode.type === 'dragging-node') {
       const nx = Math.max(0, x - mode.offsetX);
       const ny = Math.max(0, y - mode.offsetY);
-      this.graphNodes.update(ns => ns.map(n => n.id === mode.nodeId ? { ...n, x: nx, y: ny } : n));
+      this.graphNodes.update((ns) =>
+        ns.map((n) => (n.id === mode.nodeId ? { ...n, x: nx, y: ny } : n)),
+      );
     } else if (mode.type === 'drawing-edge') {
       this.interaction.set({ ...mode, curX: x, curY: y });
     }
@@ -277,9 +326,14 @@ export class ChainOrchestratorComponent {
         if (this.wouldCreateCycle(mode.fromNodeId, targetId)) {
           this.toasts.show('Cannot connect — this would create a cycle', 'danger');
         } else {
-          const dup = this.graphEdges().some(e => e.fromId === mode.fromNodeId && e.toId === targetId);
+          const dup = this.graphEdges().some(
+            (e) => e.fromId === mode.fromNodeId && e.toId === targetId,
+          );
           if (!dup) {
-            this.graphEdges.update(es => [...es, { id: crypto.randomUUID(), fromId: mode.fromNodeId, toId: targetId }]);
+            this.graphEdges.update((es) => [
+              ...es,
+              { id: crypto.randomUUID(), fromId: mode.fromNodeId, toId: targetId },
+            ]);
           }
         }
       }
@@ -294,20 +348,22 @@ export class ChainOrchestratorComponent {
     const target = e.target as HTMLElement;
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
 
-    const nodeId  = this.selectedNodeId();
-    const edgeId  = this.selectedEdgeId();
-    const startId = this.graphNodes().find(n => n.type === 'start')?.id;
+    const nodeId = this.selectedNodeId();
+    const edgeId = this.selectedEdgeId();
+    const startId = this.graphNodes().find((n) => n.type === 'start')?.id;
 
     if (nodeId && nodeId !== startId) {
       this.removeNode(nodeId);
     } else if (edgeId) {
-      this.graphEdges.update(es => es.filter(e => e.id !== edgeId));
+      this.graphEdges.update((es) => es.filter((e) => e.id !== edgeId));
       this.selectedEdgeId.set(null);
     }
   }
 
   @HostListener('document:click')
-  onDocClick(): void { this.showAddChain.set(false); }
+  onDocClick(): void {
+    this.showAddChain.set(false);
+  }
 
   // ── Run ───────────────────────────────────────────────────────────────────────
   async runGraph(): Promise<void> {
@@ -323,16 +379,21 @@ export class ChainOrchestratorComponent {
     this.orchSvc.saveGraph(graph);
     this.selectedGraphId.set(id);
     this.running.set(true);
-    try { await this.executor.execute(graph, this.allChains()); }
-    finally { this.running.set(false); }
+    try {
+      await this.executor.execute(graph, this.allChains());
+    } finally {
+      this.running.set(false);
+    }
   }
 
-  stopGraph(): void { this.executor.stop(); }
+  stopGraph(): void {
+    this.executor.stop();
+  }
 
   // ── SVG helpers ───────────────────────────────────────────────────────────────
   getEdgePath(edge: OrchEdge): string {
-    const from = this.graphNodes().find(n => n.id === edge.fromId);
-    const to   = this.graphNodes().find(n => n.id === edge.toId);
+    const from = this.graphNodes().find((n) => n.id === edge.fromId);
+    const to = this.graphNodes().find((n) => n.id === edge.toId);
     if (!from || !to) return '';
     return this.bezier(this.portOut(from), this.portIn(to));
   }
@@ -343,23 +404,23 @@ export class ChainOrchestratorComponent {
     return this.bezier({ x: mode.fromX, y: mode.fromY }, { x: mode.curX, y: mode.curY });
   }
 
-  private bezier(from: {x:number;y:number}, to: {x:number;y:number}): string {
+  private bezier(from: { x: number; y: number }, to: { x: number; y: number }): string {
     const dx = Math.max(60, Math.abs(to.x - from.x) * 0.5);
     return `M ${from.x} ${from.y} C ${from.x + dx} ${from.y} ${to.x - dx} ${to.y} ${to.x} ${to.y}`;
   }
 
-  private portOut(n: OrchNode): {x:number;y:number} {
+  private portOut(n: OrchNode): { x: number; y: number } {
     const w = n.type === 'start' ? START_W : NODE_W;
     const h = n.type === 'start' ? START_H : NODE_H;
     return { x: n.x + w, y: n.y + h / 2 };
   }
 
-  private portIn(n: OrchNode): {x:number;y:number} {
+  private portIn(n: OrchNode): { x: number; y: number } {
     const h = n.type === 'start' ? START_H : NODE_H;
     return { x: n.x, y: n.y + h / 2 };
   }
 
-  private canvasCoords(e: MouseEvent): {x:number;y:number} {
+  private canvasCoords(e: MouseEvent): { x: number; y: number } {
     const el = this.canvasRef?.nativeElement;
     if (!el) return { x: 0, y: 0 };
     const rect = el.getBoundingClientRect();
@@ -368,12 +429,12 @@ export class ChainOrchestratorComponent {
 
   private wouldCreateCycle(fromId: string, toId: string): boolean {
     const visited = new Set<string>();
-    const edges   = this.graphEdges();
+    const edges = this.graphEdges();
     const dfs = (id: string): boolean => {
       if (id === fromId) return true;
       if (visited.has(id)) return false;
       visited.add(id);
-      return edges.filter(e => e.fromId === id).some(e => dfs(e.toId));
+      return edges.filter((e) => e.fromId === id).some((e) => dfs(e.toId));
     };
     return dfs(toId);
   }
@@ -381,26 +442,42 @@ export class ChainOrchestratorComponent {
   // ── Template helpers ──────────────────────────────────────────────────────────
   getNodeRunStatus(nodeId: string): NodeRunStatus {
     if (!this.isActiveGraph()) return 'idle';
-    return this.activeRun()?.nodes.find(n => n.nodeId === nodeId)?.status ?? 'idle';
+    return this.activeRun()?.nodes.find((n) => n.nodeId === nodeId)?.status ?? 'idle';
   }
 
   nodeStatusIcon(s: NodeRunStatus): string {
-    return ({ idle: '○', running: '◌', success: '✓', failure: '✕', skipped: '–' } as Record<string,string>)[s] ?? '○';
+    return (
+      (
+        { idle: '○', running: '◌', success: '✓', failure: '✕', skipped: '–' } as Record<
+          string,
+          string
+        >
+      )[s] ?? '○'
+    );
   }
 
   getChainStepCount(chainId?: string): string {
     if (!chainId) return '';
-    const c = this.allChains().find(c => c.id === chainId);
+    const c = this.allChains().find((c) => c.id === chainId);
     return c ? `${c.steps.length} step${c.steps.length === 1 ? '' : 's'}` : '';
   }
 
   runStatusColor(status: string): string {
-    return ({ running: 'info', success: 'success', failure: 'danger', stopped: 'muted' } as Record<string,string>)[status] ?? 'muted';
+    return (
+      (
+        { running: 'info', success: 'success', failure: 'danger', stopped: 'muted' } as Record<
+          string,
+          string
+        >
+      )[status] ?? 'muted'
+    );
   }
 
-  isDrawingEdge(): boolean { return this.interaction()?.type === 'drawing-edge'; }
+  isDrawingEdge(): boolean {
+    return this.interaction()?.type === 'drawing-edge';
+  }
 
   getNodeLabel(nodeId: string): string {
-    return this.graphNodes().find(n => n.id === nodeId)?.label ?? nodeId.slice(0, 6);
+    return this.graphNodes().find((n) => n.id === nodeId)?.label ?? nodeId.slice(0, 6);
   }
 }

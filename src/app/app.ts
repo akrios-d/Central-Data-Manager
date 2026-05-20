@@ -11,10 +11,10 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   styleUrl: './app.scss',
 })
 export class App {
-  private tokens    = inject(TokenService);
+  private tokens = inject(TokenService);
   private translate = inject(TranslateService);
 
-  readonly showNav     = computed(() => this.tokens.hasAnyToken());
+  readonly showNav = computed(() => this.tokens.hasAnyToken());
   readonly currentLang = signal(localStorage.getItem('cdm_lang') ?? 'en');
   readonly sidebarOpen = signal(false);
 
@@ -25,8 +25,12 @@ export class App {
     this.translate.use(saved);
   }
 
-  toggleSidebar(): void { this.sidebarOpen.update(v => !v); }
-  closeSidebar(): void  { this.sidebarOpen.set(false); }
+  toggleSidebar(): void {
+    this.sidebarOpen.update((v) => !v);
+  }
+  closeSidebar(): void {
+    this.sidebarOpen.set(false);
+  }
 
   @HostListener('window:resize')
   onResize(): void {

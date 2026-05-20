@@ -9,9 +9,13 @@
 } @else if (loading()) {
   <div class="card sprint-card"><div class="spinner"></div></div>
 } @else if (error()) {
-  <div class="card sprint-card"><p class="text-muted text-sm">{{ error() }}</p></div>
+  <div class="card sprint-card">
+    <p class="text-muted text-sm">{{ error() }}</p>
+  </div>
 } @else if (!sprint()) {
-  <div class="card sprint-card"><p class="text-muted text-sm">{{ 'sprint.noActiveSprint' | translate }}</p></div>
+  <div class="card sprint-card">
+    <p class="text-muted text-sm">{{ 'sprint.noActiveSprint' | translate }}</p>
+  </div>
 } @else {
   <div class="card sprint-card">
     <div class="sprint-header">
@@ -20,9 +24,9 @@
         <div class="sprint-name">{{ sprint()!.name }}</div>
         <div class="sprint-dates text-muted text-sm">
           @if (sprint()!.startDate) {
-            {{ sprint()!.startDate | date:'dd MMM' }} →
+            {{ sprint()!.startDate | date: 'dd MMM' }} →
           }
-          {{ sprint()!.endDate | date:'dd MMM yyyy' }}
+          {{ sprint()!.endDate | date: 'dd MMM yyyy' }}
           @if (daysLeft() !== null) {
             <span class="days-left" [class.urgent]="daysLeft()! <= 2">
               · {{ daysLeft() }}{{ 'sprint.daysLeft' | translate }}
@@ -32,9 +36,15 @@
       </div>
       <div class="sprint-progress-circle">
         <svg viewBox="0 0 36 36" class="circular-chart">
-          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-          <path class="circle" [attr.stroke-dasharray]="progress() + ', 100'"
-            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path
+            class="circle-bg"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+          <path
+            class="circle"
+            [attr.stroke-dasharray]="progress() + ', 100'"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
         </svg>
         <span class="progress-text">{{ progress() }}%</span>
       </div>
@@ -46,9 +56,12 @@
 
     <div class="state-groups">
       @for (group of stateGroups(); track group.state) {
-        <button class="state-chip" [class]="'state-' + group.state.toLowerCase().replace(' ', '-')"
+        <button
+          class="state-chip"
+          [class]="'state-' + group.state.toLowerCase().replace(' ', '-')"
           [class.inactive]="!isStateActive(group.state)"
-          (click)="toggleState(group.state)">
+          (click)="toggleState(group.state)"
+        >
           <span class="state-count">{{ group.count }}</span>
           <span class="state-name">{{ group.state }}</span>
         </button>
@@ -58,7 +71,11 @@
     @if (availableTypes().length > 1) {
       <div class="type-chips">
         @for (type of availableTypes(); track type) {
-          <button class="type-chip" [class.inactive]="!isTypeActive(type)" (click)="toggleType(type)">
+          <button
+            class="type-chip"
+            [class.inactive]="!isTypeActive(type)"
+            (click)="toggleType(type)"
+          >
             {{ type }}
           </button>
         }
@@ -75,7 +92,9 @@
           </li>
         }
         @if (filteredItems().length > (hasFilter() ? 50 : 8)) {
-          <li class="sprint-more text-muted text-sm">+{{ filteredItems().length - (hasFilter() ? 50 : 8) }} {{ 'sprint.more' | translate }}</li>
+          <li class="sprint-more text-muted text-sm">
+            +{{ filteredItems().length - (hasFilter() ? 50 : 8) }} {{ 'sprint.more' | translate }}
+          </li>
         }
       </ul>
     } @else if (hasFilter()) {

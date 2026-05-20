@@ -32,14 +32,20 @@
   font-size: 0.8rem;
   cursor: pointer;
   color: var(--text-muted);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 
   &.active {
     color: var(--text);
     border-color: var(--accent, #58a6ff);
-    background: var(--accent-muted, rgba(88,166,255,0.12));
+    background: var(--accent-muted, rgba(88, 166, 255, 0.12));
   }
-  &:hover:not(.active) { border-color: var(--text-muted); color: var(--text); }
+  &:hover:not(.active) {
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
 }
 
 .sprint-toggle {
@@ -57,13 +63,18 @@
   font-size: 0.8rem;
   cursor: pointer;
   color: var(--text-muted);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
   &.active {
-    background: var(--accent-muted, rgba(88,166,255,0.12));
+    background: var(--accent-muted, rgba(88, 166, 255, 0.12));
     color: var(--accent, #58a6ff);
   }
-  &:hover:not(.active) { color: var(--text); background: var(--surface-2); }
+  &:hover:not(.active) {
+    color: var(--text);
+    background: var(--surface-2);
+  }
 }
 
 .filter-divider {
@@ -78,7 +89,9 @@
   flex-shrink: 0;
 }
 
-.filter-assignee { width: 180px; }
+.filter-assignee {
+  width: 180px;
+}
 
 .assignee-drop {
   position: absolute;
@@ -88,7 +101,7 @@
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   z-index: 60;
   max-height: 200px;
   overflow-y: auto;
@@ -102,14 +115,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  &:hover { background: var(--surface-2); }
+  &:hover {
+    background: var(--surface-2);
+  }
 }
 
 .spinner-inline {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -117,7 +132,11 @@
   vertical-align: middle;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .board-meta {
   margin-bottom: 0.5rem;
@@ -135,16 +154,22 @@
   font-size: 0.78rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
   display: flex;
   align-items: center;
   gap: 0.35rem;
 
-  &:hover { color: var(--text); border-color: var(--text-muted); }
+  &:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
   &.active {
     color: var(--accent);
     border-color: var(--accent);
-    background: var(--accent-muted, rgba(88,166,255,0.08));
+    background: var(--accent-muted, rgba(88, 166, 255, 0.08));
   }
 }
 
@@ -166,7 +191,7 @@
   border-radius: var(--radius);
   padding: 0.5rem;
   min-width: 200px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -188,9 +213,14 @@
   width: 100%;
   text-align: left;
   border-radius: 4px;
-  transition: color 0.12s, background 0.12s;
+  transition:
+    color 0.12s,
+    background 0.12s;
 
-  &:hover { color: var(--danger, #f85149); background: var(--surface-2); }
+  &:hover {
+    color: var(--danger, #f85149);
+    background: var(--surface-2);
+  }
 }
 
 .col-manager-empty {
@@ -217,11 +247,20 @@
   padding: 0.2rem 0.25rem;
   border-radius: 4px;
   cursor: grab;
-  transition: background 0.1s, opacity 0.1s;
+  transition:
+    background 0.1s,
+    opacity 0.1s;
 
-  &:hover { background: var(--surface-2); }
-  &.col-dragging { opacity: 0.35; cursor: grabbing; }
-  &:active { cursor: grabbing; }
+  &:hover {
+    background: var(--surface-2);
+  }
+  &.col-dragging {
+    opacity: 0.35;
+    cursor: grabbing;
+  }
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .col-drag-handle {
@@ -240,7 +279,10 @@
   cursor: pointer;
   flex: 1;
 
-  input[type="checkbox"] { cursor: pointer; accent-color: var(--accent); }
+  input[type='checkbox'] {
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
 }
 
 .kanban-board {
@@ -258,7 +300,9 @@
   display: flex;
   flex-direction: column;
   min-height: 200px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
   &.drag-over {
     border-color: var(--accent);
@@ -267,7 +311,9 @@
 }
 
 .kanban-col {
-  &.col-board-dragging { opacity: 0.4; }
+  &.col-board-dragging {
+    opacity: 0.4;
+  }
 }
 
 .kanban-col-header {
@@ -285,7 +331,9 @@
   cursor: grab;
   user-select: none;
 
-  &:active { cursor: grabbing; }
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .col-header-drag-hint {
@@ -294,7 +342,9 @@
   opacity: 0.4;
   transition: opacity 0.15s;
 
-  .kanban-col-header:hover & { opacity: 1; }
+  .kanban-col-header:hover & {
+    opacity: 1;
+  }
 }
 
 .kanban-items {
@@ -329,15 +379,20 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  transition: border-color 0.15s, opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    opacity 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
   user-select: none;
 
   &:hover {
     border-color: var(--text-muted);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
-  &:active, &.dragging {
+  &:active,
+  &.dragging {
     cursor: grabbing;
     opacity: 0.5;
     transform: rotate(1.5deg) scale(0.97);
@@ -360,7 +415,9 @@
   line-height: 1.4;
 }
 
-.wi-assignee { font-size: 0.75rem; }
+.wi-assignee {
+  font-size: 0.75rem;
+}
 
 .wi-card-footer {
   display: flex;
@@ -375,8 +432,12 @@
   }
 }
 
-.wi-id { font-size: 0.72rem; }
-.wi-priority { font-size: 0.8rem; }
+.wi-id {
+  font-size: 0.72rem;
+}
+.wi-priority {
+  font-size: 0.8rem;
+}
 
 // ── Mobile ────────────────────────────────────────────────────────────────────
 
@@ -387,5 +448,7 @@
     overflow-x: auto;
   }
 
-  .filter-row { gap: 0.5rem; }
+  .filter-row {
+    gap: 0.5rem;
+  }
 }

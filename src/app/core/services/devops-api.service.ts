@@ -44,7 +44,7 @@ export class DevOpsApiService {
   listProjects(): Observable<DevOpsPagedResult<DevOpsProject>> {
     return this.http.get<DevOpsPagedResult<DevOpsProject>>(
       `${this.base()}/projects?api-version=7.1`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -53,30 +53,40 @@ export class DevOpsApiService {
   listTeams(project: string): Observable<DevOpsPagedResult<DevOpsTeam>> {
     return this.http.get<DevOpsPagedResult<DevOpsTeam>>(
       `${this.base()}/projects/${encodeURIComponent(project)}/teams?api-version=7.1`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
-  listTeamMembers(project: string, teamId: string): Observable<DevOpsPagedResult<DevOpsTeamMember>> {
+  listTeamMembers(
+    project: string,
+    teamId: string,
+  ): Observable<DevOpsPagedResult<DevOpsTeamMember>> {
     return this.http.get<DevOpsPagedResult<DevOpsTeamMember>>(
       `${this.base()}/projects/${encodeURIComponent(project)}/teams/${teamId}/members?api-version=7.1`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
   // ── Iterations / Sprint ─────────────────────────────────────────────────────
 
-  getCurrentIteration(project: string, team: string): Observable<DevOpsPagedResult<DevOpsIteration>> {
+  getCurrentIteration(
+    project: string,
+    team: string,
+  ): Observable<DevOpsPagedResult<DevOpsIteration>> {
     return this.http.get<DevOpsPagedResult<DevOpsIteration>>(
       `${this.teamBase(project, team)}/work/teamsettings/iterations?$timeframe=current&api-version=7.1`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
-  getIterationWorkItemIds(project: string, team: string, iterationId: string): Observable<DevOpsIterationWorkItems> {
+  getIterationWorkItemIds(
+    project: string,
+    team: string,
+    iterationId: string,
+  ): Observable<DevOpsIterationWorkItems> {
     return this.http.get<DevOpsIterationWorkItems>(
       `${this.teamBase(project, team)}/work/teamsettings/iterations/${iterationId}/workitems?api-version=7.1`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -86,7 +96,7 @@ export class DevOpsApiService {
     const idList = ids.join(',');
     return this.http.get<{ value: DevOpsWorkItem[] }>(
       `${this.base(project)}/wit/workitems?ids=${idList}&$expand=all&api-version=7.1`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -94,11 +104,14 @@ export class DevOpsApiService {
     return this.http.post<{ workItems: { id: number }[] }>(
       `${this.base(project)}/wit/wiql?api-version=7.1`,
       { query: wiql },
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
-  queryWorkItemLinks(project: string, wiql: string): Observable<{
+  queryWorkItemLinks(
+    project: string,
+    wiql: string,
+  ): Observable<{
     workItemRelations: Array<{
       rel: string | null;
       source: { id: number } | null;
@@ -108,7 +121,7 @@ export class DevOpsApiService {
     return this.http.post<any>(
       `${this.base(project)}/wit/wiql?api-version=7.1`,
       { query: wiql },
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -116,7 +129,7 @@ export class DevOpsApiService {
     return this.http.post<DevOpsWorkItem>(
       `${this.base(project)}/wit/workitems/${id}?api-version=7.1`,
       [{ op: 'add', path: '/fields/System.State', value: state }],
-      { headers: this.patchHeaders }
+      { headers: this.patchHeaders },
     );
   }
 }

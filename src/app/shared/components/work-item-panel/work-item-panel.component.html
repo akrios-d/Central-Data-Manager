@@ -9,9 +9,18 @@
       </div>
       <div class="panel-actions">
         @if (wi.url) {
-          <a [href]="wi.url" target="_blank" rel="noopener" class="btn btn-sm" [title]="'panel.openTitle' | translate">{{ 'panel.openBtn' | translate }}</a>
+          <a
+            [href]="wi.url"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-sm"
+            [title]="'panel.openTitle' | translate"
+            >{{ 'panel.openBtn' | translate }}</a
+          >
         }
-        <button class="btn btn-sm" (click)="close()" [title]="'panel.closeTitle' | translate">✕</button>
+        <button class="btn btn-sm" (click)="close()" [title]="'panel.closeTitle' | translate">
+          ✕
+        </button>
       </div>
     </div>
 
@@ -48,9 +57,9 @@
           <dd>{{ wi.areaPath }}</dd>
         }
         <dt>{{ 'panel.created' | translate }}</dt>
-        <dd>{{ wi.createdDate | date:'dd MMM yyyy HH:mm' }}</dd>
+        <dd>{{ wi.createdDate | date: 'dd MMM yyyy HH:mm' }}</dd>
         <dt>{{ 'panel.lastUpdated' | translate }}</dt>
-        <dd>{{ wi.changedDate | date:'dd MMM yyyy HH:mm' }}</dd>
+        <dd>{{ wi.changedDate | date: 'dd MMM yyyy HH:mm' }}</dd>
       </dl>
 
       @if (tags().length) {

@@ -33,8 +33,16 @@ export interface JiraSprint {
 
 export interface JiraIssueLink {
   type: { name: string; inward: string; outward: string };
-  outwardIssue?: { id: string; key: string; fields?: { summary?: string; status?: { name: string }; issuetype?: { name: string } } };
-  inwardIssue?:  { id: string; key: string; fields?: { summary?: string; status?: { name: string }; issuetype?: { name: string } } };
+  outwardIssue?: {
+    id: string;
+    key: string;
+    fields?: { summary?: string; status?: { name: string }; issuetype?: { name: string } };
+  };
+  inwardIssue?: {
+    id: string;
+    key: string;
+    fields?: { summary?: string; status?: { name: string }; issuetype?: { name: string } };
+  };
 }
 
 export interface JiraIssue {
@@ -63,15 +71,15 @@ export interface JiraTransition {
 
 @Injectable({ providedIn: 'root' })
 export class JiraApiService {
-  private http   = inject(HttpClient);
+  private http = inject(HttpClient);
   private tokens = inject(TokenService);
 
   private get headers(): HttpHeaders {
     const email = this.tokens.jiraEmail() ?? '';
     const token = this.tokens.jiraToken() ?? '';
     return new HttpHeaders({
-      'Authorization': `Basic ${btoa(`${email}:${token}`)}`,
-      'Accept': 'application/json',
+      Authorization: `Basic ${btoa(`${email}:${token}`)}`,
+      Accept: 'application/json',
       'Content-Type': 'application/json',
     });
   }
@@ -89,62 +97,80 @@ export class JiraApiService {
   }
 
   listProjects(): Observable<JiraProject[]> {
-    return this.http.get<{ values: JiraProject[] }>(
-      `${this.base}/project/search?maxResults=100&orderBy=name`,
-      { headers: this.headers }
-    ).pipe(map(r => r.values));
+    return this.http
+      .get<{
+        values: JiraProject[];
+      }>(`${this.base}/project/search?maxResults=100&orderBy=name`, { headers: this.headers })
+      .pipe(map((r) => r.values));
   }
 
   listBoards(projectKey: string): Observable<JiraBoard[]> {
-    return this.http.get<{ values: JiraBoard[] }>(
-      `${this.agileBase}/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`,
-      { headers: this.headers }
-    ).pipe(map(r => r.values ?? []));
+    return this.http
+      .get<{
+        values: JiraBoard[];
+      }>(`${this.agileBase}/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`, {
+        headers: this.headers,
+      })
+      .pipe(map((r) => r.values ?? []));
   }
 
   getActiveSprint(boardId: number): Observable<JiraSprint | null> {
-    return this.http.get<{ values: JiraSprint[] }>(
-      `${this.agileBase}/board/${boardId}/sprint?state=active&maxResults=1`,
-      { headers: this.headers }
-    ).pipe(map(r => r.values?.[0] ?? null));
+    return this.http
+      .get<{
+        values: JiraSprint[];
+      }>(`${this.agileBase}/board/${boardId}/sprint?state=active&maxResults=1`, {
+        headers: this.headers,
+      })
+      .pipe(map((r) => r.values?.[0] ?? null));
   }
 
   getActiveSprintForProject(projectKey: string): Observable<JiraSprint | null> {
     return this.listBoards(projectKey).pipe(
-      switchMap(boards => {
+      switchMap((boards) => {
         if (!boards.length) return of(null);
         return this.getActiveSprint(boards[0].id).pipe(catchError(() => of(null)));
       }),
-      catchError(() => of(null))
+      catchError(() => of(null)),
     );
   }
 
   searchIssues(jql: string): Observable<JiraIssue[]> {
-    return this.http.get<{ issues: JiraIssue[] }>(
-      `${this.base}/search?jql=${encodeURIComponent(jql)}&maxResults=200&fields=summary,status,issuetype,assignee,reporter,creator,priority,created,updated`,
-      { headers: this.headers }
-    ).pipe(map(r => r.issues ?? []));
+    return this.http
+      .get<{
+        issues: JiraIssue[];
+      }>(
+        `${this.base}/search?jql=${encodeURIComponent(jql)}&maxResults=200&fields=summary,status,issuetype,assignee,reporter,creator,priority,created,updated`,
+        { headers: this.headers },
+      )
+      .pipe(map((r) => r.issues ?? []));
   }
 
   searchIssuesWithLinks(jql: string): Observable<JiraIssue[]> {
-    return this.http.get<{ issues: JiraIssue[] }>(
-      `${this.base}/search?jql=${encodeURIComponent(jql)}&maxResults=500&fields=summary,status,issuetype,assignee,reporter,creator,priority,created,updated,issuelinks`,
-      { headers: this.headers }
-    ).pipe(map(r => r.issues ?? []));
+    return this.http
+      .get<{
+        issues: JiraIssue[];
+      }>(
+        `${this.base}/search?jql=${encodeURIComponent(jql)}&maxResults=500&fields=summary,status,issuetype,assignee,reporter,creator,priority,created,updated,issuelinks`,
+        { headers: this.headers },
+      )
+      .pipe(map((r) => r.issues ?? []));
   }
 
   getTransitions(issueKey: string): Observable<JiraTransition[]> {
-    return this.http.get<{ transitions: JiraTransition[] }>(
-      `${this.base}/issue/${encodeURIComponent(issueKey)}/transitions`,
-      { headers: this.headers }
-    ).pipe(map(r => r.transitions ?? []));
+    return this.http
+      .get<{
+        transitions: JiraTransition[];
+      }>(`${this.base}/issue/${encodeURIComponent(issueKey)}/transitions`, {
+        headers: this.headers,
+      })
+      .pipe(map((r) => r.transitions ?? []));
   }
 
   applyTransition(issueKey: string, transitionId: string): Observable<void> {
     return this.http.post<void>(
       `${this.base}/issue/${encodeURIComponent(issueKey)}/transitions`,
       { transition: { id: transitionId } },
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 }

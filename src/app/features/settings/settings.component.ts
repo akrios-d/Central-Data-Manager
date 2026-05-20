@@ -4,7 +4,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
-import { DevOpsApiService, DevOpsProject, DevOpsTeam } from '../../core/services/devops-api.service';
+import {
+  DevOpsApiService,
+  DevOpsProject,
+  DevOpsTeam,
+} from '../../core/services/devops-api.service';
 import { GitHubApiService } from '../../core/services/github-api.service';
 import { GitLabApiService } from '../../core/services/gitlab-api.service';
 import { JiraApiService } from '../../core/services/jira-api.service';
@@ -22,76 +26,80 @@ interface ConnectionTest {
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit {
-  private tokens      = inject(TokenService);
-  private toasts      = inject(ToastService);
-  private ado         = inject(DevOpsApiService);
-  private gh          = inject(GitHubApiService);
-  private gl          = inject(GitLabApiService);
-  private jira        = inject(JiraApiService);
-  private translate   = inject(TranslateService);
+  private tokens = inject(TokenService);
+  private toasts = inject(ToastService);
+  private ado = inject(DevOpsApiService);
+  private gh = inject(GitHubApiService);
+  private gl = inject(GitLabApiService);
+  private jira = inject(JiraApiService);
+  private translate = inject(TranslateService);
   private appSettings = inject(AppSettingsService);
 
-  readonly persist            = this.tokens.persist;
-  readonly hasGh              = this.tokens.hasGitHub;
-  readonly hasAdo             = this.tokens.hasDevOps;
-  readonly hasGl              = this.tokens.hasGitLab;
-  readonly activeCiProvider     = this.tokens.activeCiProvider;
+  readonly persist = this.tokens.persist;
+  readonly hasGh = this.tokens.hasGitHub;
+  readonly hasAdo = this.tokens.hasDevOps;
+  readonly hasGl = this.tokens.hasGitLab;
+  readonly activeCiProvider = this.tokens.activeCiProvider;
   readonly activeBoardsProvider = this.tokens.activeBoardsProvider;
-  readonly hasJira              = this.tokens.hasJira;
-  readonly jiraEmail2           = this.tokens.jiraEmail;
-  readonly jiraBaseUrl2         = this.tokens.jiraBaseUrl;
+  readonly hasJira = this.tokens.hasJira;
+  readonly jiraEmail2 = this.tokens.jiraEmail;
+  readonly jiraBaseUrl2 = this.tokens.jiraBaseUrl;
 
   jiraToken = signal('');
   jiraEmail = signal('');
-  jiraUrl   = signal('https://your-domain.atlassian.net');
+  jiraUrl = signal('https://your-domain.atlassian.net');
   showJiraForm = signal(false);
-  jiraTest  = signal<ConnectionTest | null>(null);
+  jiraTest = signal<ConnectionTest | null>(null);
 
-  readonly jiraProject         = this.tokens.jiraProject;
-  jiraProject2                 = signal('');
-  showJiraProjectEdit          = signal(false);
-  availableJiraProjects        = signal<{ id: string; key: string; name: string }[]>([]);
-  jiraProjectsLoading          = signal(false);
+  readonly jiraProject = this.tokens.jiraProject;
+  jiraProject2 = signal('');
+  showJiraProjectEdit = signal(false);
+  availableJiraProjects = signal<{ id: string; key: string; name: string }[]>([]);
+  jiraProjectsLoading = signal(false);
 
-  setProvider(p: 'github' | 'gitlab'): void { this.tokens.setActiveCiProvider(p); }
-  setBoardsProvider(p: 'devops' | 'jira'): void { this.tokens.setActiveBoardsProvider(p); }
-  readonly ghOwner      = this.tokens.githubOwner;
-  readonly adoOrg       = this.tokens.devopsOrg;
-  readonly adoProject   = this.tokens.devopsProject;
-  readonly adoTeam      = this.tokens.devopsTeam;
-  readonly glBaseUrl    = this.tokens.gitlabBaseUrl;
+  setProvider(p: 'github' | 'gitlab'): void {
+    this.tokens.setActiveCiProvider(p);
+  }
+  setBoardsProvider(p: 'devops' | 'jira'): void {
+    this.tokens.setActiveBoardsProvider(p);
+  }
+  readonly ghOwner = this.tokens.githubOwner;
+  readonly adoOrg = this.tokens.devopsOrg;
+  readonly adoProject = this.tokens.devopsProject;
+  readonly adoTeam = this.tokens.devopsTeam;
+  readonly glBaseUrl = this.tokens.gitlabBaseUrl;
 
   editPollInterval = signal(this.appSettings.pollIntervalSec());
-  editMaxPolls     = signal(this.appSettings.maxPolls());
+  editMaxPolls = signal(this.appSettings.maxPolls());
   readonly maxPollMinutes = computed(() =>
-    Math.round(this.editPollInterval() * this.editMaxPolls() / 60)
+    Math.round((this.editPollInterval() * this.editMaxPolls()) / 60),
   );
 
-  ghToken  = signal('');
+  ghToken = signal('');
   ghOwner2 = signal('');
   adoToken = signal('');
-  adoOrg2  = signal('');
-  glToken  = signal('');
-  glUrl    = signal('https://gitlab.com');
+  adoOrg2 = signal('');
+  glToken = signal('');
+  glUrl = signal('https://gitlab.com');
 
-  editAdoOrg     = signal('');
+  editAdoOrg = signal('');
   editAdoProject = signal('');
-  editAdoTeam    = signal('');
+  editAdoTeam = signal('');
 
-  showGhForm      = signal(false);
-  showAdoForm     = signal(false);
-  showAdoOrgEdit  = signal(false);
-  showSprintEdit  = signal(false);
-  showGlForm      = signal(false);
+  showGhForm = signal(false);
+  showAdoForm = signal(false);
+  showAdoOrgEdit = signal(false);
+  showSprintEdit = signal(false);
+  showGlForm = signal(false);
 
   availableProjects = signal<DevOpsProject[]>([]);
-  projectsLoading   = signal(false);
-  availableTeams    = signal<DevOpsTeam[]>([]);
-  teamsLoading      = signal(false);
+  projectsLoading = signal(false);
+  availableTeams = signal<DevOpsTeam[]>([]);
+  teamsLoading = signal(false);
 
-  ghTest  = signal<ConnectionTest | null>(null);
+  ghTest = signal<ConnectionTest | null>(null);
   adoTest = signal<ConnectionTest | null>(null);
-  glTest  = signal<ConnectionTest | null>(null);
+  glTest = signal<ConnectionTest | null>(null);
 
   ngOnInit(): void {
     this.editAdoProject.set(this.tokens.devopsProject() ?? '');
@@ -104,9 +112,9 @@ export class SettingsComponent implements OnInit {
   testGitHub(): void {
     this.ghTest.set({ status: 'testing', detail: 'Connecting…' });
     forkJoin({
-      user:  this.gh.getAuthenticatedUser(),
+      user: this.gh.getAuthenticatedUser(),
       repos: this.gh.listRepos().pipe(catchError(() => of([]))),
-      orgs:  this.gh.listOrgs().pipe(catchError(() => of([]))),
+      orgs: this.gh.listOrgs().pipe(catchError(() => of([]))),
     }).subscribe({
       next: ({ user, repos, orgs }) => {
         const orgList = orgs.map((o: any) => o.login).join(', ');
@@ -116,7 +124,9 @@ export class SettingsComponent implements OnInit {
           orgs.length ? `Orgs: ${orgList}` : 'Sem orgs associadas',
         ];
         if (repos.length === 0 && orgs.length > 0) {
-          lines.push('⚠ Se os repos estão numa org, pode precisar de autorizar o PAT nessa org (SSO/SAML).');
+          lines.push(
+            '⚠ Se os repos estão numa org, pode precisar de autorizar o PAT nessa org (SSO/SAML).',
+          );
         }
         this.ghTest.set({ status: repos.length > 0 ? 'ok' : 'error', detail: lines.join(' · ') });
       },
@@ -131,7 +141,10 @@ export class SettingsComponent implements OnInit {
     this.adoTest.set({ status: 'testing', detail: 'Connecting…' });
     this.ado.listProjects().subscribe({
       next: (res) => {
-        const names = res.value.slice(0, 3).map((p) => p.name).join(', ');
+        const names = res.value
+          .slice(0, 3)
+          .map((p) => p.name)
+          .join(', ');
         this.adoTest.set({
           status: 'ok',
           detail: `✓ ${res.count} project(s) found: ${names}${res.count > 3 ? '…' : ''}`,
@@ -164,7 +177,11 @@ export class SettingsComponent implements OnInit {
 
   saveAdoOrg(): void {
     const org = this.editAdoOrg().trim();
-    if (org) { this.tokens.updateDevOpsOrg(org); this.showAdoOrgEdit.set(false); this.toasts.show('Organisation updated.', 'success'); }
+    if (org) {
+      this.tokens.updateDevOpsOrg(org);
+      this.showAdoOrgEdit.set(false);
+      this.toasts.show('Organisation updated.', 'success');
+    }
   }
 
   openSprintEdit(): void {
@@ -184,7 +201,10 @@ export class SettingsComponent implements OnInit {
         this.projectsLoading.set(false);
         if (this.editAdoProject()) this.loadTeams();
       },
-      error: () => { this.projectsLoading.set(false); this.toasts.show('Could not load projects.', 'danger'); },
+      error: () => {
+        this.projectsLoading.set(false);
+        this.toasts.show('Could not load projects.', 'danger');
+      },
     });
   }
 
@@ -201,16 +221,22 @@ export class SettingsComponent implements OnInit {
     this.teamsLoading.set(true);
     this.availableTeams.set([]);
     this.ado.listTeams(project).subscribe({
-      next: (res) => { this.availableTeams.set(res.value); this.teamsLoading.set(false); },
-      error: ()   => { this.teamsLoading.set(false); this.toasts.show('Could not load teams.', 'danger'); },
+      next: (res) => {
+        this.availableTeams.set(res.value);
+        this.teamsLoading.set(false);
+      },
+      error: () => {
+        this.teamsLoading.set(false);
+        this.toasts.show('Could not load teams.', 'danger');
+      },
     });
   }
 
   saveSprintConfig(): void {
     const project = this.editAdoProject().trim();
-    const team    = this.editAdoTeam().trim();
+    const team = this.editAdoTeam().trim();
     if (project) this.tokens.updateDevOpsProject(project);
-    if (team)    this.tokens.updateDevOpsTeam(team);
+    if (team) this.tokens.updateDevOpsTeam(team);
     this.showSprintEdit.set(false);
     this.toasts.show('Sprint config saved.', 'success');
   }
@@ -237,7 +263,7 @@ export class SettingsComponent implements OnInit {
 
   saveGl(): void {
     const token = this.glToken().trim();
-    const url   = this.glUrl().trim() || 'https://gitlab.com';
+    const url = this.glUrl().trim() || 'https://gitlab.com';
     if (token) {
       this.tokens.setGitLab(token, url);
       this.glToken.set('');
@@ -281,7 +307,10 @@ export class SettingsComponent implements OnInit {
     this.jiraTest.set({ status: 'testing', detail: 'Connecting…' });
     this.jira.getMyself().subscribe({
       next: (user) => {
-        this.jiraTest.set({ status: 'ok', detail: `✓ Authenticated as ${user.displayName} (${user.emailAddress})` });
+        this.jiraTest.set({
+          status: 'ok',
+          detail: `✓ Authenticated as ${user.displayName} (${user.emailAddress})`,
+        });
       },
       error: (e) => {
         const msg = e?.error?.message ?? e?.message ?? 'Request failed';
@@ -293,7 +322,7 @@ export class SettingsComponent implements OnInit {
   saveJira(): void {
     const token = this.jiraToken().trim();
     const email = this.jiraEmail().trim();
-    const url   = this.jiraUrl().trim();
+    const url = this.jiraUrl().trim();
     if (token && email && url) {
       this.tokens.setJira(token, email, url);
       this.jiraToken.set('');
@@ -309,8 +338,14 @@ export class SettingsComponent implements OnInit {
     this.availableJiraProjects.set([]);
     this.showJiraProjectEdit.set(true);
     this.jira.listProjects().subscribe({
-      next: (ps) => { this.availableJiraProjects.set(ps); this.jiraProjectsLoading.set(false); },
-      error: () => { this.jiraProjectsLoading.set(false); this.toasts.show('Could not load Jira projects.', 'danger'); },
+      next: (ps) => {
+        this.availableJiraProjects.set(ps);
+        this.jiraProjectsLoading.set(false);
+      },
+      error: () => {
+        this.jiraProjectsLoading.set(false);
+        this.toasts.show('Could not load Jira projects.', 'danger');
+      },
     });
   }
 
@@ -337,7 +372,7 @@ export class SettingsComponent implements OnInit {
   }
 
   requestEnablePersist(): void {
-    const msg   = this.translate.instant('settings.storageRiskMsg');
+    const msg = this.translate.instant('settings.storageRiskMsg');
     const label = this.translate.instant('settings.storageRiskAccept');
     this.toasts.confirm(msg, label, () => {
       this.tokens.enablePersist();

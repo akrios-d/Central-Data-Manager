@@ -4,7 +4,9 @@
   gap: 1rem;
 }
 
-.sprint-setup { padding: 1rem; }
+.sprint-setup {
+  padding: 1rem;
+}
 
 .sprint-header {
   display: flex;
@@ -26,10 +28,17 @@
   font-weight: 600;
 }
 
-.sprint-dates { margin-top: 0.2rem; }
+.sprint-dates {
+  margin-top: 0.2rem;
+}
 
-.days-left { color: var(--text-muted); }
-.days-left.urgent { color: var(--danger); font-weight: 600; }
+.days-left {
+  color: var(--text-muted);
+}
+.days-left.urgent {
+  color: var(--danger);
+  font-weight: 600;
+}
 
 // ── Circular progress ────────────────────────────────────────────────────────
 
@@ -106,20 +115,40 @@
   color: var(--text-muted);
   border: none;
   cursor: pointer;
-  transition: opacity 0.15s, outline 0.15s;
+  transition:
+    opacity 0.15s,
+    outline 0.15s;
   outline: 2px solid transparent;
 
-  &:hover { opacity: 0.85; }
+  &:hover {
+    opacity: 0.85;
+  }
 
-  &.state-new      { background: rgba(88,166,255,0.1);  color: var(--accent);   }
-  &.state-active   { background: rgba(63,185,80,0.1);   color: var(--success);  }
-  &.state-resolved { background: rgba(210,153,34,0.1);  color: var(--warning);  }
-  &.state-closed   { background: var(--surface-2);      color: var(--text-muted);}
+  &.state-new {
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent);
+  }
+  &.state-active {
+    background: rgba(63, 185, 80, 0.1);
+    color: var(--success);
+  }
+  &.state-resolved {
+    background: rgba(210, 153, 34, 0.1);
+    color: var(--warning);
+  }
+  &.state-closed {
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
 
-  &.inactive { opacity: 0.35; }
+  &.inactive {
+    opacity: 0.35;
+  }
 }
 
-.state-count { font-weight: 700; }
+.state-count {
+  font-weight: 700;
+}
 
 // ── Type chips ────────────────────────────────────────────────────────────────
 
@@ -137,11 +166,18 @@
   font-size: 0.72rem;
   cursor: pointer;
   color: var(--text-muted);
-  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 
-  &:hover { opacity: 0.85; }
+  &:hover {
+    opacity: 0.85;
+  }
 
-  &.inactive { opacity: 0.3; }
+  &.inactive {
+    opacity: 0.3;
+  }
 
   &:not(.inactive) {
     color: var(--text);
@@ -170,7 +206,9 @@
   padding: 0.1rem 0.25rem;
   margin: 0 -0.25rem;
   transition: background 0.12s;
-  &:hover { background: var(--surface-hover, rgba(255,255,255,0.05)); }
+  &:hover {
+    background: var(--surface-hover, rgba(255, 255, 255, 0.05));
+  }
 }
 
 .wi-state-dot {
@@ -179,10 +217,18 @@
   border-radius: 50%;
   flex-shrink: 0;
   background: var(--text-muted);
-  &.new      { background: var(--accent); }
-  &.active   { background: var(--success); }
-  &.resolved { background: var(--warning); }
-  &.closed   { background: var(--border); }
+  &.new {
+    background: var(--accent);
+  }
+  &.active {
+    background: var(--success);
+  }
+  &.resolved {
+    background: var(--warning);
+  }
+  &.closed {
+    background: var(--border);
+  }
 }
 
 .wi-title {
@@ -192,7 +238,9 @@
   text-overflow: ellipsis;
 }
 
-.wi-type { flex-shrink: 0; }
+.wi-type {
+  flex-shrink: 0;
+}
 
 .sprint-more {
   padding-left: 1.4rem;

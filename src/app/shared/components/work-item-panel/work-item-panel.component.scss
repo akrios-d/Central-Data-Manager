@@ -32,7 +32,9 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
 
-  &.open { transform: translateX(0); }
+  &.open {
+    transform: translateX(0);
+  }
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -95,11 +97,26 @@
   background: var(--surface-2);
   color: var(--text-muted);
 
-  &.state-new      { background: rgba(88,166,255,0.15);  color: var(--accent);   }
-  &.state-active   { background: rgba(63,185,80,0.15);   color: var(--success);  }
-  &.state-resolved { background: rgba(210,153,34,0.15);  color: var(--warning);  }
-  &.state-closed   { background: var(--surface-2);       color: var(--text-muted);}
-  &.state-removed  { background: rgba(248,81,73,0.1);    color: var(--danger);   }
+  &.state-new {
+    background: rgba(88, 166, 255, 0.15);
+    color: var(--accent);
+  }
+  &.state-active {
+    background: rgba(63, 185, 80, 0.15);
+    color: var(--success);
+  }
+  &.state-resolved {
+    background: rgba(210, 153, 34, 0.15);
+    color: var(--warning);
+  }
+  &.state-closed {
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+  &.state-removed {
+    background: rgba(248, 81, 73, 0.1);
+    color: var(--danger);
+  }
 }
 
 // ── Meta grid ─────────────────────────────────────────────────────────────────
@@ -110,8 +127,14 @@
   gap: 0.5rem 0.75rem;
   font-size: 0.85rem;
 
-  dt { color: var(--text-muted); align-self: center; }
-  dd { font-weight: 500; word-break: break-word; }
+  dt {
+    color: var(--text-muted);
+    align-self: center;
+  }
+  dd {
+    font-weight: 500;
+    word-break: break-word;
+  }
 }
 
 // ── Tags ──────────────────────────────────────────────────────────────────────
@@ -149,18 +172,33 @@
   line-height: 1.7;
   color: var(--text);
 
-  p, ul, ol { margin-bottom: 0.5rem; }
-  ul, ol { padding-left: 1.25rem; }
-  a { color: var(--accent); }
+  p,
+  ul,
+  ol {
+    margin-bottom: 0.5rem;
+  }
+  ul,
+  ol {
+    padding-left: 1.25rem;
+  }
+  a {
+    color: var(--accent);
+  }
   code {
     background: var(--surface-2);
     padding: 0.1em 0.3em;
     border-radius: 3px;
     font-size: 0.85em;
   }
-  img { max-width: 100%; border-radius: var(--radius); }
+  img {
+    max-width: 100%;
+    border-radius: var(--radius);
+  }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-size: 0.95rem;
     font-weight: 600;
     margin: 0.75rem 0 0.25rem;
@@ -172,7 +210,10 @@
     overflow-x: auto;
     font-size: 0.8rem;
     margin-bottom: 0.5rem;
-    code { background: none; padding: 0; }
+    code {
+      background: none;
+      padding: 0;
+    }
   }
   blockquote {
     border-left: 3px solid var(--border);
@@ -190,13 +231,19 @@
     border-collapse: collapse;
     font-size: 0.82rem;
     margin-bottom: 0.5rem;
-    th, td {
+    th,
+    td {
       padding: 0.3rem 0.5rem;
       border: 1px solid var(--border);
       text-align: left;
     }
-    th { background: var(--surface-2); font-weight: 600; }
+    th {
+      background: var(--surface-2);
+      font-weight: 600;
+    }
   }
 }
 
-.wi-no-desc { margin-top: 0.25rem; }
+.wi-no-desc {
+  margin-top: 0.25rem;
+}

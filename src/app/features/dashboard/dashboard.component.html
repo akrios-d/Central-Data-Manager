@@ -16,20 +16,29 @@
       <div class="section-header">
         <h2 class="section-title">{{ 'dashboard.pipelines' | translate }}</h2>
         @if (!ghLoading()) {
-          <span class="text-muted text-sm">{{ filteredRepos().length }} / {{ allRepos().length }} {{ 'actions.repos' | translate }}</span>
+          <span class="text-muted text-sm"
+            >{{ filteredRepos().length }} / {{ allRepos().length }}
+            {{ 'actions.repos' | translate }}</span
+          >
         }
       </div>
 
-      <input class="form-control filter-input" type="text"
+      <input
+        class="form-control filter-input"
+        type="text"
         [placeholder]="'dashboard.searchPlaceholder' | translate"
-        [ngModel]="pipelineSearch()" (ngModelChange)="pipelineSearch.set($event)" />
+        [ngModel]="pipelineSearch()"
+        (ngModelChange)="pipelineSearch.set($event)"
+      />
 
       @if (ghLoading()) {
         <div class="empty-state mt-2"><div class="spinner"></div></div>
       } @else if (ghError()) {
         <p class="text-muted text-sm mt-2">{{ ghError() }}</p>
       } @else if (repoGroups().length === 0) {
-        <div class="empty-state mt-2"><p>{{ 'dashboard.noPipelines' | translate }}</p></div>
+        <div class="empty-state mt-2">
+          <p>{{ 'dashboard.noPipelines' | translate }}</p>
+        </div>
       } @else {
         <div class="repo-groups">
           @for (group of repoGroups(); track group.repoFullName) {
@@ -37,7 +46,14 @@
               <button class="repo-group-header" (click)="toggleRepo(group.repoFullName)">
                 <span class="run-dot" [class]="group.worstStatus"></span>
                 <span class="repo-group-name">{{ group.repoFullName }}</span>
-                <span class="repo-group-meta text-muted text-sm">{{ group.pipelines.length }} {{ group.pipelines.length === 1 ? ('dashboard.workflowOne' | translate) : ('dashboard.workflowMany' | translate) }}</span>
+                <span class="repo-group-meta text-muted text-sm"
+                  >{{ group.pipelines.length }}
+                  {{
+                    group.pipelines.length === 1
+                      ? ('dashboard.workflowOne' | translate)
+                      : ('dashboard.workflowMany' | translate)
+                  }}</span
+                >
                 <span class="expand-icon">{{ isExpanded(group.repoFullName) ? '▾' : '▸' }}</span>
               </button>
               @if (isExpanded(group.repoFullName)) {
@@ -48,11 +64,23 @@
                       <div class="pipeline-info">
                         <span class="pipeline-name">{{ p.name }}</span>
                         <span class="pipeline-meta text-muted text-sm">
-                          {{ p.lastRun.head_branch }} · {{ p.lastRun.created_at | date:'dd MMM HH:mm' }}
+                          {{ p.lastRun.head_branch }} ·
+                          {{ p.lastRun.created_at | date: 'dd MMM HH:mm' }}
                         </span>
                       </div>
-                      <span class="badge"
-                        [class]="'badge-' + (runClass(p.lastRun) === 'success' ? 'success' : runClass(p.lastRun) === 'failure' ? 'danger' : runClass(p.lastRun) === 'in_progress' ? 'info' : 'muted')">
+                      <span
+                        class="badge"
+                        [class]="
+                          'badge-' +
+                          (runClass(p.lastRun) === 'success'
+                            ? 'success'
+                            : runClass(p.lastRun) === 'failure'
+                              ? 'danger'
+                              : runClass(p.lastRun) === 'in_progress'
+                                ? 'info'
+                                : 'muted')
+                        "
+                      >
                         {{ runClass(p.lastRun).replace('_', ' ') }}
                       </span>
                     </li>
@@ -74,11 +102,17 @@
       } @else if (adoError()) {
         <p class="text-muted text-sm">{{ adoError() }}</p>
       } @else if (workItems().length === 0) {
-        <div class="empty-state"><p>{{ 'dashboard.noWorkItems' | translate }}</p></div>
+        <div class="empty-state">
+          <p>{{ 'dashboard.noWorkItems' | translate }}</p>
+        </div>
       } @else {
         <div class="wi-filters">
           @for (state of availableWiStates(); track state) {
-            <button class="wi-chip" [class.active]="isWiStateActive(state)" (click)="toggleWiState(state)">
+            <button
+              class="wi-chip"
+              [class.active]="isWiStateActive(state)"
+              (click)="toggleWiState(state)"
+            >
               {{ state }}
             </button>
           }
@@ -89,9 +123,7 @@
               <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
               <div class="wi-info">
                 <span class="wi-title">{{ wi.title }}</span>
-                <span class="wi-meta text-muted text-sm">
-                  {{ wi.type }} · {{ wi.state }}
-                </span>
+                <span class="wi-meta text-muted text-sm"> {{ wi.type }} · {{ wi.state }} </span>
               </div>
             </li>
           }
@@ -102,7 +134,11 @@
 
   @if (!hasCi() && !hasAdo()) {
     <div class="card">
-      <p>{{ 'dashboard.noIntegrations' | translate }} <a routerLink="/settings">{{ 'nav.settings' | translate }}</a> {{ 'dashboard.noIntegrationsSuffix' | translate }}</p>
+      <p>
+        {{ 'dashboard.noIntegrations' | translate }}
+        <a routerLink="/settings">{{ 'nav.settings' | translate }}</a>
+        {{ 'dashboard.noIntegrationsSuffix' | translate }}
+      </p>
     </div>
   }
 </div>

@@ -1,6 +1,11 @@
 <div class="app-shell">
   @if (showNav()) {
-    <button class="hamburger" [class.open]="sidebarOpen()" (click)="toggleSidebar()" aria-label="Menu">
+    <button
+      class="hamburger"
+      [class.open]="sidebarOpen()"
+      (click)="toggleSidebar()"
+      aria-label="Menu"
+    >
       <span></span><span></span><span></span>
     </button>
     <div class="sidebar-backdrop" [class.visible]="sidebarOpen()" (click)="closeSidebar()"></div>
@@ -10,33 +15,45 @@
         <span class="brand-name">CDM</span>
       </div>
       <ul class="nav-links">
-
-        <li><a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">◈</span> {{ 'nav.dashboard' | translate }}
-        </a></li>
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">◈</span> {{ 'nav.dashboard' | translate }}
+          </a>
+        </li>
 
         <li class="nav-section">{{ 'nav.sectionManagement' | translate }}</li>
-        <li><a routerLink="/devops-boards" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">◧</span> {{ 'nav.devopsBoards' | translate }}
-        </a></li>
-        <li><a routerLink="/blockers" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">⛔</span> {{ 'nav.blockers' | translate }}
-        </a></li>
-        <li><a routerLink="/releases" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">⊛</span> {{ 'nav.releases' | translate }}
-        </a></li>
+        <li>
+          <a routerLink="/devops-boards" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">◧</span> {{ 'nav.devopsBoards' | translate }}
+          </a>
+        </li>
+        <li>
+          <a routerLink="/blockers" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">⛔</span> {{ 'nav.blockers' | translate }}
+          </a>
+        </li>
+        <li>
+          <a routerLink="/releases" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">⊛</span> {{ 'nav.releases' | translate }}
+          </a>
+        </li>
 
         <li class="nav-section">{{ 'nav.sectionCicd' | translate }}</li>
-        <li><a routerLink="/github-actions" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">◎</span> {{ 'nav.githubActions' | translate }}
-        </a></li>
-<li><a routerLink="/chain-builder" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">⛓</span> {{ 'nav.chainBuilder' | translate }}
-        </a></li>
-        <li><a routerLink="/chain-orchestrator" routerLinkActive="active" (click)="closeSidebar()">
-          <span class="nav-icon">⬡</span> {{ 'nav.chainOrchestrator' | translate }}
-        </a></li>
-
+        <li>
+          <a routerLink="/github-actions" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">◎</span> {{ 'nav.githubActions' | translate }}
+          </a>
+        </li>
+        <li>
+          <a routerLink="/chain-builder" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">⛓</span> {{ 'nav.chainBuilder' | translate }}
+          </a>
+        </li>
+        <li>
+          <a routerLink="/chain-orchestrator" routerLinkActive="active" (click)="closeSidebar()">
+            <span class="nav-icon">⬡</span> {{ 'nav.chainOrchestrator' | translate }}
+          </a>
+        </li>
       </ul>
       <div class="nav-settings">
         <a routerLink="/settings" routerLinkActive="active" (click)="closeSidebar()">

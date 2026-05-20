@@ -3,8 +3,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { TokenService } from './token.service';
 
-export interface GhOrg { login: string; }
-export interface GhTokenScopes { scopes: string[] | null; }
+export interface GhOrg {
+  login: string;
+}
+export interface GhTokenScopes {
+  scopes: string[] | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class GitHubApiService {
@@ -27,13 +31,15 @@ export class GitHubApiService {
   }
 
   listOrgs(): Observable<GhOrg[]> {
-    return this.http.get<GhOrg[]>('https://api.github.com/user/orgs?per_page=100', { headers: this.headers });
+    return this.http.get<GhOrg[]>('https://api.github.com/user/orgs?per_page=100', {
+      headers: this.headers,
+    });
   }
 
   listOrgRepos(org: string): Observable<GhRepo[]> {
     return this.http.get<GhRepo[]>(
       `https://api.github.com/orgs/${org}/repos?per_page=100&sort=updated`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -42,7 +48,7 @@ export class GitHubApiService {
     // affiliation=owner,collaborator,organization_member covers org repos too
     return this.http.get<GhRepo[]>(
       `https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -50,7 +56,7 @@ export class GitHubApiService {
   listWorkflows(fullName: string): Observable<{ workflows: GhWorkflow[] }> {
     return this.http.get<{ workflows: GhWorkflow[] }>(
       `https://api.github.com/repos/${fullName}/actions/workflows`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -65,36 +71,42 @@ export class GitHubApiService {
   listRunsForHealth(fullName: string): Observable<{ workflow_runs: GhRun[] }> {
     return this.http.get<{ workflow_runs: GhRun[] }>(
       `https://api.github.com/repos/${fullName}/actions/runs?per_page=100`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
   getFileContent(fullName: string, path: string): Observable<string> {
-    return this.http.get<{ content: string }>(
-      `https://api.github.com/repos/${fullName}/contents/${path}`,
-      { headers: this.headers }
-    ).pipe(map(r => atob(r.content.replace(/\s+/g, ''))));
+    return this.http
+      .get<{
+        content: string;
+      }>(`https://api.github.com/repos/${fullName}/contents/${path}`, { headers: this.headers })
+      .pipe(map((r) => atob(r.content.replace(/\s+/g, ''))));
   }
 
   listTags(fullName: string): Observable<{ name: string }[]> {
     return this.http.get<{ name: string }[]>(
       `https://api.github.com/repos/${fullName}/tags?per_page=50`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
   listBranches(fullName: string): Observable<{ name: string }[]> {
     return this.http.get<{ name: string }[]>(
       `https://api.github.com/repos/${fullName}/branches?per_page=100`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
-  triggerWorkflow(fullName: string, workflowId: number, ref: string, inputs: Record<string, string>): Observable<void> {
+  triggerWorkflow(
+    fullName: string,
+    workflowId: number,
+    ref: string,
+    inputs: Record<string, string>,
+  ): Observable<void> {
     return this.http.post<void>(
       `https://api.github.com/repos/${fullName}/actions/workflows/${workflowId}/dispatches`,
       { ref, inputs },
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -102,7 +114,7 @@ export class GitHubApiService {
     const encodedRef = encodeURIComponent(ref.startsWith('refs/') ? ref : `refs/heads/${ref}`);
     return this.http.delete<unknown>(
       `https://api.github.com/repos/${fullName}/actions/caches?ref=${encodedRef}`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -110,7 +122,7 @@ export class GitHubApiService {
     return this.http.post<void>(
       `https://api.github.com/repos/${fullName}/actions/runs/${runId}/rerun`,
       {},
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
@@ -118,14 +130,14 @@ export class GitHubApiService {
     return this.http.post<void>(
       `https://api.github.com/repos/${fullName}/actions/runs/${runId}/cancel`,
       {},
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 
   compareRefs(fullName: string, base: string, head: string): Observable<GhComparison> {
     return this.http.get<GhComparison>(
       `https://api.github.com/repos/${fullName}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
-      { headers: this.headers }
+      { headers: this.headers },
     );
   }
 }

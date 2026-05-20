@@ -30,21 +30,25 @@ export interface CiWorkflow {
   path: string;
 }
 
-export interface CiTag    { name: string; }
-export interface CiBranch { name: string; }
+export interface CiTag {
+  name: string;
+}
+export interface CiBranch {
+  name: string;
+}
 
 export interface CiCommit {
-  sha:     string;
+  sha: string;
   message: string;
-  author:  string;
-  date:    string;
-  url:     string;
+  author: string;
+  date: string;
+  url: string;
 }
 
 export interface CiComparison {
-  status:    'identical' | 'ahead' | 'behind' | 'diverged';
-  ahead_by:  number;
+  status: 'identical' | 'ahead' | 'behind' | 'diverged';
+  ahead_by: number;
   behind_by: number;
-  commits:   CiCommit[];
-  html_url:  string;
+  commits: CiCommit[];
+  html_url: string;
 }

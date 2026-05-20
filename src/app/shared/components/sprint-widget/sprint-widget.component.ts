@@ -22,26 +22,25 @@ interface StateGroup {
 })
 export class SprintWidgetComponent implements OnInit {
   private boardsProvider = inject(BoardsProviderService);
-  private tokens         = inject(TokenService);
+  private tokens = inject(TokenService);
 
-  sprint       = signal<BoardSprint | null>(null);
-  workItems    = signal<BoardWorkItem[]>([]);
-  loading      = signal(true);
-  error        = signal<string | null>(null);
-  stateFilter  = signal<Set<string>>(new Set());
-  typeFilter   = signal<Set<string>>(new Set());
+  sprint = signal<BoardSprint | null>(null);
+  workItems = signal<BoardWorkItem[]>([]);
+  loading = signal(true);
+  error = signal<string | null>(null);
+  stateFilter = signal<Set<string>>(new Set());
+  typeFilter = signal<Set<string>>(new Set());
   selectedItem = signal<BoardWorkItem | null>(null);
 
   readonly availableTypes = computed(() =>
-    [...new Set(this.workItems().map(wi => wi.type))].sort()
+    [...new Set(this.workItems().map((wi) => wi.type))].sort(),
   );
 
   readonly filteredItems = computed(() => {
     const sf = this.stateFilter();
     const tf = this.typeFilter();
-    return this.workItems().filter(wi =>
-      (sf.size === 0 || sf.has(wi.state)) &&
-      (tf.size === 0 || tf.has(wi.type))
+    return this.workItems().filter(
+      (wi) => (sf.size === 0 || sf.has(wi.state)) && (tf.size === 0 || tf.has(wi.type)),
     );
   });
 
@@ -54,15 +53,15 @@ export class SprintWidgetComponent implements OnInit {
   readonly project = computed(() =>
     this.tokens.activeBoardsProvider() === 'jira'
       ? this.tokens.jiraProject()
-      : this.tokens.devopsProject()
+      : this.tokens.devopsProject(),
   );
 
   readonly team = computed(() =>
-    this.tokens.activeBoardsProvider() === 'jira' ? null : this.tokens.devopsTeam()
+    this.tokens.activeBoardsProvider() === 'jira' ? null : this.tokens.devopsTeam(),
   );
 
   toggleState(state: string): void {
-    this.stateFilter.update(s => {
+    this.stateFilter.update((s) => {
       const next = new Set(s);
       next.has(state) ? next.delete(state) : next.add(state);
       return next;
@@ -70,7 +69,7 @@ export class SprintWidgetComponent implements OnInit {
   }
 
   toggleType(type: string): void {
-    this.typeFilter.update(s => {
+    this.typeFilter.update((s) => {
       const next = new Set(s);
       next.has(type) ? next.delete(type) : next.add(type);
       return next;
@@ -90,7 +89,16 @@ export class SprintWidgetComponent implements OnInit {
   readonly hasFilter = computed(() => this.stateFilter().size > 0 || this.typeFilter().size > 0);
 
   readonly stateGroups = computed<StateGroup[]>(() => {
-    const order = ['New', 'Active', 'Resolved', 'Closed', 'Removed', 'To Do', 'In Progress', 'Done'];
+    const order = [
+      'New',
+      'Active',
+      'Resolved',
+      'Closed',
+      'Removed',
+      'To Do',
+      'In Progress',
+      'Done',
+    ];
     const map = new Map<string, BoardWorkItem[]>();
     for (const wi of this.workItems()) {
       if (!map.has(wi.state)) map.set(wi.state, []);
@@ -116,14 +124,14 @@ export class SprintWidgetComponent implements OnInit {
     const total = this.workItems().length;
     if (!total) return 0;
     const done = this.workItems().filter(
-      w => w.state === 'Closed' || w.state === 'Resolved' || w.state === 'Done'
+      (w) => w.state === 'Closed' || w.state === 'Resolved' || w.state === 'Done',
     ).length;
     return Math.round((done / total) * 100);
   });
 
   ngOnInit(): void {
     const project = this.project();
-    const team    = this.team() ?? undefined;
+    const team = this.team() ?? undefined;
 
     if (!this.isConfigured() || !project) {
       this.loading.set(false);

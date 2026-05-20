@@ -39,61 +39,61 @@ interface BEdge {
 })
 export class BlockersComponent implements OnInit {
   private boardsProvider = inject(BoardsProviderService);
-  private tokens         = inject(TokenService);
+  private tokens = inject(TokenService);
 
   readonly NODE_W = NODE_W;
   readonly NODE_H = NODE_H;
 
-  projects        = signal<BoardProject[]>([]);
+  projects = signal<BoardProject[]>([]);
   selectedProject = signal('');
   loadingProjects = signal(false);
-  loading         = signal(false);
-  error           = signal('');
+  loading = signal(false);
+  error = signal('');
 
-  nodes          = signal<BNode[]>([]);
-  edges          = signal<BEdge[]>([]);
+  nodes = signal<BNode[]>([]);
+  edges = signal<BEdge[]>([]);
   selectedNodeId = signal<number | string | null>(null);
-  canvasWidth    = signal(800);
-  canvasHeight   = signal(500);
+  canvasWidth = signal(800);
+  canvasHeight = signal(500);
 
-  filterTypes        = signal<Set<string>>(new Set());
-  filterStates       = signal<Set<string>>(new Set());
+  filterTypes = signal<Set<string>>(new Set());
+  filterStates = signal<Set<string>>(new Set());
   filterOnlyBlockers = signal(false);
 
-  availableTypes  = computed(() => [...new Set(this.nodes().map(n => n.item.type))].sort());
-  availableStates = computed(() => [...new Set(this.nodes().map(n => n.item.state))].sort());
+  availableTypes = computed(() => [...new Set(this.nodes().map((n) => n.item.type))].sort());
+  availableStates = computed(() => [...new Set(this.nodes().map((n) => n.item.state))].sort());
 
   filteredNodes = computed(() => {
-    const types        = this.filterTypes();
-    const states       = this.filterStates();
+    const types = this.filterTypes();
+    const states = this.filterStates();
     const onlyBlockers = this.filterOnlyBlockers();
-    return this.nodes().filter(n => {
-      if (types.size  > 0 && !types.has(n.item.type))  return false;
+    return this.nodes().filter((n) => {
+      if (types.size > 0 && !types.has(n.item.type)) return false;
       if (states.size > 0 && !states.has(n.item.state)) return false;
-      if (onlyBlockers && n.blocks.length === 0)         return false;
+      if (onlyBlockers && n.blocks.length === 0) return false;
       return true;
     });
   });
 
-  filteredNodeIds = computed(() => new Set(this.filteredNodes().map(n => n.id)));
+  filteredNodeIds = computed(() => new Set(this.filteredNodes().map((n) => n.id)));
 
   filteredEdges = computed(() => {
     const ids = this.filteredNodeIds();
-    return this.edges().filter(e => ids.has(e.fromId) && ids.has(e.toId));
+    return this.edges().filter((e) => ids.has(e.fromId) && ids.has(e.toId));
   });
 
-  hasActiveFilters = computed(() =>
-    this.filterTypes().size > 0 || this.filterStates().size > 0 || this.filterOnlyBlockers()
+  hasActiveFilters = computed(
+    () => this.filterTypes().size > 0 || this.filterStates().size > 0 || this.filterOnlyBlockers(),
   );
 
-  nodeById = computed(() => new Map(this.nodes().map(n => [n.id, n])));
+  nodeById = computed(() => new Map(this.nodes().map((n) => [n.id, n])));
 
   selectedNode = computed(() => this.nodeById().get(this.selectedNodeId()!) ?? null);
 
   topBlockers = computed(() =>
     [...this.filteredNodes()]
-      .filter(n => n.blocks.length > 0)
-      .sort((a, b) => b.impactScore - a.impactScore)
+      .filter((n) => n.blocks.length > 0)
+      .sort((a, b) => b.impactScore - a.impactScore),
   );
 
   affectedNodes = computed((): Map<number | string, 'direct' | 'indirect'> => {
@@ -120,11 +120,11 @@ export class BlockersComponent implements OnInit {
   });
 
   readonly hasProvider = computed(() =>
-    this.boardsProvider.provider === 'jira' ? this.tokens.hasJira() : this.tokens.hasDevOps()
+    this.boardsProvider.provider === 'jira' ? this.tokens.hasJira() : this.tokens.hasDevOps(),
   );
 
   readonly noProviderKey = computed(() =>
-    this.boardsProvider.provider === 'jira' ? 'blockers.noJira' : 'blockers.noDevops'
+    this.boardsProvider.provider === 'jira' ? 'blockers.noJira' : 'blockers.noDevops',
   );
 
   async ngOnInit() {
@@ -137,7 +137,9 @@ export class BlockersComponent implements OnInit {
       const ps = await firstValueFrom(this.boardsProvider.listProjects());
       this.projects.set(ps);
       if (ps.length) this.selectedProject.set(ps[0].id);
-    } catch { /* ignore */ } finally {
+    } catch {
+      /* ignore */
+    } finally {
       this.loadingProjects.set(false);
     }
   }
@@ -155,12 +157,19 @@ export class BlockersComponent implements OnInit {
     try {
       const { items, relations } = await firstValueFrom(this.boardsProvider.loadBlockers(project));
 
-      if (!relations.length) { this.loading.set(false); return; }
+      if (!relations.length) {
+        this.loading.set(false);
+        return;
+      }
 
       const allIds = [...items.keys()];
 
-      const blocks    = new Map<number | string, Set<number | string>>(allIds.map(id => [id, new Set()]));
-      const blockedBy = new Map<number | string, Set<number | string>>(allIds.map(id => [id, new Set()]));
+      const blocks = new Map<number | string, Set<number | string>>(
+        allIds.map((id) => [id, new Set()]),
+      );
+      const blockedBy = new Map<number | string, Set<number | string>>(
+        allIds.map((id) => [id, new Set()]),
+      );
 
       const edgeSeen = new Set<string>();
       const rawEdges: BEdge[] = [];
@@ -180,7 +189,7 @@ export class BlockersComponent implements OnInit {
         if (visiting.has(id)) return 0;
         visiting.add(id);
         const preds = [...(blockedBy.get(id) ?? [])];
-        const level = preds.length ? Math.max(...preds.map(p => getLevel(p, visiting) + 1)) : 0;
+        const level = preds.length ? Math.max(...preds.map((p) => getLevel(p, visiting) + 1)) : 0;
         visiting.delete(id);
         levels.set(id, level);
         return level;
@@ -223,14 +232,14 @@ export class BlockersComponent implements OnInit {
         });
       }
 
-      const xs = [...positions.values()].map(p => p.x);
-      const ys = [...positions.values()].map(p => p.y);
+      const xs = [...positions.values()].map((p) => p.x);
+      const ys = [...positions.values()].map((p) => p.y);
       this.canvasWidth.set(Math.max(...xs) + NODE_W + CANVAS_PAD);
       this.canvasHeight.set(Math.max(...ys) + NODE_H + CANVAS_PAD);
 
       const bNodes: BNode[] = allIds
-        .filter(id => items.has(id) && positions.has(id))
-        .map(id => ({
+        .filter((id) => items.has(id) && positions.has(id))
+        .map((id) => ({
           id,
           item: items.get(id)!,
           x: positions.get(id)!.x,
@@ -253,20 +262,30 @@ export class BlockersComponent implements OnInit {
   getEdgePath(edge: BEdge): string {
     const map = this.nodeById();
     const from = map.get(edge.fromId);
-    const to   = map.get(edge.toId);
+    const to = map.get(edge.toId);
     if (!from || !to) return '';
-    const x1 = from.x + NODE_W, y1 = from.y + NODE_H / 2;
-    const x2 = to.x,            y2 = to.y + NODE_H / 2;
+    const x1 = from.x + NODE_W,
+      y1 = from.y + NODE_H / 2;
+    const x2 = to.x,
+      y2 = to.y + NODE_H / 2;
     const cx = (x1 + x2) / 2;
     return `M ${x1} ${y1} C ${cx} ${y1} ${cx} ${y2} ${x2} ${y2}`;
   }
 
   toggleTypeFilter(type: string): void {
-    this.filterTypes.update(s => { const n = new Set(s); n.has(type) ? n.delete(type) : n.add(type); return n; });
+    this.filterTypes.update((s) => {
+      const n = new Set(s);
+      n.has(type) ? n.delete(type) : n.add(type);
+      return n;
+    });
   }
 
   toggleStateFilter(state: string): void {
-    this.filterStates.update(s => { const n = new Set(s); n.has(state) ? n.delete(state) : n.add(state); return n; });
+    this.filterStates.update((s) => {
+      const n = new Set(s);
+      n.has(state) ? n.delete(state) : n.add(state);
+      return n;
+    });
   }
 
   clearFilters(): void {
@@ -292,13 +311,20 @@ export class BlockersComponent implements OnInit {
 
   typeColor(type: string): string {
     switch ((type ?? '').toLowerCase()) {
-      case 'epic':        return '#a371f7';
-      case 'feature':     return '#58a6ff';
-      case 'user story':  return '#3fb950';
-      case 'story':       return '#3fb950';
-      case 'task':        return '#f0883e';
-      case 'bug':         return '#f85149';
-      default:            return '#8b949e';
+      case 'epic':
+        return '#a371f7';
+      case 'feature':
+        return '#58a6ff';
+      case 'user story':
+        return '#3fb950';
+      case 'story':
+        return '#3fb950';
+      case 'task':
+        return '#f0883e';
+      case 'bug':
+        return '#f85149';
+      default:
+        return '#8b949e';
     }
   }
 }
