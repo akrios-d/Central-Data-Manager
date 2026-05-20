@@ -4,12 +4,12 @@ A client-side dashboard for managing CI/CD pipelines, work boards, releases and 
 
 ## Supported integrations
 
-| Category | Providers |
-|---|---|
-| CI/CD & Pipelines | GitHub Actions, GitLab CI |
-| Work Boards | Azure DevOps *(Jira coming soon)* |
-| Releases | GitHub, GitLab |
-| Chain Builder | GitHub Actions, GitLab CI |
+| Category          | Providers                         |
+|-------------------|-----------------------------------|
+| CI/CD & Pipelines | GitHub Actions, GitLab CI         |
+| Work Boards       | Azure DevOps *(Jira coming soon)* |
+| Releases          | GitHub, GitLab                    |
+| Chain Builder     | GitHub Actions, GitLab CI         |
 
 ---
 
@@ -65,11 +65,11 @@ The app opens directly on the Settings page — configure your tokens there befo
 
 All tokens are stored locally in your browser (sessionStorage by default, localStorage if you enable persistent storage in Settings). Nothing is sent to any server other than the provider APIs directly.
 
-| Provider | What you need |
-|---|---|
-| **GitHub** | Personal Access Token with `repo` and `workflow` scopes + your username/org |
-| **GitLab** | Personal Access Token with `api` scope + base URL (default `https://gitlab.com`) |
-| **Azure DevOps** | Personal Access Token with full access + organisation name |
+| Provider         | What you need                                                                    |
+|------------------|----------------------------------------------------------------------------------|
+| **GitHub**       | Personal Access Token with `repo` and `workflow` scopes + your username/org      |
+| **GitLab**       | Personal Access Token with `api` scope + base URL (default `https://gitlab.com`) |
+| **Azure DevOps** | Personal Access Token with full access + organisation name                       |
 
 Go to **Settings → CI Provider** to switch between GitHub and GitLab. The selected provider is used across Pipelines, Chain Builder and Releases.
 
@@ -86,6 +86,64 @@ Go to **Settings → CI Provider** to switch between GitHub and GitLab. The sele
 
 ---
 
+## Deployment
+
+Central Data Manager compiles to a folder of static files — any web server can serve it.
+
+### Production build
+
+```bash
+npm run build
+# output: dist/Central-Data-Manager/browser/
+```
+
+### Option 1 — Docker (recommended)
+
+```bash
+# Build image
+docker build -t central-data-manager .
+
+# Run on port 8080
+docker run -p 8080:80 central-data-manager
+```
+
+Open **http://localhost:8080**.
+
+### Option 2 — Nginx (static files)
+
+```bash
+npm run build
+cp -r dist/Central-Data-Manager/browser/* /var/www/central-data-manager/
+```
+
+Copy `nginx.conf` from this repository to `/etc/nginx/conf.d/central-data-manager.conf` and adjust the `root` path. The config includes SPA fallback routing, asset caching, and security headers.
+
+### Option 3 — Netlify / Vercel / GitHub Pages
+
+Point the platform at the `dist/Central-Data-Manager/browser/` output folder. For Netlify and Vercel, add a redirect rule so all routes return `index.html` (required for client-side routing):
+
+**Netlify** — create `public/_redirects`:
+```
+/* /index.html 200
+```
+
+**Vercel** — create `vercel.json`:
+```json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
+```
+
+### HTTPS
+
+Always serve over HTTPS in production. Tokens are stored in the browser and must not travel over plain HTTP.
+
+---
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the security model, token storage details, and how to report vulnerabilities.
+
+---
+
 ## Development
 
 ```bash
@@ -93,10 +151,10 @@ Go to **Settings → CI Provider** to switch between GitHub and GitLab. The sele
 ng serve
 
 # Production build
-ng build
+npm run build
 
 # Run unit tests
 ng test
 ```
 
-Build output goes to `dist/Central-Data-Manager/`.
+Build output goes to `dist/Central-Data-Manager/browser/`.
