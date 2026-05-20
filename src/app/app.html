@@ -71,6 +71,8 @@
       <div class="lang-switcher">
         <button [class.active]="currentLang() === 'en'" (click)="setLang('en')">EN</button>
         <button [class.active]="currentLang() === 'pt'" (click)="setLang('pt')">PT</button>
+        <button [class.active]="currentLang() === 'fr'" (click)="setLang('fr')">FR</button>
+        <button [class.active]="currentLang() === 'zh'" (click)="setLang('zh')">中文</button>
         <button class="theme-btn" (click)="toggleTheme()">
           {{ theme() === 'dark' ? '☀' : '🌙' }}
         </button>

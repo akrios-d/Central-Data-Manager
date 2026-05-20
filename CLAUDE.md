@@ -8,7 +8,7 @@ This file gives Claude Code full context on Central Data Manager so it can be pr
 
 **Central Data Manager (CDM)** is a 100 % client-side Angular 21 dashboard. There is no backend, no database, no Auth.js, no server. All API calls go directly from the browser to the provider APIs. All state is stored in the browser (sessionStorage by default, localStorage if the user opts in).
 
-**Owner:** Felipe "Akrios" Oliveira — gdevffelipe@gmail.com
+**Owner:** Felipe "Akrios" Oliveira — ghfelipe@hotmail.com
 
 **Never suggest server-side solutions.** If a feature seems to need a backend, find a client-side alternative or explicitly tell the user it cannot be done without a backend and ask how they want to proceed.
 
@@ -21,7 +21,7 @@ This file gives Claude Code full context on Central Data Manager so it can be pr
 | Framework | Angular 21, standalone components, no NgModules |
 | State | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state, RxJS only for HTTP |
 | HTTP | `HttpClient` with `withFetch()` |
-| i18n | `@ngx-translate/core`, files in `public/i18n/en.json` and `public/i18n/pt.json` |
+| i18n | `@ngx-translate/core`, files in `public/i18n/{en,pt,fr,zh}.json` |
 | Styling | Global SCSS variables in `src/styles.scss`, per-component SCSS |
 | Build | Angular CLI 21, `ng build --configuration=production` |
 | Container | Docker + `nginx:alpine`, config in `nginx.conf` |
@@ -222,7 +222,7 @@ type NodeRunStatus = 'idle' | 'running' | 'success' | 'failure' | 'skipped'
 
 ## i18n
 
-All user-facing strings go through `@ngx-translate`. Keys are namespaced: `nav.*`, `settings.*`, `security.*`, `builder.*`, `orch.*`, `boards.*`, `releases.*`, `blockers.*`, `health.*`, `notif.*`, `onboarding.*`, `dashboard.*`, `sprint.*`, `panel.*`, `actions.*`, `audit.*`, `prs.*`, `lang.*`. Both `en.json` and `pt.json` must be kept in sync.
+All user-facing strings go through `@ngx-translate`. Keys are namespaced: `nav.*`, `settings.*`, `security.*`, `builder.*`, `orch.*`, `boards.*`, `releases.*`, `blockers.*`, `health.*`, `notif.*`, `onboarding.*`, `dashboard.*`, `sprint.*`, `panel.*`, `actions.*`, `audit.*`, `prs.*`, `lang.*`. All four files — `en.json`, `pt.json`, `fr.json`, `zh.json` — must be kept in sync.
 
 ---
 
