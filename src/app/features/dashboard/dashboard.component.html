@@ -3,7 +3,7 @@
   <p>{{ 'dashboard.subtitle' | translate }}</p>
 </div>
 
-@if (hasAdo()) {
+@if (hasBoardsProvider()) {
   <section class="sprint-section">
     <h2 class="section-title">{{ 'dashboard.currentSprint' | translate }}</h2>
     <app-sprint-widget />

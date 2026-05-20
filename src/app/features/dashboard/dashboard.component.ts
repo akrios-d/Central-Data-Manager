@@ -43,8 +43,11 @@ export class DashboardComponent implements OnInit {
   private ado    = inject(DevOpsApiService);
   private boards = inject(BoardsProviderService);
 
-  readonly hasCi  = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
-  readonly hasAdo = this.tokens.hasDevOps;
+  readonly hasCi             = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
+  readonly hasAdo            = this.tokens.hasDevOps;
+  readonly hasBoardsProvider = computed(() =>
+    this.tokens.hasDevOps() || (this.tokens.hasJira() && !!this.tokens.jiraProject())
+  );
 
   allRepos   = signal<CiRepo[]>([]);
   pipelines  = signal<Pipeline[]>([]);
