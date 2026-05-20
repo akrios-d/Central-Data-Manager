@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Chain, ChainStep, ChainStepRun, StepStatus } from '../../core/models/chain.model';
+import { Chain, ChainRun, ChainStep, ChainStepRun, StepStatus } from '../../core/models/chain.model';
 import { parseDispatchInputs } from '../../core/utils/workflow-parser';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
@@ -64,7 +64,12 @@ export class ChainBuilderComponent {
   editingStepId = signal<string | null>(null);
 
   // ── Executor ──────────────────────────────────────────────────────────────────
-  readonly activeRun = computed(() => this.executor.activeRuns()[this.selectedId() ?? ''] ?? null);
+  readonly activeRun = computed<ChainRun | null>(
+    () =>
+      (this.executor.activeRuns() as Record<string, ChainRun | undefined>)[
+        this.selectedId() ?? ''
+      ] ?? null,
+  );
   dragStepIndex = signal<number | null>(null);
   selectedStepIds = signal<string[]>([]);
 
@@ -547,7 +552,7 @@ export class ChainBuilderComponent {
   }
 
   getStepRun(stepId: string): ChainStepRun | undefined {
-    return this.activeRun()?.steps.find((sr) => sr.stepId === stepId);
+    return this.activeRun()?.steps.find((sr: ChainStepRun) => sr.stepId === stepId);
   }
 
   getStepEffectiveStatus(stepId: string): StepStatus {
