@@ -5,7 +5,8 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TokenService } from '../../core/services/token.service';
-import { GitHubApiService, GhRepo, GhRun } from '../../core/services/github-api.service';
+import { CiProviderService } from '../../core/services/ci-provider.service';
+import { CiRepo, CiRun } from '../../core/interfaces/ci-provider.interface';
 import { DevOpsApiService, DevOpsWorkItem } from '../../core/services/devops-api.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { SprintWidgetComponent } from '../../shared/components/sprint-widget/sprint-widget.component';
@@ -16,7 +17,7 @@ export interface Pipeline {
   name: string;
   repo: string;
   repoFullName: string;
-  lastRun: GhRun;
+  lastRun: CiRun;
 }
 
 export interface RepoGroup {
@@ -36,13 +37,13 @@ const MAX_REPOS_FOR_RUNS = 15;
 })
 export class DashboardComponent implements OnInit {
   private tokens = inject(TokenService);
-  private gh     = inject(GitHubApiService);
+  private ci     = inject(CiProviderService);
   private ado    = inject(DevOpsApiService);
 
-  readonly hasGh  = this.tokens.hasGitHub;
+  readonly hasCi  = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
   readonly hasAdo = this.tokens.hasDevOps;
 
-  allRepos   = signal<GhRepo[]>([]);
+  allRepos   = signal<CiRepo[]>([]);
   pipelines  = signal<Pipeline[]>([]);
   workItems  = signal<DevOpsWorkItem[]>([]);
   ghLoading  = signal(false);
@@ -117,7 +118,6 @@ export class DashboardComponent implements OnInit {
   });
 
   constructor() {
-    // When the filtered repo list changes, refetch runs for the new set
     toObservable(this.filteredRepos).pipe(
       skip(1),
       debounceTime(500),
@@ -136,16 +136,16 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.tokens.hasGitHub()) this.loadGitHub();
+    if (this.tokens.hasAnyToken()) this.loadCiRepos();
     if (this.tokens.hasDevOps()) this.loadDevOps();
   }
 
-  private loadGitHub(): void {
+  private loadCiRepos(): void {
     this.ghLoading.set(true);
-    this.gh.listRepos().pipe(
+    this.ci.listRepos().pipe(
       catchError(err => {
-        this.ghError.set(err?.message ?? 'GitHub error');
-        return of([] as GhRepo[]);
+        this.ghError.set(err?.message ?? 'Error loading repositories');
+        return of([] as CiRepo[]);
       })
     ).subscribe(repos => {
       this.allRepos.set(repos);
@@ -156,14 +156,14 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  private fetchRunsForRepos(repos: GhRepo[]) {
+  private fetchRunsForRepos(repos: CiRepo[]) {
     const toFetch = repos.slice(0, MAX_REPOS_FOR_RUNS);
     if (!toFetch.length) return of([] as Pipeline[]);
 
     return forkJoin(
       toFetch.map(r =>
-        this.gh.listRuns(r.full_name).pipe(
-          catchError(() => of({ workflow_runs: [] as GhRun[] }))
+        this.ci.listRuns(r).pipe(
+          catchError(() => of({ workflow_runs: [] as CiRun[] }))
         )
       )
     ).pipe(
@@ -220,7 +220,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  runClass(run: GhRun): string {
+  runClass(run: CiRun): string {
     return run.status !== 'completed' ? run.status : (run.conclusion ?? 'unknown');
   }
 

@@ -11,7 +11,7 @@
 }
 
 <div class="dashboard-grid">
-  @if (hasGh()) {
+  @if (hasCi()) {
     <section class="card">
       <div class="section-header">
         <h2 class="section-title">{{ 'dashboard.pipelines' | translate }}</h2>
@@ -100,7 +100,7 @@
     </section>
   }
 
-  @if (!hasGh() && !hasAdo()) {
+  @if (!hasCi() && !hasAdo()) {
     <div class="card">
       <p>{{ 'dashboard.noIntegrations' | translate }} <a routerLink="/settings">{{ 'nav.settings' | translate }}</a> {{ 'dashboard.noIntegrationsSuffix' | translate }}</p>
     </div>
