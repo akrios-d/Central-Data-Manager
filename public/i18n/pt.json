@@ -224,6 +224,8 @@
     "tabHistory": "Histórico",
     "new": "+ Novo",
     "noGraphs": "Sem grafos ainda.",
+    "searchGraphs": "Pesquisar grafos…",
+    "noGraphsMatch": "Nenhum grafo encontrado.",
     "chainsCount": "chains",
     "emptyState": "Selecciona um grafo ou cria um novo.",
     "graphName": "Nome do grafo…",
@@ -240,7 +242,10 @@
     "enableNode": "Activar",
     "export": "↓ Exportar",
     "import": "↑ Importar",
-    "noRuns": "Sem execuções — clica em Executar para começar."
+    "noRuns": "Sem execuções — clica em Executar para começar.",
+    "close": "Fechar",
+    "enableChain": "Activar chain",
+    "popupSteps": "Steps"
   },
   "releases": {
     "title": "Releases",

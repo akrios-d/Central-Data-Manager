@@ -224,6 +224,8 @@
     "tabHistory": "History",
     "new": "+ New",
     "noGraphs": "No graphs yet.",
+    "searchGraphs": "Search graphs…",
+    "noGraphsMatch": "No graphs match.",
     "chainsCount": "chains",
     "emptyState": "Select a graph or create a new one.",
     "graphName": "Graph name…",
@@ -240,7 +242,10 @@
     "enableNode": "Enable",
     "export": "↓ Export",
     "import": "↑ Import",
-    "noRuns": "No runs yet — hit Run to start."
+    "noRuns": "No runs yet — hit Run to start.",
+    "close": "Close",
+    "enableChain": "Enable chain",
+    "popupSteps": "Steps"
   },
   "releases": {
     "title": "Releases",

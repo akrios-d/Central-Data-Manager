@@ -637,6 +637,160 @@
   }
 }
 
+// ── Graph list search ─────────────────────────────────────────────────────────
+
+.chain-search-input {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+// ── Node detail popup ─────────────────────────────────────────────────────────
+
+.node-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-popup {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.node-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.5rem;
+}
+
+.node-popup-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.node-popup-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-popup-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-muted);
+
+  &.dot-running {
+    background: var(--info, #58a6ff);
+    animation: orchChipPulse 1.5s ease-in-out infinite;
+  }
+  &.dot-success {
+    background: var(--success, #3fb950);
+  }
+  &.dot-failure {
+    background: var(--danger, #f85149);
+  }
+  &.dot-skipped {
+    opacity: 0.4;
+  }
+}
+
+.node-popup-toggle {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.node-popup-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: var(--accent, #58a6ff);
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.node-popup-steps-header {
+  padding: 0.5rem 1rem 0.2rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.68rem;
+}
+
+.node-popup-steps {
+  list-style: none;
+  padding: 0 0.5rem 0.5rem;
+  margin: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.node-popup-step {
+  border-radius: 6px;
+  transition: background 0.12s;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  .node-popup-row {
+    padding: 0.4rem 0.5rem;
+  }
+
+  &.step-row-disabled {
+    opacity: 0.45;
+
+    .node-popup-step-name {
+      text-decoration: line-through;
+    }
+  }
+}
+
+.node-popup-step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.node-popup-step-name {
+  font-size: 0.83rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // ── Mobile ────────────────────────────────────────────────────────────────────
 
 @media (max-width: 768px) {

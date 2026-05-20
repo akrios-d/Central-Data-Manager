@@ -69,6 +69,24 @@ export class ChainOrchestratorComponent {
   hoveredInPortNodeId = signal<string | null>(null);
   selectedNodeId = signal<string | null>(null);
   selectedEdgeId = signal<string | null>(null);
+  private mouseDownPos = { x: 0, y: 0 };
+
+  // ── Node popup ────────────────────────────────────────────────────────────────
+  selectedNodePopupId = signal<string | null>(null);
+
+  readonly popupNode = computed(() => {
+    const id = this.selectedNodePopupId();
+    return id ? (this.graphNodes().find((n) => n.id === id) ?? null) : null;
+  });
+
+  readonly popupSteps = computed(() => {
+    const node = this.popupNode();
+    if (!node?.chainId) return [];
+    return this.allChains().find((c) => c.id === node.chainId)?.steps ?? [];
+  });
+
+  // ── Graph search ──────────────────────────────────────────────────────────────
+  graphSearch = signal('');
 
   // ── Add-chain panel ───────────────────────────────────────────────────────────
   showAddChain = signal(false);
@@ -86,6 +104,11 @@ export class ChainOrchestratorComponent {
   readonly graphRuns = computed(() => {
     const id = this.selectedGraphId();
     return id && id !== 'new' ? this.orchSvc.runs().filter((r) => r.graphId === id) : [];
+  });
+
+  readonly filteredGraphs = computed(() => {
+    const q = this.graphSearch().toLowerCase().trim();
+    return q ? this.allGraphs().filter((g) => g.name.toLowerCase().includes(q)) : this.allGraphs();
   });
 
   readonly filteredChains = computed(() => {
@@ -209,10 +232,12 @@ export class ChainOrchestratorComponent {
     this.selectedNodeId.set(null);
     this.selectedEdgeId.set(null);
     this.showAddChain.set(false);
+    this.selectedNodePopupId.set(null);
   }
 
   onNodeMouseDown(e: MouseEvent, node: OrchNode): void {
     e.stopPropagation();
+    this.mouseDownPos = { x: e.clientX, y: e.clientY };
     this.selectedNodeId.set(node.id);
     this.selectedEdgeId.set(null);
     const { x, y } = this.canvasCoords(e);
@@ -222,6 +247,42 @@ export class ChainOrchestratorComponent {
       offsetX: x - node.x,
       offsetY: y - node.y,
     });
+  }
+
+  onNodeClick(e: MouseEvent, node: OrchNode): void {
+    e.stopPropagation();
+    if (node.type === 'start') return;
+    if (
+      Math.abs(e.clientX - this.mouseDownPos.x) > 5 ||
+      Math.abs(e.clientY - this.mouseDownPos.y) > 5
+    )
+      return;
+    this.selectedNodePopupId.set(node.id);
+  }
+
+  closeNodePopup(): void {
+    this.selectedNodePopupId.set(null);
+  }
+
+  toggleStepDisabled(nodeId: string, stepId: string): void {
+    this.graphNodes.update((ns) =>
+      ns.map((n) => {
+        if (n.id !== nodeId) return n;
+        const ds = n.disabledSteps ?? [];
+        return {
+          ...n,
+          disabledSteps: ds.includes(stepId) ? ds.filter((id) => id !== stepId) : [...ds, stepId],
+        };
+      }),
+    );
+  }
+
+  isStepDisabled(nodeId: string, stepId: string): boolean {
+    return (
+      this.graphNodes()
+        .find((n) => n.id === nodeId)
+        ?.disabledSteps?.includes(stepId) ?? false
+    );
   }
 
   onOutPortMouseDown(e: MouseEvent, node: OrchNode): void {

@@ -67,8 +67,12 @@ export class OrchestratorExecutorService {
           return false;
         }
 
+        const effectiveChain = node.disabledSteps?.length
+          ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps!.includes(s.id)) }
+          : chain;
+
         this.setStatus(run, nr, 'running');
-        const result = await this.runChain(chain);
+        const result = await this.runChain(effectiveChain);
         if (!result.ok && result.error) nr.error = result.error;
         this.setStatus(run, nr, result.ok ? 'success' : 'failure');
         return result.ok;

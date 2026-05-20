@@ -8,6 +8,7 @@ export interface OrchNode {
   x: number;
   y: number;
   disabled?: boolean;
+  disabledSteps?: string[];
 }
 
 export interface OrchEdge {

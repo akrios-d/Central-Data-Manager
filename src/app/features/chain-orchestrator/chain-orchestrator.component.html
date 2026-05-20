@@ -49,20 +49,30 @@
       @if (allGraphs().length === 0) {
         <p class="text-muted text-sm">{{ 'orch.noGraphs' | translate }}</p>
       } @else {
-        <ul class="chain-list">
-          @for (g of allGraphs(); track g.id) {
-            <li
-              class="chain-item"
-              [class.selected]="selectedGraphId() === g.id"
-              (click)="selectGraph(g)"
-            >
-              <span class="chain-item-name">{{ g.name }}</span>
-              <span class="chain-item-meta text-muted text-sm">
-                {{ g.nodes.length - 1 }} {{ 'orch.chainsCount' | translate }}
-              </span>
-            </li>
-          }
-        </ul>
+        <input
+          class="form-control form-control-sm chain-search-input"
+          [placeholder]="'orch.searchGraphs' | translate"
+          [ngModel]="graphSearch()"
+          (ngModelChange)="graphSearch.set($event)"
+        />
+        @if (filteredGraphs().length === 0) {
+          <p class="text-muted text-sm">{{ 'orch.noGraphsMatch' | translate }}</p>
+        } @else {
+          <ul class="chain-list">
+            @for (g of filteredGraphs(); track g.id) {
+              <li
+                class="chain-item"
+                [class.selected]="selectedGraphId() === g.id"
+                (click)="selectGraph(g)"
+              >
+                <span class="chain-item-name">{{ g.name }}</span>
+                <span class="chain-item-meta text-muted text-sm">
+                  {{ g.nodes.length - 1 }} {{ 'orch.chainsCount' | translate }}
+                </span>
+              </li>
+            }
+          </ul>
+        }
       }
     }
 
@@ -203,6 +213,7 @@
                 [style.left.px]="node.x"
                 [style.top.px]="node.y"
                 (mousedown)="onNodeMouseDown($event, node)"
+                (click)="onNodeClick($event, node)"
               >
                 <!-- Input port (not on start node) -->
                 @if (node.type !== 'start') {
@@ -313,3 +324,54 @@
     }
   </div>
 </div>
+
+<!-- ── Node detail popup ───────────────────────────────────────────────────── -->
+@if (popupNode(); as node) {
+  <div class="node-popup-backdrop" (click)="closeNodePopup()">
+    <div class="node-popup" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="node-popup-header">
+        <div class="node-popup-title-row">
+          <span class="node-popup-status-dot" [class]="'dot-' + getNodeRunStatus(node.id)"></span>
+          <span class="node-popup-title">{{ node.label }}</span>
+        </div>
+        <button class="icon-btn" [title]="'orch.close' | translate" (click)="closeNodePopup()">
+          ✕
+        </button>
+      </div>
+
+      <!-- Node-level toggle -->
+      <label class="node-popup-row node-popup-toggle">
+        <input type="checkbox" [checked]="!node.disabled" (change)="toggleNodeDisabled(node.id)" />
+        <span>{{ 'orch.enableChain' | translate }}</span>
+      </label>
+
+      <!-- Steps -->
+      @if (popupSteps().length > 0) {
+        <p class="node-popup-steps-header text-muted text-sm">
+          {{ 'orch.popupSteps' | translate }}
+        </p>
+        <ul class="node-popup-steps">
+          @for (step of popupSteps(); track step.id) {
+            <li
+              class="node-popup-step"
+              [class.step-row-disabled]="isStepDisabled(node.id, step.id)"
+            >
+              <label class="node-popup-row">
+                <input
+                  type="checkbox"
+                  [checked]="!isStepDisabled(node.id, step.id)"
+                  (change)="toggleStepDisabled(node.id, step.id)"
+                />
+                <div class="node-popup-step-info">
+                  <span class="node-popup-step-name">{{ step.workflowName }}</span>
+                  <span class="text-muted text-sm">{{ step.repoName }}</span>
+                </div>
+              </label>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+}
