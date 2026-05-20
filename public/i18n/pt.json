@@ -138,7 +138,9 @@
     "viewOnGithub": "Ver no GitHub ↗",
     "gitlabPipelineNote": "GitLab CI — o pipeline padrão (.gitlab-ci.yml) será disparado na branch seleccionada.",
     "emptyState": "Selecciona uma chain à esquerda, ou cria uma nova.",
-    "noRunsYet": "Sem execuções — clica em Executar para começar."
+    "noRunsYet": "Sem execuções — clica em Executar para começar.",
+    "searchChains": "Pesquisar chains…",
+    "noChainMatch": "Nenhuma chain encontrada."
   },
   "notif": {
     "stepOk": "Concluído com sucesso.",

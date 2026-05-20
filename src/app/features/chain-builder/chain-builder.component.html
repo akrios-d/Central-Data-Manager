@@ -53,11 +53,21 @@
         </button>
       </div>
 
+      @if (chains().length > 0) {
+        <input
+          class="form-control form-control-sm chain-search-input"
+          [placeholder]="'builder.searchChains' | translate"
+          [ngModel]="chainSearch()"
+          (ngModelChange)="chainSearch.set($event)"
+        />
+      }
       @if (chains().length === 0) {
         <p class="text-muted text-sm">{{ 'builder.noChains' | translate }}</p>
+      } @else if (filteredChains().length === 0) {
+        <p class="text-muted text-sm">{{ 'builder.noChainMatch' | translate }}</p>
       } @else {
         <ul class="chain-list">
-          @for (c of chains(); track c.id) {
+          @for (c of filteredChains(); track c.id) {
             <li
               class="chain-item"
               [class.selected]="selectedId() === c.id"
@@ -366,7 +376,7 @@
         <p class="text-muted text-sm">{{ 'builder.emptyState' | translate }}</p>
       } @else {
         <div class="run-toolbar">
-          @if (isActiveChain() && activeRun()?.status === 'running') {
+          @if (activeRun()?.status === 'running') {
             <button class="btn btn-sm btn-danger" (click)="stopChain()">
               {{ 'builder.stop' | translate }}
             </button>
@@ -375,7 +385,7 @@
               {{ 'builder.run' | translate }}
             </button>
           }
-          @if (!running() && activeRun()?.status !== 'running') {
+          @if (activeRun()?.status !== 'running') {
             <button class="btn btn-xs btn-outline step-select-toggle" (click)="toggleAllSteps()">
               {{
                 allStepsSelected()
@@ -384,18 +394,22 @@
               }}
             </button>
           }
-          @if (isActiveChain() && activeRun()) {
+          @if (activeRun()) {
             <span class="text-muted text-sm">{{
               activeRun()!.startedAt | date: 'dd MMM HH:mm:ss'
             }}</span>
           }
         </div>
 
-        @if (isActiveChain() && activeRun()) {
-          @let run = activeRun()!;
+        @if (activeRun()) {
           <div class="run-status-header">
-            <span [class]="'text-' + runStatusColor(run.status)">{{ run.status }}</span>
+            <span [class]="'text-' + runStatusColor(activeRun()!.status)">{{
+              activeRun()!.status
+            }}</span>
           </div>
+        }
+
+        @if (editSteps().length > 0) {
           <ol class="run-step-list">
             @for (step of editSteps(); track step.id) {
               @let sr = getStepRun(step.id);
@@ -408,7 +422,7 @@
                   <input
                     type="checkbox"
                     [checked]="selectedStepIds().includes(step.id)"
-                    [disabled]="running() || activeRun()?.status === 'running'"
+                    [disabled]="activeRun()?.status === 'running'"
                     (change)="toggleStepSelection(step.id)"
                   />
                 </label>
@@ -436,7 +450,7 @@
             }
           </ol>
         } @else {
-          <p class="text-muted text-sm empty-steps">{{ 'builder.noRunsYet' | translate }}</p>
+          <p class="text-muted text-sm empty-steps">{{ 'builder.noSteps' | translate }}</p>
         }
 
         @if (chainRuns().length > 0) {

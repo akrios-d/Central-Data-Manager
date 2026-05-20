@@ -138,7 +138,9 @@
     "viewOnGithub": "View on GitHub ↗",
     "gitlabPipelineNote": "GitLab CI — the default pipeline (.gitlab-ci.yml) will be triggered on the selected branch.",
     "emptyState": "Select a chain from the left, or create a new one.",
-    "noRunsYet": "No runs yet — hit Run to start."
+    "noRunsYet": "No runs yet — hit Run to start.",
+    "searchChains": "Search chains…",
+    "noChainMatch": "No chains match."
   },
   "notif": {
     "stepOk": "Completed successfully.",

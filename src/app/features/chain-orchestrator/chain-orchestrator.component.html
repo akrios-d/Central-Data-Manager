@@ -272,9 +272,14 @@
                 <span
                   class="orch-run-chip"
                   [class]="'chip-' + nr.status"
-                  [title]="getNodeLabel(nr.nodeId) + ': ' + nr.status"
+                  [title]="
+                    getNodeLabel(nr.nodeId) + ': ' + nr.status + (nr.error ? ' — ' + nr.error : '')
+                  "
                 >
                   {{ nodeStatusIcon(nr.status) }} {{ getNodeLabel(nr.nodeId) }}
+                  @if (nr.error) {
+                    <span class="orch-chip-error">{{ nr.error }}</span>
+                  }
                 </span>
               }
             </div>

@@ -65,9 +65,10 @@ export class OrchestratorExecutorService {
         }
 
         this.setStatus(run, nr, 'running');
-        const ok = await this.runChain(chain);
-        this.setStatus(run, nr, ok ? 'success' : 'failure');
-        return ok;
+        const result = await this.runChain(chain);
+        if (!result.ok && result.error) nr.error = result.error;
+        this.setStatus(run, nr, result.ok ? 'success' : 'failure');
+        return result.ok;
       });
 
       promises.set(nodeId, p);
@@ -112,9 +113,9 @@ export class OrchestratorExecutorService {
     return [...visited];
   }
 
-  private async runChain(chain: Chain): Promise<boolean> {
+  private async runChain(chain: Chain): Promise<{ ok: boolean; error?: string }> {
     for (const step of chain.steps) {
-      if (this.stopRequested) return false;
+      if (this.stopRequested) return { ok: false, error: 'Stopped' };
       if (step.clearCache) await this.clearCache(step.repoFullName, step.ref);
 
       let ref = step.ref;
@@ -124,12 +125,17 @@ export class OrchestratorExecutorService {
       }
 
       const err = await this.triggerStep(step.repoFullName, step.workflowId ?? 0, ref, step.inputs);
-      if (err !== null) return false;
+      if (err !== null) return { ok: false, error: `${step.workflowName}: ${err}` };
 
-      const ok = await this.waitForStep(step.repoFullName, step.workflowId ?? 0, Date.now());
-      if (!ok) return false;
+      const stepResult = await this.waitForStep(
+        step.repoFullName,
+        step.workflowId ?? 0,
+        Date.now(),
+      );
+      if (!stepResult.ok)
+        return { ok: false, error: `${step.workflowName}: ${stepResult.reason ?? 'failed'}` };
     }
-    return true;
+    return { ok: true };
   }
 
   private fetchLatestTag(fullName: string): Promise<string | null> {
@@ -162,18 +168,22 @@ export class OrchestratorExecutorService {
     );
   }
 
-  private waitForStep(fullName: string, workflowId: number, since: number): Promise<boolean> {
+  private waitForStep(
+    fullName: string,
+    workflowId: number,
+    since: number,
+  ): Promise<{ ok: boolean; reason?: string }> {
     return new Promise((resolve) => {
       let polls = 0;
       const tick = () => {
         if (this.stopRequested) {
-          resolve(false);
+          resolve({ ok: false, reason: 'stopped' });
           return;
         }
         const maxPolls = this.settings.maxPolls();
         const interval = this.settings.pollIntervalSec() * 1000;
         if (polls++ > maxPolls) {
-          resolve(false);
+          resolve({ ok: false, reason: 'timed out' });
           return;
         }
         this.gh.listRuns(fullName, workflowId).subscribe({
@@ -185,7 +195,11 @@ export class OrchestratorExecutorService {
               setTimeout(tick, interval);
               return;
             }
-            resolve(run.conclusion === 'success');
+            resolve(
+              run.conclusion === 'success'
+                ? { ok: true }
+                : { ok: false, reason: run.conclusion ?? 'failure' },
+            );
           },
           error: () => setTimeout(tick, interval),
         });

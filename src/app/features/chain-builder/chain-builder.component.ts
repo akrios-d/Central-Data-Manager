@@ -35,6 +35,9 @@ export class ChainBuilderComponent {
   readonly chains = this.chainSvc.chains;
   readonly runs = this.chainSvc.runs;
 
+  // ── Chain search ──────────────────────────────────────────────────────────────
+  chainSearch = signal('');
+
   // ── Selection / Editor ────────────────────────────────────────────────────────
   selectedId = signal<string | null>(null);
   chainName = signal('');
@@ -61,12 +64,18 @@ export class ChainBuilderComponent {
   editingStepId = signal<string | null>(null);
 
   // ── Executor ──────────────────────────────────────────────────────────────────
-  readonly activeRun = this.executor.activeRun;
-  running = signal(false);
+  readonly activeRun = computed(() => this.executor.activeRuns()[this.selectedId() ?? ''] ?? null);
   dragStepIndex = signal<number | null>(null);
   selectedStepIds = signal<string[]>([]);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
+  readonly running = computed(() => this.activeRun()?.status === 'running');
+
+  readonly filteredChains = computed(() => {
+    const q = this.chainSearch().toLowerCase().trim();
+    return q ? this.chains().filter((c) => c.name.toLowerCase().includes(q)) : this.chains();
+  });
+
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase().trim();
     const list = this.repos();
@@ -83,10 +92,9 @@ export class ChainBuilderComponent {
     return id && id !== 'new' ? this.runs().filter((r) => r.chainId === id) : [];
   });
 
-  readonly canRun = computed(() => {
-    const run = this.activeRun();
-    return this.selectedStepIds().length > 0 && !this.running() && run?.status !== 'running';
-  });
+  readonly canRun = computed(
+    () => this.selectedStepIds().length > 0 && this.activeRun()?.status !== 'running',
+  );
 
   readonly allStepsSelected = computed(() => {
     const ids = this.selectedStepIds();
@@ -182,6 +190,7 @@ export class ChainBuilderComponent {
     this.toasts.confirm(`Remove step "${step.workflowName}"?`, 'Remove', () => {
       this.editSteps.update((list) => list.filter((_, idx) => idx !== i));
       this.selectedStepIds.update((ids) => ids.filter((id) => id !== step.id));
+      if (this.editingStepId() === step.id) this.cancelAddStep();
       this.toasts.show('Step removed', 'success');
     });
   }
@@ -430,12 +439,7 @@ export class ChainBuilderComponent {
     this.chainSvc.saveChain({ ...chain, steps: allSteps });
     this.selectedId.set(id);
     this.activeTab.set('run');
-    this.running.set(true);
-    try {
-      await this.executor.execute(chain);
-    } finally {
-      this.running.set(false);
-    }
+    await this.executor.execute(chain);
   }
 
   toggleStepSelection(stepId: string): void {
@@ -450,7 +454,8 @@ export class ChainBuilderComponent {
   }
 
   stopChain(): void {
-    this.executor.stop();
+    const id = this.selectedId();
+    if (id) this.executor.stop(id);
   }
 
   // ── Export / Import ───────────────────────────────────────────────────────────

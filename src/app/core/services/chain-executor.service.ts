@@ -15,12 +15,12 @@ export class ChainExecutorService {
   private settings = inject(AppSettingsService);
   private translate = inject(TranslateService);
 
-  readonly activeRun = signal<ChainRun | null>(null);
+  readonly activeRuns = signal<Record<string, ChainRun>>({});
   private timer: ReturnType<typeof setTimeout> | null = null;
-  private stopRequested = false;
+  private stopRequested = new Set<string>();
 
   async execute(chain: Chain): Promise<void> {
-    this.stopRequested = false;
+    this.stopRequested.delete(chain.id);
     const run: ChainRun = {
       id: crypto.randomUUID(),
       chainId: chain.id,
@@ -29,11 +29,10 @@ export class ChainExecutorService {
       status: 'running',
       steps: chain.steps.map((s) => ({ stepId: s.id, status: 'pending' })),
     };
-    this.activeRun.set({ ...run });
-    this.chainSvc.saveRun(run);
+    this.push(run);
 
     for (let i = 0; i < chain.steps.length; i++) {
-      if (this.stopRequested) {
+      if (this.stopRequested.has(chain.id)) {
         run.status = 'stopped';
         run.steps[i].status = 'skipped';
         for (let j = i + 1; j < run.steps.length; j++) run.steps[j].status = 'skipped';
@@ -83,6 +82,7 @@ export class ChainExecutorService {
         run.steps[i],
         provider,
         triggerResult.gitlabPipelineId,
+        chain.id,
       );
       run.steps[i].completedAt = new Date().toISOString();
       this.push(run);
@@ -107,13 +107,14 @@ export class ChainExecutorService {
     this.notify(chain.name, run);
   }
 
-  stop(): void {
-    this.stopRequested = true;
+  stop(chainId: string): void {
+    this.stopRequested.add(chainId);
   }
 
   private push(run: ChainRun): void {
-    this.activeRun.set({ ...run, steps: run.steps.map((s) => ({ ...s })) });
-    this.chainSvc.saveRun({ ...run, steps: run.steps.map((s) => ({ ...s })) });
+    const snapshot = { ...run, steps: run.steps.map((s) => ({ ...s })) };
+    this.activeRuns.update((map) => ({ ...map, [run.chainId]: snapshot }));
+    this.chainSvc.saveRun(snapshot);
   }
 
   private notify(chainName: string, run: ChainRun): void {
@@ -184,11 +185,12 @@ export class ChainExecutorService {
     stepRun: ChainStepRun,
     provider: CiProviderType,
     gitlabPipelineId?: number,
+    chainId?: string,
   ): Promise<'success' | 'failure' | 'stopped'> {
     return new Promise((resolve) => {
       let polls = 0;
       const tick = () => {
-        if (this.stopRequested) {
+        if (chainId && this.stopRequested.has(chainId)) {
           resolve('stopped');
           return;
         }
