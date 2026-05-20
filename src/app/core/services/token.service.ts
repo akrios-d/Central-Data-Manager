@@ -178,7 +178,7 @@ export class TokenService {
   // GitLab
   // =========================================================
 
-  setGitLab(token: string, baseUrl: string = 'https://gitlab.com'): void {
+  setGitLab(token: string, baseUrl = 'https://gitlab.com'): void {
     this.store.setItem(GITLAB_KEY, token);
     this.store.setItem(GITLAB_URL_KEY, baseUrl);
     this._gitlabToken.set(token);

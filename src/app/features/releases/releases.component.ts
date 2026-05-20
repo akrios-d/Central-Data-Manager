@@ -446,7 +446,7 @@ export class ReleasesComponent {
   }
 
   isBranch(val: string): boolean {
-    return !/^v?\d[\d.\-_]*$/.test(val) && !/^release[-\/]\d/i.test(val);
+    return !/^v?\d[\d.\-_]*$/.test(val) && !/^release[-/]\d/i.test(val);
   }
 
   shortDate(dateStr: string): string {

@@ -112,11 +112,11 @@ export class DevOpsApiService {
     project: string,
     wiql: string,
   ): Observable<{
-    workItemRelations: Array<{
+    workItemRelations: {
       rel: string | null;
       source: { id: number } | null;
       target: { id: number } | null;
-    }>;
+    }[];
   }> {
     return this.http.post<any>(
       `${this.base(project)}/wit/wiql?api-version=7.1`,
@@ -175,10 +175,10 @@ export interface DevOpsIteration {
 }
 
 export interface DevOpsIterationWorkItems {
-  workItemRelations: Array<{
+  workItemRelations: {
     rel: string | null;
     target: { id: number; url: string };
-  }>;
+  }[];
 }
 
 export interface DevOpsWorkItem {

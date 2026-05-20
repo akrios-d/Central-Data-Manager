@@ -101,7 +101,7 @@ export class BlockersComponent implements OnInit {
     if (selectedId == null) return new Map();
     const byId = this.nodeById();
     const result = new Map<number | string, 'direct' | 'indirect'>();
-    const queue: Array<{ id: number | string; hop: number }> = [{ id: selectedId, hop: 0 }];
+    const queue: { id: number | string; hop: number }[] = [{ id: selectedId, hop: 0 }];
     const visited = new Set<number | string>([selectedId]);
     let qi = 0;
     while (qi < queue.length) {

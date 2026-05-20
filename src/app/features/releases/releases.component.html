@@ -34,7 +34,7 @@
                     <span class="repo-provider-badge">{{ providerBadge(r.provider) }}</span>
                     {{ r.full_name }}
                     @if (alreadyAdded().has(r.full_name)) {
-                      <span class="text-muted text-sm"> · já adicionado</span>
+                      <span class="text-muted text-sm"> · {{ 'releases.alreadyAdded' | translate }}</span>
                     }
                   </li>
                 }

@@ -268,7 +268,8 @@
     "openOnGitHub": "↗ GitHub",
     "viewCommits": "Commits",
     "viewChangelog": "Changelog",
-    "copyMarkdown": "Copy Markdown"
+    "copyMarkdown": "Copy Markdown",
+    "alreadyAdded": "already added"
   },
   "health": {
     "title": "Pipeline Health",

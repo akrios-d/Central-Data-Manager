@@ -204,7 +204,7 @@ export class ChainOrchestratorComponent {
   }
 
   // ── Canvas events ─────────────────────────────────────────────────────────────
-  onCanvasMouseDown(e: MouseEvent): void {
+  onCanvasMouseDown(_e: MouseEvent): void {
     this.selectedNodeId.set(null);
     this.selectedEdgeId.set(null);
     this.showAddChain.set(false);

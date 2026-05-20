@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Chain, ChainStep, ChainStepRun, StepStatus } from '../../core/models/chain.model';
-import { parseDispatchInputs, WorkflowInput } from '../../core/utils/workflow-parser';
+import { parseDispatchInputs } from '../../core/utils/workflow-parser';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
 import { CiProviderService } from '../../core/services/ci-provider.service';
