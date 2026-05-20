@@ -100,54 +100,16 @@
 
               @for (env of envs(); track env.id) {
                 <td class="cell-tag"
-                  [id]="cellId(repo.id, env.id)"
-                  (click)="!isEditing(repo.id, env.id) && startEdit(repo.id, env.id, repo.deployments[env.id] || '')">
-
-                  @if (isEditing(repo.id, env.id)) {
-                    <div class="ref-edit-wrap">
-                      <input class="form-control form-control-sm cell-edit-input"
-                        [placeholder]="'releases.refPlaceholder' | translate"
-                        [ngModel]="editValue()"
-                        (ngModelChange)="editValue.set($event)"
-                        (keydown)="onCellKey($event)"
-                        (focus)="showRefDrop.set(true)"
-                        (blur)="commitEdit()" />
-                      @if (refsLoading()) { <div class="ref-spinner"></div> }
-                      @if (showRefDrop() && hasRefSuggestions()) {
-                        <div class="ref-dropdown">
-                          @if (filteredCellTags().length) {
-                            <div class="ref-group-label">{{ 'releases.tags' | translate }}</div>
-                            @for (tag of filteredCellTags(); track tag) {
-                              <div class="ref-item"
-                                   (mousedown)="$event.preventDefault()"
-                                   (click)="selectRef(tag)">
-                                <span class="ref-icon">🏷</span> {{ tag }}
-                              </div>
-                            }
-                          }
-                          @if (filteredCellBranches().length) {
-                            <div class="ref-group-label">{{ 'releases.branches' | translate }}</div>
-                            @for (branch of filteredCellBranches(); track branch) {
-                              <div class="ref-item"
-                                   (mousedown)="$event.preventDefault()"
-                                   (click)="selectRef(branch)">
-                                <span class="ref-icon">⎇</span> {{ branch }}
-                              </div>
-                            }
-                          }
-                        </div>
-                      }
-                    </div>
+                  [class.cell-active]="editTarget()?.repoId === repo.id && editTarget()?.envId === env.id"
+                  (click)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')">
+                  @if (repo.deployments[env.id]) {
+                    <span [class]="isBranch(repo.deployments[env.id]) ? 'branch-badge' : 'tag-badge'"
+                          [title]="updatedTitle(repo, env.id)">
+                      @if (isBranch(repo.deployments[env.id])) { <span class="ref-icon-sm">⎇</span> }
+                      {{ repo.deployments[env.id] }}
+                    </span>
                   } @else {
-                    @if (repo.deployments[env.id]) {
-                      <span [class]="isBranch(repo.deployments[env.id]) ? 'branch-badge' : 'tag-badge'"
-                            [title]="updatedTitle(repo, env.id)">
-                        @if (isBranch(repo.deployments[env.id])) { <span class="ref-icon-sm">⎇</span> }
-                        {{ repo.deployments[env.id] }}
-                      </span>
-                    } @else {
-                      <span class="tag-empty">—</span>
-                    }
+                    <span class="tag-empty">—</span>
                   }
                 </td>
               }
@@ -268,3 +230,67 @@
   }
 
 </div>
+
+<!-- ── Ref picker popup ──────────────────────────────────────────────────── -->
+@if (showRefPopup()) {
+  <div class="ref-popup-backdrop" (click)="closePopup()">
+    <div class="ref-popup" (click)="$event.stopPropagation()" (keydown.escape)="closePopup()">
+
+      <div class="ref-popup-header">
+        <input class="form-control form-control-sm ref-popup-input"
+               [placeholder]="'releases.refPlaceholder' | translate"
+               [ngModel]="popupSearch()"
+               (ngModelChange)="popupSearch.set($event)"
+               (keydown.enter)="commitManual()"
+               (keydown.escape)="closePopup()" />
+        <button class="ref-popup-close" title="Close" (click)="closePopup()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M1 1l10 10M11 1L1 11"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ref-tab-toggle">
+        <button class="ref-tab-btn" [class.active]="refMode() === 'tags'" (click)="setRefMode('tags')">
+          {{ 'releases.tags' | translate }}
+        </button>
+        <button class="ref-tab-btn" [class.active]="refMode() === 'branches'" (click)="setRefMode('branches')">
+          {{ 'releases.branches' | translate }}
+        </button>
+      </div>
+
+      <div class="ref-popup-list" (scroll)="onListScroll($event)">
+        @if (refsLoading()) {
+          <div class="ref-loading-row"><div class="ref-spinner"></div></div>
+        } @else if (refMode() === 'tags') {
+          @if (!filteredCellTags().length) {
+            <div class="ref-empty-msg">—</div>
+          } @else {
+            @for (tag of displayedTags(); track tag) {
+              <div class="ref-item" [class.ref-item-current]="tag === currentRef()" (click)="selectRef(tag)">
+                <span class="ref-icon">🏷</span> {{ tag }}
+              </div>
+            }
+            @if (hasMoreTags()) {
+              <div class="ref-more-hint">scroll for more</div>
+            }
+          }
+        } @else {
+          @if (!filteredCellBranches().length) {
+            <div class="ref-empty-msg">—</div>
+          } @else {
+            @for (branch of displayedBranches(); track branch) {
+              <div class="ref-item" [class.ref-item-current]="branch === currentRef()" (click)="selectRef(branch)">
+                <span class="ref-icon">⎇</span> {{ branch }}
+              </div>
+            }
+            @if (hasMoreBranches()) {
+              <div class="ref-more-hint">scroll for more</div>
+            }
+          }
+        }
+      </div>
+
+    </div>
+  </div>
+}

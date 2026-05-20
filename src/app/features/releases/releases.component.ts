@@ -40,31 +40,35 @@ export class ReleasesComponent {
   readonly envs  = this.svc.envs;
   readonly repos = this.svc.repos;
 
-  // ── Inline cell edit ────────────────────────────────────────────────────────
-  editTarget = signal<EditTarget | null>(null);
-  editValue  = signal('');
+  // ── Cell ref popup ──────────────────────────────────────────────────────────
+  editTarget   = signal<EditTarget | null>(null);
+  currentRef   = signal('');
+  popupSearch  = signal('');
+  showRefPopup = signal(false);
+  refMode      = signal<'tags' | 'branches'>('tags');
 
-  // ── Ref suggestions ─────────────────────────────────────────────────────────
   private tagsCache     = new Map<string, string[]>();
   private branchesCache = new Map<string, string[]>();
-  cellTags     = signal<string[]>([]);
-  cellBranches = signal<string[]>([]);
-  refsLoading  = signal(false);
-  showRefDrop  = signal(false);
+  cellTags        = signal<string[]>([]);
+  cellBranches    = signal<string[]>([]);
+  refsLoading     = signal(false);
+  visibleTagCount = signal(5);
+  visibleBranchCount = signal(5);
 
   filteredCellTags = computed(() => {
-    const q = this.editValue().toLowerCase();
+    const q = this.popupSearch().toLowerCase();
     return q ? this.cellTags().filter(t => t.toLowerCase().includes(q)) : this.cellTags();
   });
 
   filteredCellBranches = computed(() => {
-    const q = this.editValue().toLowerCase();
+    const q = this.popupSearch().toLowerCase();
     return q ? this.cellBranches().filter(b => b.toLowerCase().includes(q)) : this.cellBranches();
   });
 
-  hasRefSuggestions = computed(() =>
-    this.filteredCellTags().length > 0 || this.filteredCellBranches().length > 0
-  );
+  displayedTags     = computed(() => this.filteredCellTags().slice(0, this.visibleTagCount()));
+  displayedBranches = computed(() => this.filteredCellBranches().slice(0, this.visibleBranchCount()));
+  hasMoreTags       = computed(() => this.filteredCellTags().length > this.visibleTagCount());
+  hasMoreBranches   = computed(() => this.filteredCellBranches().length > this.visibleBranchCount());
 
   // ── Add-repo form ───────────────────────────────────────────────────────────
   showAddRepo    = signal(false);
@@ -130,39 +134,43 @@ export class ReleasesComponent {
 
   constructor() {
     effect(() => {
-      if (this.editTarget()) {
+      if (this.showRefPopup()) {
         setTimeout(() => {
-          const inp = this.el.nativeElement.querySelector('.cell-edit-input') as HTMLInputElement | null;
+          const inp = this.el.nativeElement.querySelector('.ref-popup-input') as HTMLInputElement | null;
           inp?.focus();
           inp?.select();
         }, 0);
       }
     });
+    effect(() => {
+      this.popupSearch();
+      this.visibleTagCount.set(5);
+      this.visibleBranchCount.set(5);
+    });
   }
 
-  // ── Cell edit ───────────────────────────────────────────────────────────────
+  // ── Cell ref popup ───────────────────────────────────────────────────────────
 
-  isEditing(repoId: string, envId: string): boolean {
-    const t = this.editTarget();
-    return !!t && t.repoId === repoId && t.envId === envId;
-  }
-
-  startEdit(repoId: string, envId: string, current: string): void {
+  startEdit(repoId: string, envId: string, currentVal = ''): void {
     this.editTarget.set({ repoId, envId });
-    this.editValue.set(current);
+    this.currentRef.set(currentVal);
+    this.popupSearch.set('');
     this.cellTags.set([]);
     this.cellBranches.set([]);
-    this.showRefDrop.set(true);
+    this.refMode.set('tags');
+    this.visibleTagCount.set(5);
+    this.visibleBranchCount.set(5);
+    this.showRefPopup.set(true);
 
     const repo = this.repos().find(r => r.id === repoId);
     if (!repo?.repoName.includes('/')) return;
     const name     = repo.repoName;
     const provider = repo.provider ?? 'github';
 
-    const tagsReady    = this.tagsCache.has(name);
+    const tagsReady     = this.tagsCache.has(name);
     const branchesReady = this.branchesCache.has(name);
 
-    if (tagsReady)    this.cellTags.set(this.tagsCache.get(name)!);
+    if (tagsReady)     this.cellTags.set(this.tagsCache.get(name)!);
     if (branchesReady) this.cellBranches.set(this.branchesCache.get(name)!);
     if (tagsReady && branchesReady) return;
 
@@ -185,31 +193,35 @@ export class ReleasesComponent {
   }
 
   selectRef(val: string): void {
-    this.editValue.set(val);
-    this.commitEdit();
-  }
-
-  commitEdit(): void {
     const t = this.editTarget();
-    if (!t) return;
-    const val = this.editValue().trim();
-    if (val) {
-      this.svc.setDeployment(t.repoId, t.envId, val);
-    } else {
-      this.svc.clearDeployment(t.repoId, t.envId);
+    if (t) this.svc.setDeployment(t.repoId, t.envId, val);
+    this.closePopup();
+  }
+
+  commitManual(): void {
+    const val = this.popupSearch().trim();
+    const t   = this.editTarget();
+    if (val && t) this.svc.setDeployment(t.repoId, t.envId, val);
+    this.closePopup();
+  }
+
+  setRefMode(mode: 'tags' | 'branches'): void {
+    this.refMode.set(mode);
+    this.visibleTagCount.set(5);
+    this.visibleBranchCount.set(5);
+  }
+
+  onListScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) {
+      if (this.refMode() === 'tags') this.visibleTagCount.update(n => n + 10);
+      else this.visibleBranchCount.update(n => n + 10);
     }
-    this.editTarget.set(null);
-    this.showRefDrop.set(false);
   }
 
-  cancelEdit(): void {
+  closePopup(): void {
+    this.showRefPopup.set(false);
     this.editTarget.set(null);
-    this.showRefDrop.set(false);
-  }
-
-  onCellKey(event: KeyboardEvent): void {
-    if (event.key === 'Enter')  { event.preventDefault(); this.commitEdit(); }
-    if (event.key === 'Escape') { event.preventDefault(); this.cancelEdit(); }
   }
 
   // ── Repos ───────────────────────────────────────────────────────────────────
