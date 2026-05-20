@@ -4,12 +4,13 @@ A client-side dashboard for managing CI/CD pipelines, work boards, releases and 
 
 ## Supported integrations
 
-| Category          | Providers                     |
-|-------------------|-------------------------------|
-| CI/CD & Pipelines | GitHub Actions, GitLab CI     |
-| Work Boards       | Azure DevOps, Jira            |
-| Releases          | GitHub, GitLab                |
-| Chain Builder     | GitHub Actions, GitLab CI     |
+| Category          | Providers                              |
+| ----------------- | -------------------------------------- |
+| CI/CD & Pipelines | GitHub Actions, GitLab CI              |
+| Work Boards       | Azure DevOps, Jira                     |
+| Releases          | GitHub, GitLab                         |
+| Chain Builder     | GitHub Actions, GitLab CI              |
+| Chain Orchestrator| GitHub Actions, GitLab CI              |
 
 ---
 
@@ -57,36 +58,102 @@ ng serve
 
 Open your browser at **http://localhost:4200**.
 
-The app opens directly on the Settings page — configure your tokens there before using any other feature.
+On first launch the Onboarding page will guide you through connecting your integrations. You can also configure everything later in **Settings**.
 
 ---
 
 ## Configuration (tokens)
 
-All tokens are stored locally in your browser (sessionStorage by default, localStorage if you enable persistent storage in Settings). Nothing is sent to any server other than the provider APIs directly.
+All tokens are stored locally in your browser (sessionStorage by default, localStorage if you opt in to persistent storage in Settings). Nothing is sent to any server other than the provider APIs directly.
 
-| Provider         | What you need                                                                    |
-|------------------|----------------------------------------------------------------------------------|
-| **GitHub**       | Personal Access Token with `repo` and `workflow` scopes + your username/org      |
-| **GitLab**       | Personal Access Token with `api` scope + base URL (default `https://gitlab.com`) |
-| **Azure DevOps** | Personal Access Token with full access + organisation name                       |
-| **Jira**         | Atlassian API token + account email + base URL (e.g. `https://your-org.atlassian.net`) |
+| Provider         | What you need                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| **GitHub**       | Personal Access Token with `repo` and `workflow` scopes + your username/org                 |
+| **GitLab**       | Personal Access Token with `api` scope + base URL (default `https://gitlab.com`)            |
+| **Azure DevOps** | Personal Access Token with full access + organisation name                                  |
+| **Jira**         | Atlassian API token + account email + base URL (e.g. `https://your-org.atlassian.net`)      |
 
-Go to **Settings → CI Provider** to switch between GitHub and GitLab. The selected provider is used across Pipelines, Chain Builder and Releases.
+Go to **Settings → CI Provider** to switch between GitHub and GitLab. The selected provider is used across Pipelines, Chain Builder, Orchestrator and Releases.
 
-Go to **Settings → Boards Provider** to switch between Azure DevOps and Jira. The selected provider is used across Boards, Blockers Map and the sprint widget. After configuring Jira, set the default project under **Settings → Project & Team**.
+Go to **Settings → Boards Provider** to switch between Azure DevOps and Jira. The selected provider is used across Boards, Blockers Map and the sprint widget. After configuring Jira, set the default project under **Settings → Sprint Project**.
 
 ---
 
 ## Features
 
-- **Pipelines** — browse runs, re-run or cancel, and monitor workflow health (success rate, average duration, trend sparklines)
-- **Chain Builder** — define ordered sequences of pipelines across multiple repos and run them with a single click; supports per-step branch override, latest-tag resolution and cache clearing
-- **Chain Orchestrator** — build pipelines of chains as a visual graph with a drag-and-drop canvas; run entire graphs and inspect execution history
-- **Releases** — track which tag/branch is deployed in each environment; compare refs and generate a changelog
-- **Boards** — Kanban view of work items with drag-and-drop state transitions, column visibility config and filters; supports Azure DevOps and Jira
-- **Blockers Map** — visual dependency graph of blocking work items with transitive impact scores; supports Azure DevOps and Jira
-- **Dashboard** — overview of recent pipeline runs and current sprint work items
+### Dashboard
+Overview of recent pipeline runs and the current sprint work items from the configured boards provider.
+
+### Pipelines
+Browse repositories and workflows, inspect run history, re-run or cancel jobs, and open runs directly in GitHub or GitLab. Includes a **Pipeline Health** tab with success rate, average duration and a trend sparkline for each workflow.
+
+### Chain Builder
+Define ordered sequences of pipelines across multiple repositories and trigger them with a single click.
+
+- Per-step branch/ref override or latest-tag resolution at runtime
+- Clear Actions cache before a step
+- Custom workflow inputs (key/value)
+- Step enable/disable toggles for one-off runs
+- Full run history with step-level status and links to provider runs
+- Import / Export chains as JSON
+- Supports GitHub Actions and GitLab CI
+
+### Chain Orchestrator
+Build pipelines of chains as a **visual graph** with a drag-and-drop canvas.
+
+- Connect chain nodes by dragging edges between them
+- Parallel and sequential execution depending on graph topology
+- Click any chain node to open a popup: live status, step list, enable/disable the whole chain or individual steps
+- Disable individual nodes or steps without deleting them
+- Run full graphs and inspect execution history per run
+- Import / Export graphs as JSON
+- Graph search
+
+### Releases
+Track which tag or branch is deployed in each environment per repository.
+
+- Compare two refs and view commit list or auto-generated changelog
+- Copy changelog as Markdown
+- Supports GitHub and GitLab
+
+### Boards
+Kanban view of your work items with drag-and-drop state transitions.
+
+- Configurable columns (show/hide, reorder)
+- Filter by sprint, assignee and state
+- Side panel with full work item details
+- Supports Azure DevOps and Jira
+
+### Blockers Map
+Visual dependency graph showing which work items are blocking others and their transitive impact score.
+
+- Top-blockers ranking
+- Filter by type, state and whether an item blocks others
+- Supports Azure DevOps and Jira
+
+---
+
+## Security features
+
+### Session inactivity timeout
+In session-only mode the app automatically clears all tokens after a configurable period of inactivity (default 8 h, adjustable in **Settings → Chain Execution**). A modal overlay appears when the session expires — no automatic redirect.
+
+### Audit log
+Key actions are logged to the browser's `localStorage` (up to 500 entries, FIFO):
+- Token save / remove events per provider
+- Chain and graph run start and result
+- Session expiry events
+- Execution settings changes
+
+The log is visible and clearable in **Settings → Audit Log**.
+
+### Content Security Policy
+The provided `nginx.conf` enforces a strict CSP:
+- `default-src 'self'`
+- `connect-src` limited to GitHub, GitLab, Azure DevOps and Jira API endpoints
+- `object-src 'none'`
+- `base-uri 'self'`
+- `frame-ancestors 'none'`
 
 ---
 
@@ -144,7 +211,28 @@ Always serve over HTTPS in production. Tokens are stored in the browser and must
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for the security model, token storage details, and how to report vulnerabilities.
+See [SECURITY.md](SECURITY.md) for the full security model, token storage details, and how to report vulnerabilities.
+
+---
+
+## Future work (enterprise readiness)
+
+The following items are identified gaps for formal enterprise or compliance deployments. They are tracked here as future work.
+
+### Centralised audit log export
+The current audit log lives in the user's browser (`localStorage`). For SOC 2 / ISO 27001 compliance, events should be forwarded to a SIEM or a configurable HTTP endpoint. Planned: an optional audit webhook setting that POSTs each entry to a URL defined by the operator.
+
+### SSO / SAML / OIDC integration
+The app has no centralised authentication — each user manages their own PATs. Enterprise deployments should be placed behind an identity provider (Azure AD, Okta, etc.). A future reverse-proxy auth layer or OIDC callback page would allow session tokens to be injected automatically, removing the need for manual PAT entry.
+
+### Role-based access control (RBAC)
+There is currently no distinction between read-only and write users. Anyone with access to the URL can trigger pipelines and modify boards. Planned: an operator-level config (injected at build time or via a `config.json`) that can restrict destructive actions (trigger, cancel, board moves) to specific users or groups.
+
+### PAT expiry enforcement
+The app does not track when tokens expire or enforce a rotation policy. Planned: token expiry warnings based on GitHub / GitLab API responses, and a configurable maximum token age that forces re-entry.
+
+### Persistent storage lockout for shared devices
+The opt-in persistent storage mode can be disabled at the operator level to prevent tokens from surviving browser restarts on shared devices. Planned: a build-time or `config.json` flag `allowPersistentStorage: false` that hides the option in Settings.
 
 ---
 
