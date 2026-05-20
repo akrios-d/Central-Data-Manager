@@ -352,7 +352,9 @@
     "hours": "h",
     "auditLog": "Audit Log",
     "auditEmpty": "No events logged yet.",
-    "clearLog": "Clear log"
+    "clearLog": "Clear log",
+    "tokenAge": "Saved {{days}} d ago",
+    "tokenRotateHint": "consider rotating"
   },
   "lang": {
     "en": "EN",

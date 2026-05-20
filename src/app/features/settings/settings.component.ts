@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
+import { AppConfigService } from '../../core/services/app-config.service';
 import { AuditLogService } from '../../core/services/audit-log.service';
 import {
   DevOpsApiService,
@@ -28,7 +29,7 @@ interface ConnectionTest {
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit {
-  private tokens = inject(TokenService);
+  readonly tokens = inject(TokenService);
   private toasts = inject(ToastService);
   private ado = inject(DevOpsApiService);
   private gh = inject(GitHubApiService);
@@ -36,8 +37,11 @@ export class SettingsComponent implements OnInit {
   private jira = inject(JiraApiService);
   private translate = inject(TranslateService);
   private appSettings = inject(AppSettingsService);
+  private appConfig = inject(AppConfigService);
 
   readonly persist = this.tokens.persist;
+  readonly allowPersistentStorage = this.appConfig.allowPersistentStorage;
+  readonly tokenMaxAgeDays = this.appConfig.tokenMaxAgeDays;
   readonly hasGh = this.tokens.hasGitHub;
   readonly hasAdo = this.tokens.hasDevOps;
   readonly hasGl = this.tokens.hasGitLab;
@@ -398,5 +402,15 @@ export class SettingsComponent implements OnInit {
   disablePersist(): void {
     this.tokens.disablePersist();
     this.toasts.show(this.translate.instant('settings.storageSessionOn'), 'success');
+  }
+
+  tokenAgeDays(savedAt: string | null): number | null {
+    if (!savedAt) return null;
+    return Math.floor((Date.now() - new Date(savedAt).getTime()) / 86_400_000);
+  }
+
+  isTokenExpired(savedAt: string | null): boolean {
+    const days = this.tokenAgeDays(savedAt);
+    return days !== null && days >= this.tokenMaxAgeDays();
   }
 }

@@ -352,7 +352,9 @@
     "hours": "h",
     "auditLog": "Registo de auditoria",
     "auditEmpty": "Sem eventos registados.",
-    "clearLog": "Limpar registo"
+    "clearLog": "Limpar registo",
+    "tokenAge": "Guardado há {{days}} d",
+    "tokenRotateHint": "considere rodar"
   },
   "lang": {
     "en": "EN",

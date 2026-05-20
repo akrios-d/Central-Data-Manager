@@ -16,6 +16,10 @@ const ACTIVE_PROVIDER_KEY = 'cdm:active-provider';
 const ACTIVE_BOARDS_KEY = 'cdm:active-boards';
 const TOKEN_EXPIRY_KEY = 'cdm:expiry';
 const PERSIST_KEY = 'cdm:persist';
+const GITHUB_SAVED_AT_KEY = 'cdm:github:saved_at';
+const DEVOPS_SAVED_AT_KEY = 'cdm:devops:saved_at';
+const GITLAB_SAVED_AT_KEY = 'cdm:gitlab:saved_at';
+const JIRA_SAVED_AT_KEY = 'cdm:jira:saved_at';
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 8;
 
@@ -77,6 +81,17 @@ export class TokenService {
       (initRead(DEVOPS_KEY) ? 'devops' : 'jira'),
   );
 
+  private readonly _githubSavedAt = signal<string | null>(
+    localStorage.getItem(GITHUB_SAVED_AT_KEY),
+  );
+  private readonly _devopsSavedAt = signal<string | null>(
+    localStorage.getItem(DEVOPS_SAVED_AT_KEY),
+  );
+  private readonly _gitlabSavedAt = signal<string | null>(
+    localStorage.getItem(GITLAB_SAVED_AT_KEY),
+  );
+  private readonly _jiraSavedAt = signal<string | null>(localStorage.getItem(JIRA_SAVED_AT_KEY));
+
   // =========================================================
   // Readonly state
   // =========================================================
@@ -107,6 +122,11 @@ export class TokenService {
 
   readonly activeCiProvider = this._activeProvider.asReadonly();
   readonly activeBoardsProvider = this._activeBoardsProvider.asReadonly();
+
+  readonly githubSavedAt = this._githubSavedAt.asReadonly();
+  readonly devopsSavedAt = this._devopsSavedAt.asReadonly();
+  readonly gitlabSavedAt = this._gitlabSavedAt.asReadonly();
+  readonly jiraSavedAt = this._jiraSavedAt.asReadonly();
 
   // =========================================================
   // Session helpers
@@ -158,6 +178,9 @@ export class TokenService {
     this.store.setItem(GITHUB_OWNER_KEY, owner);
     this._githubToken.set(token);
     this._githubOwner.set(owner);
+    const now = new Date().toISOString();
+    localStorage.setItem(GITHUB_SAVED_AT_KEY, now);
+    this._githubSavedAt.set(now);
     this.refreshSession();
   }
 
@@ -170,8 +193,10 @@ export class TokenService {
   clearGitHub(): void {
     this.store.removeItem(GITHUB_KEY);
     this.store.removeItem(GITHUB_OWNER_KEY);
+    localStorage.removeItem(GITHUB_SAVED_AT_KEY);
     this._githubToken.set(null);
     this._githubOwner.set(null);
+    this._githubSavedAt.set(null);
   }
 
   // =========================================================
@@ -183,14 +208,19 @@ export class TokenService {
     this.store.setItem(GITLAB_URL_KEY, baseUrl);
     this._gitlabToken.set(token);
     this._gitlabBaseUrl.set(baseUrl);
+    const now = new Date().toISOString();
+    localStorage.setItem(GITLAB_SAVED_AT_KEY, now);
+    this._gitlabSavedAt.set(now);
     this.refreshSession();
   }
 
   clearGitLab(): void {
     this.store.removeItem(GITLAB_KEY);
     this.store.removeItem(GITLAB_URL_KEY);
+    localStorage.removeItem(GITLAB_SAVED_AT_KEY);
     this._gitlabToken.set(null);
     this._gitlabBaseUrl.set(null);
+    this._gitlabSavedAt.set(null);
   }
 
   setActiveCiProvider(p: 'github' | 'gitlab'): void {
@@ -205,6 +235,9 @@ export class TokenService {
     this._jiraToken.set(token);
     this._jiraEmail.set(email);
     this._jiraBaseUrl.set(baseUrl);
+    const now = new Date().toISOString();
+    localStorage.setItem(JIRA_SAVED_AT_KEY, now);
+    this._jiraSavedAt.set(now);
     this.refreshSession();
   }
 
@@ -217,10 +250,12 @@ export class TokenService {
     [JIRA_KEY, JIRA_EMAIL_KEY, JIRA_URL_KEY, JIRA_PROJECT_KEY].forEach((k) =>
       this.store.removeItem(k),
     );
+    localStorage.removeItem(JIRA_SAVED_AT_KEY);
     this._jiraToken.set(null);
     this._jiraEmail.set(null);
     this._jiraBaseUrl.set(null);
     this._jiraProject.set(null);
+    this._jiraSavedAt.set(null);
   }
 
   setActiveBoardsProvider(p: 'devops' | 'jira'): void {
@@ -237,6 +272,9 @@ export class TokenService {
     this.store.setItem(DEVOPS_ORG_KEY, org);
     this._devopsToken.set(token);
     this._devopsOrg.set(org);
+    const now = new Date().toISOString();
+    localStorage.setItem(DEVOPS_SAVED_AT_KEY, now);
+    this._devopsSavedAt.set(now);
     this.refreshSession();
   }
 
@@ -262,10 +300,12 @@ export class TokenService {
     [DEVOPS_KEY, DEVOPS_ORG_KEY, DEVOPS_PROJECT_KEY, DEVOPS_TEAM_KEY].forEach((k) =>
       this.store.removeItem(k),
     );
+    localStorage.removeItem(DEVOPS_SAVED_AT_KEY);
     this._devopsToken.set(null);
     this._devopsOrg.set(null);
     this._devopsProject.set(null);
     this._devopsTeam.set(null);
+    this._devopsSavedAt.set(null);
   }
 
   // =========================================================

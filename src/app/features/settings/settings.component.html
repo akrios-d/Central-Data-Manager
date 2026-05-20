@@ -29,6 +29,15 @@
     @if (hasGh()) {
       <p class="text-muted text-sm mt-2">
         {{ 'settings.owner' | translate }} <strong>{{ ghOwner() }}</strong>
+        @if (tokens.githubSavedAt()) {
+          ·
+          <span class="token-age" [class.token-age-warn]="isTokenExpired(tokens.githubSavedAt())">
+            {{ 'security.tokenAge' | translate: { days: tokenAgeDays(tokens.githubSavedAt()) } }}
+            @if (isTokenExpired(tokens.githubSavedAt())) {
+              — {{ 'security.tokenRotateHint' | translate }}
+            }
+          </span>
+        }
       </p>
 
       @if (ghTest()) {
@@ -100,6 +109,15 @@
       <p class="text-muted text-sm mt-2">
         {{ 'settings.gitlabUrl' | translate }}:
         <strong>{{ glBaseUrl() ?? 'https://gitlab.com' }}</strong>
+        @if (tokens.gitlabSavedAt()) {
+          ·
+          <span class="token-age" [class.token-age-warn]="isTokenExpired(tokens.gitlabSavedAt())">
+            {{ 'security.tokenAge' | translate: { days: tokenAgeDays(tokens.gitlabSavedAt()) } }}
+            @if (isTokenExpired(tokens.gitlabSavedAt())) {
+              — {{ 'security.tokenRotateHint' | translate }}
+            }
+          </span>
+        }
       </p>
 
       @if (glTest()) {
@@ -275,6 +293,17 @@
         }
       </div>
 
+      @if (tokens.devopsSavedAt()) {
+        <p class="text-muted text-sm mt-1">
+          <span class="token-age" [class.token-age-warn]="isTokenExpired(tokens.devopsSavedAt())">
+            {{ 'security.tokenAge' | translate: { days: tokenAgeDays(tokens.devopsSavedAt()) } }}
+            @if (isTokenExpired(tokens.devopsSavedAt())) {
+              — {{ 'security.tokenRotateHint' | translate }}
+            }
+          </span>
+        </p>
+      }
+
       @if (adoTest()) {
         <p
           class="test-result mt-1"
@@ -428,7 +457,18 @@
   <!-- Jira panel -->
   @if (activeBoardsProvider() === 'jira') {
     @if (hasJira()) {
-      <p class="text-muted text-sm mt-2">{{ jiraEmail2() }} · {{ jiraBaseUrl2() }}</p>
+      <p class="text-muted text-sm mt-2">
+        {{ jiraEmail2() }} · {{ jiraBaseUrl2() }}
+        @if (tokens.jiraSavedAt()) {
+          ·
+          <span class="token-age" [class.token-age-warn]="isTokenExpired(tokens.jiraSavedAt())">
+            {{ 'security.tokenAge' | translate: { days: tokenAgeDays(tokens.jiraSavedAt()) } }}
+            @if (isTokenExpired(tokens.jiraSavedAt())) {
+              — {{ 'security.tokenRotateHint' | translate }}
+            }
+          </span>
+        }
+      </p>
 
       @if (jiraTest()) {
         <p
@@ -585,7 +625,7 @@
       <button class="btn btn-sm" (click)="disablePersist()">
         {{ 'settings.storageDisable' | translate }}
       </button>
-    } @else {
+    } @else if (allowPersistentStorage()) {
       <button class="btn btn-sm btn-outline" (click)="requestEnablePersist()">
         {{ 'settings.storageEnable' | translate }}
       </button>

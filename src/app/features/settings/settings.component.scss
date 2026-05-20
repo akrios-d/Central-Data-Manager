@@ -187,3 +187,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.token-age {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.token-age-warn {
+  color: var(--color-warning, #f59e0b);
+  font-weight: 600;
+}
