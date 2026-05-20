@@ -2,7 +2,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Chain, ChainRun, ChainStep, ChainStepRun, StepStatus } from '../../core/models/chain.model';
+import {
+  Chain,
+  ChainRun,
+  ChainStep,
+  ChainStepRun,
+  StepStatus,
+} from '../../core/models/chain.model';
 import { parseDispatchInputs } from '../../core/utils/workflow-parser';
 import { ChainService } from '../../core/services/chain.service';
 import { ChainExecutorService } from '../../core/services/chain-executor.service';
@@ -253,7 +259,9 @@ export class ChainBuilderComponent {
     // Load branches for ref selection (both providers)
     this.ci.listBranches(repo.full_name, repo.provider).subscribe({
       next: (bs) => this.stepBranches.set(bs.map((b) => b.name)),
-      error: () => { /* branch loading is best-effort */ },
+      error: () => {
+        /* branch loading is best-effort */
+      },
     });
 
     if (repo.provider === 'gitlab') {
@@ -333,7 +341,9 @@ export class ChainBuilderComponent {
 
     this.ci.listBranches(step.repoFullName, provider).subscribe({
       next: (bs) => this.stepBranches.set(bs.map((b) => b.name)),
-      error: () => { /* branch loading is best-effort */ },
+      error: () => {
+        /* branch loading is best-effort */
+      },
     });
 
     const chainDefaultRef = this.chainRef().trim() || 'main';
