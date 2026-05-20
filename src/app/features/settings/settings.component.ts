@@ -7,6 +7,7 @@ import { AppSettingsService } from '../../core/services/app-settings.service';
 import { DevOpsApiService, DevOpsProject, DevOpsTeam } from '../../core/services/devops-api.service';
 import { GitHubApiService } from '../../core/services/github-api.service';
 import { GitLabApiService } from '../../core/services/gitlab-api.service';
+import { JiraApiService } from '../../core/services/jira-api.service';
 import { forkJoin, catchError, of } from 'rxjs';
 
 interface ConnectionTest {
@@ -26,6 +27,7 @@ export class SettingsComponent implements OnInit {
   private ado         = inject(DevOpsApiService);
   private gh          = inject(GitHubApiService);
   private gl          = inject(GitLabApiService);
+  private jira        = inject(JiraApiService);
   private translate   = inject(TranslateService);
   private appSettings = inject(AppSettingsService);
 
@@ -33,9 +35,20 @@ export class SettingsComponent implements OnInit {
   readonly hasGh              = this.tokens.hasGitHub;
   readonly hasAdo             = this.tokens.hasDevOps;
   readonly hasGl              = this.tokens.hasGitLab;
-  readonly activeCiProvider   = this.tokens.activeCiProvider;
+  readonly activeCiProvider     = this.tokens.activeCiProvider;
+  readonly activeBoardsProvider = this.tokens.activeBoardsProvider;
+  readonly hasJira              = this.tokens.hasJira;
+  readonly jiraEmail2           = this.tokens.jiraEmail;
+  readonly jiraBaseUrl2         = this.tokens.jiraBaseUrl;
+
+  jiraToken = signal('');
+  jiraEmail = signal('');
+  jiraUrl   = signal('https://your-domain.atlassian.net');
+  showJiraForm = signal(false);
+  jiraTest  = signal<ConnectionTest | null>(null);
 
   setProvider(p: 'github' | 'gitlab'): void { this.tokens.setActiveCiProvider(p); }
+  setBoardsProvider(p: 'devops' | 'jira'): void { this.tokens.setActiveBoardsProvider(p); }
   readonly ghOwner      = this.tokens.githubOwner;
   readonly adoOrg       = this.tokens.devopsOrg;
   readonly adoProject   = this.tokens.devopsProject;
@@ -78,6 +91,8 @@ export class SettingsComponent implements OnInit {
     this.editAdoProject.set(this.tokens.devopsProject() ?? '');
     this.editAdoTeam.set(this.tokens.devopsTeam() ?? '');
     this.glUrl.set(this.tokens.gitlabBaseUrl() ?? 'https://gitlab.com');
+    this.jiraUrl.set(this.tokens.jiraBaseUrl() ?? 'https://your-domain.atlassian.net');
+    if (this.tokens.jiraEmail()) this.jiraEmail.set(this.tokens.jiraEmail()!);
   }
 
   testGitHub(): void {
@@ -253,6 +268,40 @@ export class SettingsComponent implements OnInit {
     this.toasts.confirm('Clear ALL tokens?', 'Yes, clear all', () => {
       this.tokens.clearAll();
       this.toasts.show('All tokens cleared.', 'success');
+    });
+  }
+
+  testJira(): void {
+    this.jiraTest.set({ status: 'testing', detail: 'Connecting…' });
+    this.jira.getMyself().subscribe({
+      next: (user) => {
+        this.jiraTest.set({ status: 'ok', detail: `✓ Authenticated as ${user.displayName} (${user.emailAddress})` });
+      },
+      error: (e) => {
+        const msg = e?.error?.message ?? e?.message ?? 'Request failed';
+        this.jiraTest.set({ status: 'error', detail: `✗ ${msg}` });
+      },
+    });
+  }
+
+  saveJira(): void {
+    const token = this.jiraToken().trim();
+    const email = this.jiraEmail().trim();
+    const url   = this.jiraUrl().trim();
+    if (token && email && url) {
+      this.tokens.setJira(token, email, url);
+      this.jiraToken.set('');
+      this.jiraEmail.set('');
+      this.showJiraForm.set(false);
+      this.jiraTest.set(null);
+    }
+  }
+
+  clearJira(): void {
+    this.toasts.confirm('Remove Jira token? This cannot be undone.', 'Yes, remove', () => {
+      this.tokens.clearJira();
+      this.jiraTest.set(null);
+      this.toasts.show('Jira token removed.', 'success');
     });
   }
 

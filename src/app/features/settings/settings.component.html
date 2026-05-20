@@ -86,60 +86,107 @@
   }
 </div>
 
-<!-- ── Azure DevOps ───────────────────────────────────────────────────────── -->
+<!-- ── Boards Provider ───────────────────────────────────────────────────── -->
 <div class="card mt-3">
-  <div class="flex-between">
-    <h2 class="section-title">{{ 'settings.azureDevOps' | translate }}</h2>
-    @if (hasAdo()) {
-      <span class="badge badge-success">{{ 'settings.connected' | translate }}</span>
-    } @else {
-      <span class="badge badge-muted">{{ 'settings.notConfigured' | translate }}</span>
-    }
+  <div class="provider-switch">
+    <button class="ps-btn" [class.active]="activeBoardsProvider() === 'devops'" (click)="setBoardsProvider('devops')">
+      Azure DevOps
+      <span class="ps-dot" [class.ps-dot-ok]="hasAdo()" [class.ps-dot-off]="!hasAdo()"></span>
+    </button>
+    <button class="ps-btn" [class.active]="activeBoardsProvider() === 'jira'" (click)="setBoardsProvider('jira')">
+      Jira
+      <span class="ps-dot" [class.ps-dot-ok]="hasJira()" [class.ps-dot-off]="!hasJira()"></span>
+    </button>
   </div>
 
-  @if (hasAdo()) {
-    <div class="org-row mt-1">
-      @if (!showAdoOrgEdit()) {
-        <span class="text-muted text-sm">{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span>
-        <button class="btn btn-sm" (click)="openAdoOrgEdit()">{{ 'settings.editOrg' | translate }}</button>
-      } @else {
-        <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
-        <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">{{ 'settings.save' | translate }}</button>
-        <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
-      }
-    </div>
+  <!-- Azure DevOps panel -->
+  @if (activeBoardsProvider() === 'devops') {
+    @if (hasAdo()) {
+      <div class="org-row mt-2">
+        @if (!showAdoOrgEdit()) {
+          <span class="text-muted text-sm">{{ 'settings.organisation' | translate }} <strong>{{ adoOrg() }}</strong></span>
+          <button class="btn btn-sm" (click)="openAdoOrgEdit()">{{ 'settings.editOrg' | translate }}</button>
+        } @else {
+          <input class="form-control" type="text" [ngModel]="editAdoOrg()" (ngModelChange)="editAdoOrg.set($event)" />
+          <button class="btn btn-primary btn-sm" (click)="saveAdoOrg()" [disabled]="!editAdoOrg().trim()">{{ 'settings.save' | translate }}</button>
+          <button class="btn btn-sm" (click)="showAdoOrgEdit.set(false)">{{ 'settings.cancel' | translate }}</button>
+        }
+      </div>
 
-    @if (adoTest()) {
-      <p class="test-result mt-1" [class.ok]="adoTest()!.status === 'ok'" [class.err]="adoTest()!.status === 'error'">
-        @if (adoTest()!.status === 'testing') { <span class="spinner"></span> }
-        {{ adoTest()!.detail }}
-      </p>
+      @if (adoTest()) {
+        <p class="test-result mt-1" [class.ok]="adoTest()!.status === 'ok'" [class.err]="adoTest()!.status === 'error'">
+          @if (adoTest()!.status === 'testing') { <span class="spinner"></span> }
+          {{ adoTest()!.detail }}
+        </p>
+      }
+
+      <div class="settings-actions mt-2">
+        <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
+        <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">{{ 'settings.updateToken' | translate }}</button>
+        <button class="btn btn-sm btn-danger" (click)="clearAdo()">{{ 'settings.remove' | translate }}</button>
+      </div>
     }
 
-    <div class="settings-actions mt-2">
-      <button class="btn btn-sm" (click)="testDevOps()" [disabled]="adoTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
-      <button class="btn btn-sm" (click)="showAdoForm.set(!showAdoForm())">{{ 'settings.updateToken' | translate }}</button>
-      <button class="btn btn-sm btn-danger" (click)="clearAdo()">{{ 'settings.remove' | translate }}</button>
-    </div>
+    @if (!hasAdo() || showAdoForm()) {
+      <div class="settings-form mt-2">
+        <div class="form-group">
+          <label>{{ 'settings.orgName' | translate }}</label>
+          <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" [placeholder]="'settings.companyPlaceholder' | translate" />
+        </div>
+        <div class="form-group mt-1">
+          <label>{{ 'settings.pat' | translate }}</label>
+          <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" [placeholder]="'settings.patPlaceholder' | translate" />
+        </div>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
+      </div>
+    }
   }
 
-  @if (!hasAdo() || showAdoForm()) {
-    <div class="settings-form mt-2">
-      <div class="form-group">
-        <label>{{ 'settings.orgName' | translate }}</label>
-        <input class="form-control" type="text" [ngModel]="adoOrg2()" (ngModelChange)="adoOrg2.set($event)" [placeholder]="'settings.companyPlaceholder' | translate" />
+  <!-- Jira panel -->
+  @if (activeBoardsProvider() === 'jira') {
+    @if (hasJira()) {
+      <p class="text-muted text-sm mt-2">{{ jiraEmail2() }} · {{ jiraBaseUrl2() }}</p>
+
+      @if (jiraTest()) {
+        <p class="test-result mt-1" [class.ok]="jiraTest()!.status === 'ok'" [class.err]="jiraTest()!.status === 'error'">
+          @if (jiraTest()!.status === 'testing') { <span class="spinner"></span> }
+          {{ jiraTest()!.detail }}
+        </p>
+      }
+
+      <div class="settings-actions mt-2">
+        <button class="btn btn-sm" (click)="testJira()" [disabled]="jiraTest()?.status === 'testing'">{{ 'settings.test' | translate }}</button>
+        <button class="btn btn-sm" (click)="showJiraForm.set(!showJiraForm())">{{ 'settings.updateToken' | translate }}</button>
+        <button class="btn btn-sm btn-danger" (click)="clearJira()">{{ 'settings.remove' | translate }}</button>
       </div>
-      <div class="form-group mt-1">
-        <label>{{ 'settings.pat' | translate }}</label>
-        <input class="form-control" type="password" [ngModel]="adoToken()" (ngModelChange)="adoToken.set($event)" [placeholder]="'settings.patPlaceholder' | translate" />
+    }
+
+    @if (!hasJira() || showJiraForm()) {
+      <div class="settings-form mt-2">
+        <div class="form-group">
+          <label>{{ 'settings.jiraUrl' | translate }}</label>
+          <input class="form-control" type="url" [ngModel]="jiraUrl()" (ngModelChange)="jiraUrl.set($event)" placeholder="https://your-domain.atlassian.net" />
+        </div>
+        <div class="form-group mt-1">
+          <label>{{ 'settings.jiraEmail' | translate }}</label>
+          <input class="form-control" type="email" [ngModel]="jiraEmail()" (ngModelChange)="jiraEmail.set($event)" placeholder="you@company.com" />
+        </div>
+        <div class="form-group mt-1">
+          <label>{{ 'settings.pat' | translate }}</label>
+          <input class="form-control" type="password" [ngModel]="jiraToken()" (ngModelChange)="jiraToken.set($event)" [placeholder]="'settings.jiraTokenHint' | translate" />
+          <span class="text-muted text-sm">{{ 'settings.jiraTokenHint2' | translate }}</span>
+        </div>
+        <button class="btn btn-primary btn-sm mt-2" (click)="saveJira()"
+          [disabled]="!jiraToken().trim() || !jiraEmail().trim() || !jiraUrl().trim()">
+          {{ 'settings.save' | translate }}
+        </button>
       </div>
-      <button class="btn btn-primary btn-sm mt-2" (click)="saveAdo()" [disabled]="!adoToken().trim() || !adoOrg2().trim()">{{ 'settings.save' | translate }}</button>
-    </div>
+    }
   }
 </div>
 
 <!-- ── Sprint config ──────────────────────────────────────────────────────── -->
-@if (hasAdo()) {
+@if (hasAdo() && activeBoardsProvider() === 'devops') {
   <div class="card mt-3">
     <div class="flex-between">
       <div>
