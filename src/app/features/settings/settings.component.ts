@@ -86,6 +86,12 @@ export class SettingsComponent implements OnInit {
     'Notification' in window ? Notification.permission : 'denied',
   );
 
+  readonly webhookUrl = this.appSettings.webhookUrl;
+  readonly webhookEnabled = this.appSettings.webhookEnabled;
+  editWebhookUrl = signal(this.appSettings.webhookUrl());
+  webhookTesting = signal(false);
+  webhookTestResult = signal<'ok' | 'error' | null>(null);
+
   editPollInterval = signal(this.appSettings.pollIntervalSec());
   editMaxPolls = signal(this.appSettings.maxPolls());
   editTimeoutHours = signal(this.appSettings.sessionTimeoutHours());
@@ -426,6 +432,52 @@ export class SettingsComponent implements OnInit {
   async requestNotifPermission(): Promise<void> {
     await this.notifSvc.requestPermission();
     this.notifPermission.set(Notification.permission);
+  }
+
+  saveWebhook(): void {
+    const url = this.editWebhookUrl().trim();
+    this.appSettings.saveWebhook(url, !!url);
+    this.webhookTestResult.set(null);
+    this.toasts.show(this.translate.instant('settings.webhookSaved'), 'success');
+    this.audit.log('Webhook saved', url ? new URL(url).hostname : '');
+  }
+
+  clearWebhook(): void {
+    this.appSettings.saveWebhook('', false);
+    this.editWebhookUrl.set('');
+    this.webhookTestResult.set(null);
+    this.audit.log('Webhook removed');
+  }
+
+  toggleWebhook(event: Event): void {
+    const enabled = (event.target as HTMLInputElement).checked;
+    this.appSettings.saveWebhook(this.appSettings.webhookUrl(), enabled);
+  }
+
+  async testWebhook(): Promise<void> {
+    const url = this.appSettings.webhookUrl();
+    if (!url) return;
+    this.webhookTesting.set(true);
+    this.webhookTestResult.set(null);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: 'CDM',
+          version: '1',
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          action: 'Webhook test',
+          detail: 'Test payload from CDM Settings',
+        }),
+      });
+      this.webhookTestResult.set(res.ok ? 'ok' : 'error');
+    } catch {
+      this.webhookTestResult.set('error');
+    } finally {
+      this.webhookTesting.set(false);
+    }
   }
 
   exportWorkspace(): void {

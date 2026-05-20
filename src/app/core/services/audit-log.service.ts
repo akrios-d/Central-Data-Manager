@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { AppSettingsService } from './app-settings.service';
 
 export interface AuditEntry {
   id: string;
@@ -12,6 +13,8 @@ const MAX_ENTRIES = 500;
 
 @Injectable({ providedIn: 'root' })
 export class AuditLogService {
+  private appSettings = inject(AppSettingsService);
+
   readonly entries = signal<AuditEntry[]>(this.load());
 
   log(action: string, detail?: string): void {
@@ -26,6 +29,17 @@ export class AuditLogService {
       this.persist(next);
       return next;
     });
+    this.postToWebhook(entry);
+  }
+
+  private postToWebhook(entry: AuditEntry): void {
+    const url = this.appSettings.webhookUrl();
+    if (!url || !this.appSettings.webhookEnabled()) return;
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'CDM', version: '1', ...entry }),
+    }).catch(() => {});
   }
 
   clear(): void {

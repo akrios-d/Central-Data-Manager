@@ -4,6 +4,8 @@ const POLL_KEY = 'cdm:poll_interval_s';
 const MAX_KEY = 'cdm:max_polls';
 const TIMEOUT_KEY = 'cdm:session_timeout_h';
 const NOTIF_KEY = 'cdm:notifications';
+const WEBHOOK_URL_KEY = 'cdm:webhook_url';
+const WEBHOOK_ENABLED_KEY = 'cdm:webhook_enabled';
 
 @Injectable({ providedIn: 'root' })
 export class AppSettingsService {
@@ -11,6 +13,8 @@ export class AppSettingsService {
   readonly maxPolls = signal(Number(localStorage.getItem(MAX_KEY)) || 120);
   readonly sessionTimeoutHours = signal(Number(localStorage.getItem(TIMEOUT_KEY)) || 8);
   readonly notificationsEnabled = signal(localStorage.getItem(NOTIF_KEY) !== 'false');
+  readonly webhookUrl = signal(localStorage.getItem(WEBHOOK_URL_KEY) ?? '');
+  readonly webhookEnabled = signal(localStorage.getItem(WEBHOOK_ENABLED_KEY) === 'true');
 
   save(intervalSec: number, maxPolls: number): void {
     const s = Math.max(2, Math.min(60, intervalSec));
@@ -30,5 +34,12 @@ export class AppSettingsService {
   saveNotifications(enabled: boolean): void {
     localStorage.setItem(NOTIF_KEY, String(enabled));
     this.notificationsEnabled.set(enabled);
+  }
+
+  saveWebhook(url: string, enabled: boolean): void {
+    localStorage.setItem(WEBHOOK_URL_KEY, url);
+    localStorage.setItem(WEBHOOK_ENABLED_KEY, String(enabled));
+    this.webhookUrl.set(url);
+    this.webhookEnabled.set(enabled);
   }
 }

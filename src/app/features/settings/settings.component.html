@@ -691,6 +691,72 @@
   }
 </div>
 
+<!-- ── Audit webhook ──────────────────────────────────────────────────────── -->
+<div class="card mt-3">
+  <div class="flex-between">
+    <div>
+      <h2 class="section-title">{{ 'settings.webhook' | translate }}</h2>
+      <p class="text-muted text-sm mt-1">{{ 'settings.webhookSubtitle' | translate }}</p>
+    </div>
+    @if (webhookUrl()) {
+      <label class="toggle-switch">
+        <input type="checkbox" [checked]="webhookEnabled()" (change)="toggleWebhook($event)" />
+        <span class="toggle-slider"></span>
+      </label>
+    }
+  </div>
+
+  <div class="form-group mt-2">
+    <label class="form-label">{{ 'settings.webhookUrl' | translate }}</label>
+    <input
+      class="form-control"
+      type="url"
+      [placeholder]="'settings.webhookUrlPlaceholder' | translate"
+      [ngModel]="editWebhookUrl()"
+      (ngModelChange)="editWebhookUrl.set($event)"
+    />
+  </div>
+
+  <div class="settings-actions mt-2">
+    <button
+      class="btn btn-sm btn-primary"
+      (click)="saveWebhook()"
+      [disabled]="!editWebhookUrl().trim()"
+    >
+      {{ 'settings.save' | translate }}
+    </button>
+    <button
+      class="btn btn-sm"
+      (click)="testWebhook()"
+      [disabled]="!webhookUrl() || webhookTesting()"
+    >
+      @if (webhookTesting()) {
+        <span class="spinner" style="width: 0.75rem; height: 0.75rem; border-width: 1.5px"></span>
+      }
+      {{ 'settings.test' | translate }}
+    </button>
+    @if (webhookUrl()) {
+      <button class="btn btn-sm btn-danger" (click)="clearWebhook()">
+        {{ 'settings.remove' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (webhookTestResult()) {
+    <p
+      class="test-result mt-2"
+      [class.ok]="webhookTestResult() === 'ok'"
+      [class.err]="webhookTestResult() === 'error'"
+    >
+      {{
+        webhookTestResult() === 'ok'
+          ? ('settings.webhookTestOk' | translate)
+          : ('settings.webhookTestErr' | translate)
+      }}
+    </p>
+  }
+</div>
+
 <!-- ── Workspace backup ───────────────────────────────────────────────────── -->
 <div class="card mt-3">
   <h2 class="section-title">{{ 'settings.workspace' | translate }}</h2>
