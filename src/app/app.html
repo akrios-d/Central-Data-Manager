@@ -71,6 +71,9 @@
       <div class="lang-switcher">
         <button [class.active]="currentLang() === 'en'" (click)="setLang('en')">EN</button>
         <button [class.active]="currentLang() === 'pt'" (click)="setLang('pt')">PT</button>
+        <button class="theme-btn" (click)="toggleTheme()">
+          {{ theme() === 'dark' ? '☀' : '🌙' }}
+        </button>
       </div>
     </nav>
   }

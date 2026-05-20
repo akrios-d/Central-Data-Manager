@@ -32,7 +32,9 @@
           </li>
         }
         @if (filteredRepos().length === 0 && !reposLoading()) {
-          <li><p class="text-muted text-sm mt-2">{{ 'prs.noRepos' | translate }}</p></li>
+          <li>
+            <p class="text-muted text-sm mt-2">{{ 'prs.noRepos' | translate }}</p>
+          </li>
         }
       </ul>
     }
@@ -49,7 +51,14 @@
         <div class="pr-panel-header">
           <h2 class="section-title">{{ selectedRepo()!.full_name }}</h2>
           <div class="state-filter">
-            @for (s of [['open','prs.open'],['closed','prs.closed'],['all','prs.all']]; track s[0]) {
+            @for (
+              s of [
+                ['open', 'prs.open'],
+                ['closed', 'prs.closed'],
+                ['all', 'prs.all'],
+              ];
+              track s[0]
+            ) {
               <button
                 class="state-btn"
                 [class.active]="stateFilter() === s[0]"
@@ -59,6 +68,23 @@
               </button>
             }
           </div>
+        </div>
+
+        <div class="pr-filters mt-2">
+          <input
+            class="form-control pr-filter-input"
+            type="text"
+            [placeholder]="'prs.filterAuthor' | translate"
+            [ngModel]="authorFilter()"
+            (ngModelChange)="authorFilter.set($event)"
+          />
+          <input
+            class="form-control pr-filter-input"
+            type="text"
+            [placeholder]="'prs.filterLabel' | translate"
+            [ngModel]="labelFilter()"
+            (ngModelChange)="labelFilter.set($event)"
+          />
         </div>
 
         @if (prsLoading()) {
@@ -71,10 +97,15 @@
               <div class="pr-card">
                 <div class="pr-card-top">
                   <span class="pr-badge" [class]="prStateClass(pr.state, pr.draft)">
-                    @if (pr.draft) { Draft }
-                    @else if (pr.state === 'merged') { Merged }
-                    @else if (pr.state === 'open') { Open }
-                    @else { Closed }
+                    @if (pr.draft) {
+                      Draft
+                    } @else if (pr.state === 'merged') {
+                      Merged
+                    } @else if (pr.state === 'open') {
+                      Open
+                    } @else {
+                      Closed
+                    }
                   </span>
                   <a class="pr-title" [href]="pr.url" target="_blank" rel="noopener">
                     #{{ pr.number }} {{ pr.title }}
@@ -97,7 +128,8 @@
                         class="pr-label"
                         [style.background]="label.color ? '#' + label.color + '33' : undefined"
                         [style.color]="label.color ? '#' + label.color : undefined"
-                      >{{ label.name }}</span>
+                        >{{ label.name }}</span
+                      >
                     }
                   </div>
                 }

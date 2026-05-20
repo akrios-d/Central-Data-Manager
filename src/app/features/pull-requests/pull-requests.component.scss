@@ -68,6 +68,21 @@
   flex-shrink: 0;
 }
 
+// ── PR filters ─────────────────────────────────────────────────────────────────
+
+.pr-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pr-filter-input {
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  flex: 1;
+  min-width: 120px;
+}
+
 // ── PR panel ───────────────────────────────────────────────────────────────────
 
 .pr-panel-header {

@@ -3,12 +3,14 @@ import { Injectable, signal } from '@angular/core';
 const POLL_KEY = 'cdm:poll_interval_s';
 const MAX_KEY = 'cdm:max_polls';
 const TIMEOUT_KEY = 'cdm:session_timeout_h';
+const NOTIF_KEY = 'cdm:notifications';
 
 @Injectable({ providedIn: 'root' })
 export class AppSettingsService {
   readonly pollIntervalSec = signal(Number(localStorage.getItem(POLL_KEY)) || 6);
   readonly maxPolls = signal(Number(localStorage.getItem(MAX_KEY)) || 120);
   readonly sessionTimeoutHours = signal(Number(localStorage.getItem(TIMEOUT_KEY)) || 8);
+  readonly notificationsEnabled = signal(localStorage.getItem(NOTIF_KEY) !== 'false');
 
   save(intervalSec: number, maxPolls: number): void {
     const s = Math.max(2, Math.min(60, intervalSec));
@@ -23,5 +25,10 @@ export class AppSettingsService {
     const clamped = Math.max(1, Math.min(24, h));
     localStorage.setItem(TIMEOUT_KEY, String(clamped));
     this.sessionTimeoutHours.set(clamped);
+  }
+
+  saveNotifications(enabled: boolean): void {
+    localStorage.setItem(NOTIF_KEY, String(enabled));
+    this.notificationsEnabled.set(enabled);
   }
 }

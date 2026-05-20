@@ -133,6 +133,23 @@
       font-weight: 600;
     }
   }
+
+  .theme-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.3rem 0.45rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+
+    &:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+  }
 }
 
 // ── Main content ──────────────────────────────────────────────────────────────

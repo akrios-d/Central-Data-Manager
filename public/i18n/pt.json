@@ -223,6 +223,11 @@
     "workspaceExport": "↓ Exportar workspace",
     "workspaceImport": "↑ Importar workspace",
     "workspaceImported": "Workspace importado com sucesso.",
+    "notifications": "Notificações do Browser",
+    "notificationsSubtitle": "Mostrar notificações de ambiente de trabalho quando steps de chains terminam.",
+    "notifBlocked": "Notificações bloqueadas pelo browser. Permite-as nas definições do browser.",
+    "notifAllow": "Permitir notificações",
+    "notifGranted": "Notificações permitidas.",
     "dangerZone": "Zona de perigo",
     "dangerWarning": "Isto irá remover todos os tokens do teu browser e redireccionar para o Onboarding.",
     "clearAll": "Limpar todos os tokens"
@@ -394,7 +399,9 @@
     "all": "Todos",
     "noPrs": "Nenhum pull request encontrado.",
     "noRepos": "Nenhum repositório encontrado.",
-    "selectRepo": "Selecciona um repositório para ver os seus pull requests."
+    "selectRepo": "Selecciona um repositório para ver os seus pull requests.",
+    "filterAuthor": "Filtrar por autor…",
+    "filterLabel": "Filtrar por label…"
   },
   "lang": {
     "en": "EN",

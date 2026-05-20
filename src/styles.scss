@@ -20,6 +20,25 @@
   --warning: #d29922;
   --info: #58a6ff;
   --radius: 6px;
+  --btn-primary-text: #0d1117;
+  --surface-hover: rgba(255, 255, 255, 0.04);
+}
+
+html.light {
+  --surface-0: #f6f8fa;
+  --surface-1: #ffffff;
+  --surface-2: #f6f8fa;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --text-muted: #656d76;
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --success: #1a7f37;
+  --danger: #d1242f;
+  --warning: #9a6700;
+  --info: #0969da;
+  --btn-primary-text: #ffffff;
+  --surface-hover: rgba(0, 0, 0, 0.04);
 }
 
 html,
@@ -85,7 +104,7 @@ a:hover {
   &.btn-primary {
     background: var(--accent);
     border-color: var(--accent);
-    color: #0d1117;
+    color: var(--btn-primary-text);
   }
   &.btn-primary:hover {
     background: var(--accent-hover);

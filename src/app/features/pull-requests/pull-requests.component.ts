@@ -49,16 +49,26 @@ export class PullRequestsComponent implements OnInit {
   prsLoading = signal(false);
   prsError = signal<string | null>(null);
   stateFilter = signal<'open' | 'closed' | 'all'>('open');
+  authorFilter = signal('');
+  labelFilter = signal('');
 
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase();
-    return q ? this.allRepos().filter((r) => r.full_name.toLowerCase().includes(q)) : this.allRepos();
+    return q
+      ? this.allRepos().filter((r) => r.full_name.toLowerCase().includes(q))
+      : this.allRepos();
   });
 
   readonly filteredPrs = computed(() => {
     const f = this.stateFilter();
-    if (f === 'all') return this.prs();
-    return this.prs().filter((pr) => pr.state === f || (f === 'open' && pr.state === 'open'));
+    const author = this.authorFilter().toLowerCase().trim();
+    const label = this.labelFilter().toLowerCase().trim();
+
+    let prs = f === 'all' ? this.prs() : this.prs().filter((pr) => pr.state === f);
+    if (author) prs = prs.filter((pr) => pr.author.toLowerCase().includes(author));
+    if (label)
+      prs = prs.filter((pr) => pr.labels.some((l) => l.name.toLowerCase().includes(label)));
+    return prs;
   });
 
   ngOnInit(): void {
@@ -80,6 +90,8 @@ export class PullRequestsComponent implements OnInit {
     this.selectedRepo.set(repo);
     this.prs.set([]);
     this.prsError.set(null);
+    this.authorFilter.set('');
+    this.labelFilter.set('');
     this.loadPrs(repo);
   }
 

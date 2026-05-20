@@ -16,6 +16,7 @@ import { GitHubApiService } from '../../core/services/github-api.service';
 import { GitLabApiService } from '../../core/services/gitlab-api.service';
 import { JiraApiService } from '../../core/services/jira-api.service';
 import { WorkspaceService } from '../../core/services/workspace.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { forkJoin, catchError, of } from 'rxjs';
 
 interface ConnectionTest {
@@ -78,6 +79,12 @@ export class SettingsComponent implements OnInit {
 
   readonly audit = inject(AuditLogService);
   private workspace = inject(WorkspaceService);
+  private notifSvc = inject(NotificationService);
+
+  readonly notificationsEnabled = this.appSettings.notificationsEnabled;
+  readonly notifPermission = signal<NotificationPermission>(
+    'Notification' in window ? Notification.permission : 'denied',
+  );
 
   editPollInterval = signal(this.appSettings.pollIntervalSec());
   editMaxPolls = signal(this.appSettings.maxPolls());
@@ -404,6 +411,21 @@ export class SettingsComponent implements OnInit {
   disablePersist(): void {
     this.tokens.disablePersist();
     this.toasts.show(this.translate.instant('settings.storageSessionOn'), 'success');
+  }
+
+  toggleNotifications(event: Event): void {
+    const enabled = (event.target as HTMLInputElement).checked;
+    this.appSettings.saveNotifications(enabled);
+    if (enabled && 'Notification' in window && Notification.permission === 'default') {
+      this.notifSvc.requestPermission().then(() => {
+        this.notifPermission.set(Notification.permission);
+      });
+    }
+  }
+
+  async requestNotifPermission(): Promise<void> {
+    await this.notifSvc.requestPermission();
+    this.notifPermission.set(Notification.permission);
   }
 
   exportWorkspace(): void {
