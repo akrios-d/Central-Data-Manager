@@ -5,6 +5,7 @@ import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { ChainService } from './chain.service';
 import { NotificationService } from './notification.service';
 import { AppSettingsService } from './app-settings.service';
+import { AuditLogService } from './audit-log.service';
 import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +14,7 @@ export class ChainExecutorService {
   private chainSvc = inject(ChainService);
   private notif = inject(NotificationService);
   private settings = inject(AppSettingsService);
+  private audit = inject(AuditLogService);
   private translate = inject(TranslateService);
 
   readonly activeRuns = signal<Record<string, ChainRun>>({});
@@ -20,6 +22,7 @@ export class ChainExecutorService {
 
   async execute(chain: Chain): Promise<void> {
     this.stopRequested.delete(chain.id);
+    this.audit.log('Chain run started', chain.name);
     const run: ChainRun = {
       id: crypto.randomUUID(),
       chainId: chain.id,
@@ -103,6 +106,7 @@ export class ChainExecutorService {
     if (run.status === 'running') run.status = 'success';
     this.push(run);
     this.chainSvc.saveRun(run);
+    this.audit.log(`Chain run ${run.status}`, chain.name);
     this.notify(chain.name, run);
   }
 

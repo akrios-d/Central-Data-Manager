@@ -3,12 +3,14 @@ import { Chain } from '../models/chain.model';
 import { OrchGraph, OrchNodeRun, OrchRun, NodeRunStatus } from '../models/orchestrator.model';
 import { GitHubApiService } from './github-api.service';
 import { AppSettingsService } from './app-settings.service';
+import { AuditLogService } from './audit-log.service';
 import { OrchestratorService } from './orchestrator.service';
 
 @Injectable({ providedIn: 'root' })
 export class OrchestratorExecutorService {
   private gh = inject(GitHubApiService);
   private settings = inject(AppSettingsService);
+  private audit = inject(AuditLogService);
   private orchSvc = inject(OrchestratorService);
 
   readonly activeRun = signal<OrchRun | null>(null);
@@ -20,6 +22,7 @@ export class OrchestratorExecutorService {
 
   async execute(graph: OrchGraph, chains: Chain[]): Promise<void> {
     this.stopRequested = false;
+    this.audit.log('Graph run started', graph.name);
     const chainMap = new Map(chains.map((c) => [c.id, c]));
     const startNode = graph.nodes.find((n) => n.type === 'start');
     if (!startNode) return;
@@ -93,6 +96,7 @@ export class OrchestratorExecutorService {
       });
     run.status = run.nodes.some((n) => n.status === 'failure') ? 'failure' : 'success';
     this.push(run);
+    this.audit.log(`Graph run ${run.status}`, graph.name);
     this.orchSvc.saveRun({ ...run, nodes: run.nodes.map((n) => ({ ...n })) });
   }
 

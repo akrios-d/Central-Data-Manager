@@ -201,6 +201,21 @@
           >
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">{{ 'security.sessionTimeout' | translate }}</label>
+        <div class="inline-row mt-1">
+          <input
+            class="form-control exec-input"
+            type="number"
+            min="1"
+            max="24"
+            [ngModel]="editTimeoutHours()"
+            (ngModelChange)="editTimeoutHours.set(+$event)"
+          />
+          <span class="text-muted text-sm">{{ 'security.hours' | translate }}</span>
+        </div>
+        <span class="text-muted text-sm">{{ 'security.sessionTimeoutHint' | translate }}</span>
+      </div>
     </div>
     <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">
       {{ 'settings.save' | translate }}
@@ -576,6 +591,35 @@
       </button>
     }
   </div>
+</div>
+
+<!-- ── Audit log ───────────────────────────────────────────────────────────── -->
+<div class="card mt-3">
+  <div class="flex-between">
+    <h2 class="section-title">{{ 'security.auditLog' | translate }}</h2>
+    <button
+      class="btn btn-sm btn-danger"
+      (click)="audit.clear()"
+      [disabled]="!audit.entries().length"
+    >
+      {{ 'security.clearLog' | translate }}
+    </button>
+  </div>
+  @if (audit.entries().length === 0) {
+    <p class="text-muted text-sm mt-2">{{ 'security.auditEmpty' | translate }}</p>
+  } @else {
+    <div class="audit-log mt-2">
+      @for (entry of audit.entries(); track entry.id) {
+        <div class="audit-entry">
+          <span class="audit-time">{{ entry.timestamp | date: 'short' }}</span>
+          <strong class="audit-action">{{ entry.action }}</strong>
+          @if (entry.detail) {
+            <span class="audit-detail">· {{ entry.detail }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
 </div>
 
 <!-- ── Danger zone ─────────────────────────────────────────────────────────── -->

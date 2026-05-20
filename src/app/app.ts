@@ -1,7 +1,8 @@
 import { Component, HostListener, inject, computed, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from './core/services/token.service';
+import { SessionTimeoutService } from './core/services/session-timeout.service';
 import { ToastComponent } from './shared/components/toast/toast.component';
 
 @Component({
@@ -13,16 +14,25 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 export class App {
   private tokens = inject(TokenService);
   private translate = inject(TranslateService);
+  private router = inject(Router);
+  private sessionTimeout = inject(SessionTimeoutService);
 
   readonly showNav = computed(() => this.tokens.hasAnyToken());
   readonly currentLang = signal(localStorage.getItem('cdm_lang') ?? 'en');
   readonly sidebarOpen = signal(false);
+  readonly sessionExpired = this.sessionTimeout.expired;
 
   constructor() {
     const saved = localStorage.getItem('cdm_lang') ?? 'en';
     this.translate.addLangs(['en', 'pt']);
     this.translate.setDefaultLang('en');
     this.translate.use(saved);
+    this.sessionTimeout.init();
+  }
+
+  goToSettings(): void {
+    this.sessionTimeout.dismiss();
+    this.router.navigate(['/settings']);
   }
 
   toggleSidebar(): void {

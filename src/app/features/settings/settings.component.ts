@@ -1,9 +1,11 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from '../../core/services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
+import { AuditLogService } from '../../core/services/audit-log.service';
 import {
   DevOpsApiService,
   DevOpsProject,
@@ -21,7 +23,7 @@ interface ConnectionTest {
 
 @Component({
   selector: 'app-settings',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule, DatePipe],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
@@ -69,8 +71,11 @@ export class SettingsComponent implements OnInit {
   readonly adoTeam = this.tokens.devopsTeam;
   readonly glBaseUrl = this.tokens.gitlabBaseUrl;
 
+  readonly audit = inject(AuditLogService);
+
   editPollInterval = signal(this.appSettings.pollIntervalSec());
   editMaxPolls = signal(this.appSettings.maxPolls());
+  editTimeoutHours = signal(this.appSettings.sessionTimeoutHours());
   readonly maxPollMinutes = computed(() =>
     Math.round((this.editPollInterval() * this.editMaxPolls()) / 60),
   );
@@ -244,6 +249,7 @@ export class SettingsComponent implements OnInit {
   saveGh(): void {
     if (this.ghToken().trim() && this.ghOwner2().trim()) {
       this.tokens.setGitHub(this.ghToken().trim(), this.ghOwner2().trim());
+      this.audit.log('Token saved', 'GitHub');
       this.ghToken.set('');
       this.ghOwner2.set('');
       this.showGhForm.set(false);
@@ -254,6 +260,7 @@ export class SettingsComponent implements OnInit {
   saveAdo(): void {
     if (this.adoToken().trim() && this.adoOrg2().trim()) {
       this.tokens.setDevOps(this.adoToken().trim(), this.adoOrg2().trim());
+      this.audit.log('Token saved', 'Azure DevOps');
       this.adoToken.set('');
       this.adoOrg2.set('');
       this.showAdoForm.set(false);
@@ -266,6 +273,7 @@ export class SettingsComponent implements OnInit {
     const url = this.glUrl().trim() || 'https://gitlab.com';
     if (token) {
       this.tokens.setGitLab(token, url);
+      this.audit.log('Token saved', 'GitLab');
       this.glToken.set('');
       this.showGlForm.set(false);
       this.glTest.set(null);
@@ -276,6 +284,7 @@ export class SettingsComponent implements OnInit {
     this.toasts.confirm('Remove GitHub token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearGitHub();
       this.ghTest.set(null);
+      this.audit.log('Token removed', 'GitHub');
       this.toasts.show('GitHub token removed.', 'success');
     });
   }
@@ -284,6 +293,7 @@ export class SettingsComponent implements OnInit {
     this.toasts.confirm('Remove Azure DevOps token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearDevOps();
       this.adoTest.set(null);
+      this.audit.log('Token removed', 'Azure DevOps');
       this.toasts.show('Azure DevOps token removed.', 'success');
     });
   }
@@ -292,12 +302,14 @@ export class SettingsComponent implements OnInit {
     this.toasts.confirm('Remove GitLab token? This cannot be undone.', 'Yes, remove', () => {
       this.tokens.clearGitLab();
       this.glTest.set(null);
+      this.audit.log('Token removed', 'GitLab');
       this.toasts.show('GitLab token removed.', 'success');
     });
   }
 
   clearAll(): void {
     this.toasts.confirm('Clear ALL tokens?', 'Yes, clear all', () => {
+      this.audit.log('All tokens cleared');
       this.tokens.clearAll();
       this.toasts.show('All tokens cleared.', 'success');
     });
@@ -325,6 +337,7 @@ export class SettingsComponent implements OnInit {
     const url = this.jiraUrl().trim();
     if (token && email && url) {
       this.tokens.setJira(token, email, url);
+      this.audit.log('Token saved', 'Jira');
       this.jiraToken.set('');
       this.jiraEmail.set('');
       this.showJiraForm.set(false);
@@ -368,6 +381,8 @@ export class SettingsComponent implements OnInit {
 
   saveExecSettings(): void {
     this.appSettings.save(this.editPollInterval(), this.editMaxPolls());
+    this.appSettings.saveTimeoutHours(this.editTimeoutHours());
+    this.audit.log('Execution settings saved');
     this.toasts.show(this.translate.instant('settings.execSettingsSaved'), 'success');
   }
 

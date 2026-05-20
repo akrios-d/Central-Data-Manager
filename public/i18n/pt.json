@@ -343,6 +343,17 @@
     "savedDevOps": "Azure DevOps ligado.",
     "savedJira": "Jira ligado."
   },
+  "security": {
+    "sessionExpired": "Sessão expirada",
+    "sessionExpiredDetail": "A sessão expirou por inactividade. Todos os tokens foram removidos por segurança.",
+    "goToSettings": "Ir às Definições",
+    "sessionTimeout": "Timeout de sessão",
+    "sessionTimeoutHint": "Limite de inactividade (apenas no modo sessão). Não se aplica com armazenamento persistente.",
+    "hours": "h",
+    "auditLog": "Registo de auditoria",
+    "auditEmpty": "Sem eventos registados.",
+    "clearLog": "Limpar registo"
+  },
   "lang": {
     "en": "EN",
     "pt": "PT"

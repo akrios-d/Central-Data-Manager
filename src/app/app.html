@@ -71,3 +71,16 @@
   </main>
 </div>
 <app-toast />
+
+@if (sessionExpired()) {
+  <div class="session-expired-backdrop">
+    <div class="session-expired-modal">
+      <div class="session-expired-icon">🔒</div>
+      <h2 class="session-expired-title">{{ 'security.sessionExpired' | translate }}</h2>
+      <p class="session-expired-body">{{ 'security.sessionExpiredDetail' | translate }}</p>
+      <button class="btn btn-primary" (click)="goToSettings()">
+        {{ 'security.goToSettings' | translate }}
+      </button>
+    </div>
+  </div>
+}

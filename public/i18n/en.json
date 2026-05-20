@@ -343,6 +343,17 @@
     "savedDevOps": "Azure DevOps connected.",
     "savedJira": "Jira connected."
   },
+  "security": {
+    "sessionExpired": "Session Expired",
+    "sessionExpiredDetail": "Your session timed out due to inactivity. All tokens have been cleared for security.",
+    "goToSettings": "Go to Settings",
+    "sessionTimeout": "Session timeout",
+    "sessionTimeoutHint": "Inactivity limit in session-only mode. Has no effect when persistent storage is enabled.",
+    "hours": "h",
+    "auditLog": "Audit Log",
+    "auditEmpty": "No events logged yet.",
+    "clearLog": "Clear log"
+  },
   "lang": {
     "en": "EN",
     "pt": "PT"
