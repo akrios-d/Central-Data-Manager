@@ -9,6 +9,7 @@
     "githubActions": "Pipelines",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orchestrator",
+    "auditLog": "Audit Log",
     "settings": "Settings"
   },
   "dashboard": {
@@ -355,6 +356,24 @@
     "clearLog": "Clear log",
     "tokenAge": "Saved {{days}} d ago",
     "tokenRotateHint": "consider rotating"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "subtitle": "History of key actions performed across all sessions.",
+    "search": "Search entries…",
+    "filterAll": "All",
+    "filterToken": "Tokens",
+    "filterChain": "Chains",
+    "filterGraph": "Graphs",
+    "filterSession": "Session",
+    "filterSettings": "Settings",
+    "export": "↓ Export CSV",
+    "clear": "Clear log",
+    "clearConfirm": "Delete all audit log entries? This cannot be undone.",
+    "clearConfirmBtn": "Yes, clear",
+    "noEntries": "No events logged yet.",
+    "empty": "No entries match.",
+    "total": "{{count}} entries"
   },
   "lang": {
     "en": "EN",

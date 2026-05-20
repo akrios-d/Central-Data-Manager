@@ -9,6 +9,7 @@
     "githubActions": "Pipelines",
     "chainBuilder": "Chain Builder",
     "chainOrchestrator": "Orquestrador",
+    "auditLog": "Auditoria",
     "settings": "Definições"
   },
   "dashboard": {
@@ -355,6 +356,24 @@
     "clearLog": "Limpar registo",
     "tokenAge": "Guardado há {{days}} d",
     "tokenRotateHint": "considere rodar"
+  },
+  "audit": {
+    "title": "Registo de Auditoria",
+    "subtitle": "Histórico de acções importantes realizadas em todas as sessões.",
+    "search": "Pesquisar entradas…",
+    "filterAll": "Tudo",
+    "filterToken": "Tokens",
+    "filterChain": "Chains",
+    "filterGraph": "Grafos",
+    "filterSession": "Sessão",
+    "filterSettings": "Definições",
+    "export": "↓ Exportar CSV",
+    "clear": "Limpar registo",
+    "clearConfirm": "Apagar todas as entradas do registo? Esta acção não pode ser desfeita.",
+    "clearConfirmBtn": "Sim, limpar",
+    "noEntries": "Sem eventos registados ainda.",
+    "empty": "Nenhuma entrada encontrada.",
+    "total": "{{count}} entradas"
   },
   "lang": {
     "en": "EN",

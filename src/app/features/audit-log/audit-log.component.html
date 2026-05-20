@@ -1,0 +1,67 @@
+<div class="page-header">
+  <div class="audit-header-row">
+    <div>
+      <h1>{{ 'audit.title' | translate }}</h1>
+      <p>{{ 'audit.subtitle' | translate }}</p>
+    </div>
+    <div class="audit-header-actions">
+      <button class="btn btn-sm" (click)="exportCsv()" [disabled]="!filtered().length">
+        {{ 'audit.export' | translate }}
+      </button>
+      <button
+        class="btn btn-sm btn-danger"
+        (click)="clearLog()"
+        [disabled]="!audit.entries().length"
+      >
+        {{ 'audit.clear' | translate }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="audit-toolbar">
+    <input
+      class="form-control audit-search"
+      type="text"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      [placeholder]="'audit.search' | translate"
+    />
+    <div class="filter-chips">
+      @for (f of filters; track f.key) {
+        <button
+          class="chip"
+          [class.active]="activeFilter() === f.key"
+          (click)="activeFilter.set(f.key)"
+        >
+          {{ f.label | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (audit.entries().length === 0) {
+    <p class="text-muted text-sm mt-3">{{ 'audit.noEntries' | translate }}</p>
+  } @else if (filtered().length === 0) {
+    <p class="text-muted text-sm mt-3">{{ 'audit.empty' | translate }}</p>
+  } @else {
+    <p class="entry-count text-muted text-sm mt-2">
+      {{ 'audit.total' | translate: { count: filtered().length } }}
+    </p>
+    <div class="audit-table mt-2">
+      @for (entry of filtered(); track entry.id) {
+        <div class="audit-row">
+          <span class="entry-time">{{ entry.timestamp | date: 'dd/MM/yy HH:mm:ss' }}</span>
+          <span class="entry-badge badge-{{ entryCategory(entry.action) }}">{{
+            filterLabel(entry.action) | translate
+          }}</span>
+          <span class="entry-action">{{ entry.action }}</span>
+          @if (entry.detail) {
+            <span class="entry-detail">{{ entry.detail }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
