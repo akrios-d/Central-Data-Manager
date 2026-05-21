@@ -2,7 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Chain } from '../models/chain.model';
 import { OrchGraph, OrchNodeRun, OrchRun, NodeRunStatus } from '../models/orchestrator.model';
-import { GitHubApiService } from './github-api.service';
+import { CiProviderService } from './ci-provider.service';
+import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { AppSettingsService } from './app-settings.service';
 import { AuditLogService } from './audit-log.service';
 import { OrchestratorService } from './orchestrator.service';
@@ -11,7 +12,7 @@ const TERMINAL_STATUSES = new Set<NodeRunStatus>(['success', 'failure', 'skipped
 
 @Injectable({ providedIn: 'root' })
 export class OrchestratorExecutorService {
-  private readonly gh = inject(GitHubApiService);
+  private readonly ci = inject(CiProviderService);
   private readonly settings = inject(AppSettingsService);
   private readonly audit = inject(AuditLogService);
   private readonly orchSvc = inject(OrchestratorService);
@@ -138,24 +139,40 @@ export class OrchestratorExecutorService {
     return [...visited];
   }
 
+  // ── Chain execution ─────────────────────────────────────────────────────────
+
   private async runChain(chain: Chain): Promise<{ ok: boolean; error?: string }> {
     for (const step of chain.steps) {
       if (this.stopRequested) return { ok: false, error: 'Stopped' };
-      if (step.clearCache) await this.clearCache(step.repoFullName, step.ref);
+
+      const provider: CiProviderType = step.provider ?? 'github';
+
+      if (step.clearCache && provider === 'github') {
+        await this.clearCache(step.repoFullName, step.ref);
+      }
 
       let ref = step.ref;
       if (step.useLatestTag) {
-        const tag = await this.fetchLatestTag(step.repoFullName);
+        const tag = await this.fetchLatestTag(step.repoFullName, provider);
         if (tag) ref = tag;
       }
 
-      const err = await this.triggerStep(step.repoFullName, step.workflowId ?? 0, ref, step.inputs);
+      const triggerTime = Date.now();
+      const { err, gitlabPipelineId } = await this.triggerStep(
+        step.repoFullName,
+        step.workflowId ?? 0,
+        ref,
+        step.inputs,
+        provider,
+      );
       if (err !== null) return { ok: false, error: `${step.workflowName}: ${err}` };
 
       const stepResult = await this.waitForStep(
         step.repoFullName,
         step.workflowId ?? 0,
-        Date.now(),
+        triggerTime,
+        provider,
+        gitlabPipelineId,
       );
       if (!stepResult.ok)
         return { ok: false, error: `${step.workflowName}: ${stepResult.reason ?? 'failed'}` };
@@ -163,20 +180,16 @@ export class OrchestratorExecutorService {
     return { ok: true };
   }
 
-  private fetchLatestTag(fullName: string): Promise<string | null> {
+  private fetchLatestTag(fullName: string, provider: CiProviderType): Promise<string | null> {
     return new Promise((resolve) =>
-      this.gh
-        .listTags(fullName)
-        .subscribe({ next: (ts) => resolve(ts[0]?.name ?? null), error: () => resolve(null) }),
+      this.ci
+        .getLatestTag(fullName, provider)
+        .subscribe({ next: (tag) => resolve(tag), error: () => resolve(null) }),
     );
   }
 
   private clearCache(fullName: string, ref: string): Promise<void> {
-    return new Promise((resolve) =>
-      this.gh
-        .deleteRepoCaches(fullName, ref)
-        .subscribe({ next: () => resolve(), error: () => resolve() }),
-    );
+    return this.ci.deleteRepoCaches(fullName, ref);
   }
 
   private triggerStep(
@@ -184,11 +197,12 @@ export class OrchestratorExecutorService {
     workflowId: number,
     ref: string,
     inputs: Record<string, string>,
-  ): Promise<string | null> {
+    provider: CiProviderType,
+  ): Promise<{ err: string | null; gitlabPipelineId?: number }> {
     return new Promise((resolve) =>
-      this.gh.triggerWorkflow(fullName, workflowId, ref, inputs).subscribe({
-        next: () => resolve(null),
-        error: (e) => resolve(e?.error?.message ?? e?.message ?? 'Failed to trigger'),
+      this.ci.triggerWorkflow(fullName, workflowId, ref, inputs, provider).subscribe({
+        next: (result) => resolve({ err: null, gitlabPipelineId: result.gitlabPipelineId }),
+        error: (e) => resolve({ err: e?.error?.message ?? e?.message ?? 'Failed to trigger' }),
       }),
     );
   }
@@ -197,6 +211,8 @@ export class OrchestratorExecutorService {
     fullName: string,
     workflowId: number,
     since: number,
+    provider: CiProviderType,
+    gitlabPipelineId?: number,
   ): Promise<{ ok: boolean; reason?: string }> {
     const maxPolls = this.settings.maxPolls();
     const interval = this.settings.pollIntervalSec() * 1000;
@@ -204,17 +220,28 @@ export class OrchestratorExecutorService {
 
     for (let polls = 0; polls <= maxPolls; polls++) {
       if (this.stopRequested) return { ok: false, reason: 'stopped' };
+
       try {
-        const res = await firstValueFrom(this.gh.listRuns(fullName, workflowId));
-        const run = res.workflow_runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
-        if (run?.status === 'completed') {
-          return run.conclusion === 'success'
-            ? { ok: true }
-            : { ok: false, reason: run.conclusion ?? 'failure' };
+        if (provider === 'gitlab' && gitlabPipelineId !== undefined) {
+          const run = await firstValueFrom(this.ci.pollGitLabPipeline(fullName, gitlabPipelineId));
+          if (run.status === 'completed') {
+            return run.conclusion === 'success'
+              ? { ok: true }
+              : { ok: false, reason: run.conclusion ?? 'failure' };
+          }
+        } else {
+          const runs = await firstValueFrom(this.ci.pollGitHubRuns(fullName, workflowId));
+          const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
+          if (run?.status === 'completed') {
+            return run.conclusion === 'success'
+              ? { ok: true }
+              : { ok: false, reason: run.conclusion ?? 'failure' };
+          }
         }
       } catch {
-        /* retry on network error */
+        /* retry on transient network error */
       }
+
       await new Promise<void>((r) => setTimeout(r, interval));
     }
 
