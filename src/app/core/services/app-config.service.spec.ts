@@ -33,27 +33,27 @@ describe('AppConfigService', () => {
 
   describe('load() success', () => {
     it('applies allowPersistentStorage: false from config', async () => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({ allowPersistentStorage: false })),
-      );
+      fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response(JSON.stringify({ allowPersistentStorage: false })));
       const svc = makeService();
       await svc.load();
       expect(svc.allowPersistentStorage()).toBe(false);
     });
 
     it('applies a custom tokenMaxAgeDays from config', async () => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({ tokenMaxAgeDays: 30 })),
-      );
+      fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response(JSON.stringify({ tokenMaxAgeDays: 30 })));
       const svc = makeService();
       await svc.load();
       expect(svc.tokenMaxAgeDays()).toBe(30);
     });
 
     it('partial config preserves un-specified defaults', async () => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({ tokenMaxAgeDays: 60 })),
-      );
+      fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response(JSON.stringify({ tokenMaxAgeDays: 60 })));
       const svc = makeService();
       await svc.load();
       expect(svc.tokenMaxAgeDays()).toBe(60);
@@ -61,9 +61,11 @@ describe('AppConfigService', () => {
     });
 
     it('applies both flags together', async () => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({ allowPersistentStorage: false, tokenMaxAgeDays: 45 })),
-      );
+      fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(
+          new Response(JSON.stringify({ allowPersistentStorage: false, tokenMaxAgeDays: 45 })),
+        );
       const svc = makeService();
       await svc.load();
       expect(svc.allowPersistentStorage()).toBe(false);
@@ -85,9 +87,9 @@ describe('AppConfigService', () => {
     });
 
     it('keeps defaults on 404 response and never rejects', async () => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response('Not Found', { status: 404 }),
-      );
+      fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response('Not Found', { status: 404 }));
       const svc = makeService();
       await expect(svc.load()).resolves.toBeUndefined();
       expect(svc.allowPersistentStorage()).toBe(true);
@@ -95,9 +97,7 @@ describe('AppConfigService', () => {
     });
 
     it('keeps defaults when response body is invalid JSON and never rejects', async () => {
-      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response('this is not json'),
-      );
+      fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('this is not json'));
       const svc = makeService();
       await expect(svc.load()).resolves.toBeUndefined();
       expect(svc.allowPersistentStorage()).toBe(true);

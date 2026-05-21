@@ -1,45 +1,44 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 # Compiled output
 /dist
 /tmp
 /out-tsc
-/bazel-out
 
 # Node
 /node_modules
 npm-debug.log
 yarn-error.log
+*.log
 
-# IDEs and editors
+# Angular cache
+/.angular/cache
+
+# Test output
+/coverage
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDEs — JetBrains
 .idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+!.idea/.gitignore
 
-# Visual Studio Code
+# IDEs — VS Code (keep shared config, ignore personal overrides)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/mcp.json
-.history/*
+.history/
 
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
-
-# System files
+# OS
 .DS_Store
 Thumbs.db
+
+# Husky internal bootstrap (not needed in source)
+.husky/_
+
+# Claude Code / Cowork session files
 /.claude/*
