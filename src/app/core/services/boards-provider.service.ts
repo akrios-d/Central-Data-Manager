@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, from, of, throwError } from 'rxjs';
 import { map, mergeMap, switchMap, toArray } from 'rxjs/operators';
 import { DevOpsApiService, DevOpsWorkItem } from './devops-api.service';
-import { JiraApiService, JiraIssue } from './jira-api.service';
+import { JiraApiService, JiraIssue, JiraIssueLink } from './jira-api.service';
 import { TokenService } from './token.service';
 import {
   BlockerData,
@@ -134,7 +134,9 @@ export class BoardsProviderService {
         ),
       ),
       map((results) =>
-        [...new Set(results.flatMap((r) => r.value.map((m) => m.identity.displayName)))].sort((a, b) => a.localeCompare(b)),
+        [...new Set(results.flatMap((r) => r.value.map((m) => m.identity.displayName)))].sort(
+          (a, b) => a.localeCompare(b),
+        ),
       ),
     );
   }
@@ -155,17 +157,8 @@ export class BoardsProviderService {
       assignee: wi.fields['System.AssignedTo']?.displayName ?? null,
       sprint: wi.fields['System.IterationPath'] ?? null,
       url: wi._links?.html?.href ?? wi.url,
-      priorityEmoji: p == null ? '' : p <= 1 ? '🔴' : p === 2 ? '🟠' : '🟡',
-      priorityLabel:
-        p == null
-          ? null
-          : p <= 1
-            ? '1 – Critical'
-            : p === 2
-              ? '2 – High'
-              : p === 3
-                ? '3 – Medium'
-                : '4 – Low',
+      priorityEmoji: this.adoPriorityEmoji(p),
+      priorityLabel: this.adoPriorityLabel(p),
       createdDate: wi.fields['System.CreatedDate'],
       changedDate: wi.fields['System.ChangedDate'],
       description: wi.fields['System.Description'] ?? null,
@@ -183,15 +176,6 @@ export class BoardsProviderService {
 
   private normalizeJiraIssue(issue: JiraIssue): BoardWorkItem {
     const pName = issue.fields.priority?.name;
-    const pEmoji = !pName
-      ? ''
-      : pName === 'Highest' || pName === 'Critical'
-        ? '🔴'
-        : pName === 'High'
-          ? '🟠'
-          : pName === 'Medium'
-            ? '🟡'
-            : '';
     const baseUrl = (this.tokens.jiraBaseUrl() ?? '').replace(/\/$/, '');
     return {
       id: issue.key,
@@ -201,7 +185,7 @@ export class BoardsProviderService {
       assignee: issue.fields.assignee?.displayName ?? null,
       sprint: null,
       url: `${baseUrl}/browse/${issue.key}`,
-      priorityEmoji: pEmoji,
+      priorityEmoji: this.jiraPriorityEmoji(pName),
       priorityLabel: pName ?? null,
       createdDate: issue.fields.created,
       changedDate: issue.fields.updated,
@@ -211,6 +195,29 @@ export class BoardsProviderService {
       createdBy: issue.fields.creator?.displayName ?? null,
       tags: [],
     };
+  }
+
+  private adoPriorityEmoji(p: number | null | undefined): string {
+    if (p == null) return '';
+    if (p <= 1) return '🔴';
+    if (p === 2) return '🟠';
+    return '🟡';
+  }
+
+  private adoPriorityLabel(p: number | null | undefined): string | null {
+    if (p == null) return null;
+    if (p <= 1) return '1 – Critical';
+    if (p === 2) return '2 – High';
+    if (p === 3) return '3 – Medium';
+    return '4 – Low';
+  }
+
+  private jiraPriorityEmoji(pName: string | null | undefined): string {
+    if (!pName) return '';
+    if (pName === 'Highest' || pName === 'Critical') return '🔴';
+    if (pName === 'High') return '🟠';
+    if (pName === 'Medium') return '🟡';
+    return '';
   }
 
   private loadAdoBlockers(project: string): Observable<BlockerData> {
@@ -269,35 +276,51 @@ export class BoardsProviderService {
           for (const link of issue.fields.issuelinks ?? []) {
             const outward = link.type.outward?.toLowerCase().trim();
             if (link.outwardIssue && outward === 'blocks') {
-              const targetKey = link.outwardIssue.key;
-              const edgeKey = `${issue.key}-${targetKey}`;
-              if (!seen.has(edgeKey)) {
-                seen.add(edgeKey);
-                if (!items.has(targetKey)) {
-                  const li = link.outwardIssue;
-                  items.set(targetKey, {
-                    id: targetKey,
-                    title: li.fields?.summary ?? targetKey,
-                    type: li.fields?.issuetype?.name ?? 'Issue',
-                    state: li.fields?.status?.name ?? 'Unknown',
-                    assignee: null,
-                    sprint: null,
-                    url: `${baseUrl}/browse/${targetKey}`,
-                    priorityEmoji: '',
-                    priorityLabel: null,
-                    createdDate: '',
-                    changedDate: '',
-                    tags: [],
-                  });
-                }
-                relations.push({ sourceId: issue.key, targetId: targetKey });
-              }
+              this.addJiraBlockerIfNew(
+                items,
+                seen,
+                relations,
+                issue.key,
+                link.outwardIssue,
+                baseUrl,
+              );
             }
           }
         }
         return { items, relations };
       }),
     );
+  }
+
+  private addJiraBlockerIfNew(
+    items: Map<number | string, BoardWorkItem>,
+    seen: Set<string>,
+    relations: BlockerRelation[],
+    issueKey: string,
+    outwardIssue: NonNullable<JiraIssueLink['outwardIssue']>,
+    baseUrl: string,
+  ): void {
+    const targetKey = outwardIssue.key;
+    const edgeKey = `${issueKey}-${targetKey}`;
+    if (seen.has(edgeKey)) return;
+    seen.add(edgeKey);
+    if (!items.has(targetKey)) {
+      items.set(targetKey, {
+        id: targetKey,
+        title: outwardIssue.fields?.summary ?? targetKey,
+        type: outwardIssue.fields?.issuetype?.name ?? 'Issue',
+        state: outwardIssue.fields?.status?.name ?? 'Unknown',
+        assignee: null,
+        sprint: null,
+        url: `${baseUrl}/browse/${targetKey}`,
+        priorityEmoji: '',
+        priorityLabel: null,
+        createdDate: '',
+        changedDate: '',
+        tags: [],
+      });
+    }
+    relations.push({ sourceId: issueKey, targetId: targetKey });
   }
 
   private loadAdoWorkItems(project: string, filters: BoardFilters): Observable<BoardWorkItem[]> {

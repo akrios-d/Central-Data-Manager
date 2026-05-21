@@ -121,7 +121,7 @@ export class GithubActionsComponent implements OnInit {
   }
 
   runClass(run: CiRun): string {
-    return run.status !== 'completed' ? run.status : (run.conclusion ?? 'unknown');
+    return run.status === 'completed' ? (run.conclusion ?? 'unknown') : run.status;
   }
 
   togglePin(event: MouseEvent, fullName: string): void {

@@ -236,8 +236,8 @@ export class DashboardComponent implements OnInit {
           }
         });
         pipelines.sort((a, b) => {
-          const aActive = a.lastRun.status !== 'completed' ? 1 : 0;
-          const bActive = b.lastRun.status !== 'completed' ? 1 : 0;
+          const aActive = a.lastRun.status === 'completed' ? 0 : 1;
+          const bActive = b.lastRun.status === 'completed' ? 0 : 1;
           if (aActive !== bActive) return bActive - aActive;
           return (
             new Date(b.lastRun.created_at).getTime() - new Date(a.lastRun.created_at).getTime()
@@ -278,7 +278,7 @@ export class DashboardComponent implements OnInit {
   }
 
   runClass(run: CiRun): string {
-    return run.status !== 'completed' ? run.status : (run.conclusion ?? 'unknown');
+    return run.status === 'completed' ? (run.conclusion ?? 'unknown') : run.status;
   }
 
   tokenAgeDays(savedAt: string | null): number | null {
@@ -297,7 +297,7 @@ export class DashboardComponent implements OnInit {
 
   private worstStatus(pipelines: Pipeline[]): string {
     const priority = ['failure', 'in_progress', 'queued', 'success', 'unknown'];
-    const statuses = pipelines.map((p) => this.runClass(p.lastRun));
-    return priority.find((s) => statuses.includes(s)) ?? 'unknown';
+    const statuses = new Set(pipelines.map((p) => this.runClass(p.lastRun)));
+    return priority.find((s) => statuses.has(s)) ?? 'unknown';
   }
 }

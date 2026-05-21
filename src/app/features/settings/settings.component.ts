@@ -83,7 +83,7 @@ export class SettingsComponent implements OnInit {
 
   readonly notificationsEnabled = this.appSettings.notificationsEnabled;
   readonly notifPermission = signal<NotificationPermission>(
-    'Notification' in window ? Notification.permission : 'denied',
+    'Notification' in globalThis ? Notification.permission : 'denied',
   );
 
   readonly webhookUrl = this.appSettings.webhookUrl;
@@ -422,7 +422,7 @@ export class SettingsComponent implements OnInit {
   toggleNotifications(event: Event): void {
     const enabled = (event.target as HTMLInputElement).checked;
     this.appSettings.saveNotifications(enabled);
-    if (enabled && 'Notification' in window && Notification.permission === 'default') {
+    if (enabled && 'Notification' in globalThis && Notification.permission === 'default') {
       this.notifSvc.requestPermission().then(() => {
         this.notifPermission.set(Notification.permission);
       });

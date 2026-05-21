@@ -6,7 +6,7 @@ export class NotificationService {
   private readonly appSettings = inject(AppSettingsService);
 
   private get supported(): boolean {
-    return 'Notification' in window;
+    return 'Notification' in globalThis;
   }
 
   async requestPermission(): Promise<void> {

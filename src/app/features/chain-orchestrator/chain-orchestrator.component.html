@@ -151,7 +151,13 @@
 
         <!-- Canvas area -->
         <div class="orch-canvas-wrapper" #canvasWrapper>
-          <div class="orch-canvas" #canvas (mousedown)="onCanvasMouseDown($event)">
+          <div
+            class="orch-canvas"
+            #canvas
+            tabindex="0"
+            (mousedown)="onCanvasMouseDown($event)"
+            (keydown)="onCanvasKeyDown($event)"
+          >
             <!-- SVG edges layer -->
             <svg class="orch-svg">
               <defs>
@@ -212,16 +218,22 @@
                 [class.orch-node-skipped]="getNodeRunStatus(node.id) === 'skipped'"
                 [style.left.px]="node.x"
                 [style.top.px]="node.y"
+                tabindex="0"
                 (mousedown)="onNodeMouseDown($event, node)"
+                (keydown)="onNodeKeyDown($event, node)"
                 (click)="onNodeClick($event, node)"
               >
                 <!-- Input port (not on start node) -->
                 @if (node.type !== 'start') {
                   <div
                     class="orch-port orch-port-in"
+                    tabindex="0"
                     (mousedown)="$event.stopPropagation()"
+                    (keydown)="$event.stopPropagation()"
                     (mouseenter)="hoveredInPortNodeId.set(node.id)"
+                    (focus)="hoveredInPortNodeId.set(node.id)"
                     (mouseleave)="hoveredInPortNodeId.set(null)"
+                    (blur)="hoveredInPortNodeId.set(null)"
                   ></div>
                 }
 
@@ -264,6 +276,7 @@
                 <div
                   class="orch-port orch-port-out"
                   (mousedown)="onOutPortMouseDown($event, node)"
+                  (keydown)="$event.stopPropagation()"
                 ></div>
               </div>
             }

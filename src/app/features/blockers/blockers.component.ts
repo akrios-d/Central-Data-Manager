@@ -127,8 +127,8 @@ export class BlockersComponent implements OnInit {
     this.boardsProvider.provider === 'jira' ? 'blockers.noJira' : 'blockers.noDevops',
   );
 
-  async ngOnInit() {
-    if (this.hasProvider()) await this.fetchProjects();
+  ngOnInit(): void {
+    if (this.hasProvider()) void this.fetchProjects();
   }
 
   async fetchProjects() {

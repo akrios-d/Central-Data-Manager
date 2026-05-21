@@ -235,6 +235,22 @@ export class ChainOrchestratorComponent {
     this.selectedNodePopupId.set(null);
   }
 
+  onCanvasKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'Escape') {
+      this.selectedNodeId.set(null);
+      this.selectedEdgeId.set(null);
+      this.showAddChain.set(false);
+      this.selectedNodePopupId.set(null);
+    }
+  }
+
+  onNodeKeyDown(e: KeyboardEvent, node: OrchNode): void {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (node.type !== 'start') this.selectedNodePopupId.set(node.id);
+    }
+  }
+
   onNodeMouseDown(e: MouseEvent, node: OrchNode): void {
     e.stopPropagation();
     this.mouseDownPos = { x: e.clientX, y: e.clientY };
@@ -525,7 +541,9 @@ export class ChainOrchestratorComponent {
   getChainStepCount(chainId?: string): string {
     if (!chainId) return '';
     const chain = this.allChains().find((c) => c.id === chainId);
-    return chain ? `${chain.steps.length} step${chain.steps.length === 1 ? '' : 's'}` : '';
+    if (!chain) return '';
+    const count = chain.steps.length;
+    return `${count} step${count === 1 ? '' : 's'}`;
   }
 
   runStatusColor(status: string): string {

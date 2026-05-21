@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { Chain } from '../models/chain.model';
 import { OrchGraph, OrchNodeRun, OrchRun, NodeRunStatus } from '../models/orchestrator.model';
 import { GitHubApiService } from './github-api.service';
@@ -44,51 +45,12 @@ export class OrchestratorExecutorService {
     const promises = new Map<string, Promise<boolean>>();
     promises.set(startNode.id, Promise.resolve(true));
 
-    const getPromise = (nodeId: string): Promise<boolean> => {
-      const cached = promises.get(nodeId);
-      if (cached !== undefined) return cached;
-      const node = graph.nodes.find((n) => n.id === nodeId);
-      if (!node) return Promise.resolve(false);
-      const predIds = graph.edges.filter((e) => e.toId === nodeId).map((e) => e.fromId);
-
-      const p = Promise.all(predIds.map((id) => getPromise(id))).then(async (results) => {
-        const nr = run.nodes.find((n) => n.nodeId === nodeId);
-        if (!nr) return false;
-
-        if (this.stopRequested || results.some((r) => !r)) {
-          this.setStatus(run, nr, 'skipped');
-          return false;
-        }
-
-        if (node.disabled) {
-          this.setStatus(run, nr, 'skipped');
-          return true; // pass-through so downstream nodes still run
-        }
-
-        const chain = chainMap.get(node.chainId!);
-        if (!chain) {
-          nr.error = 'Chain not found';
-          this.setStatus(run, nr, 'failure');
-          return false;
-        }
-
-        const effectiveChain = node.disabledSteps?.length
-          ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps?.includes(s.id)) }
-          : chain;
-
-        this.setStatus(run, nr, 'running');
-        const result = await this.runChain(effectiveChain);
-        if (!result.ok && result.error) nr.error = result.error;
-        this.setStatus(run, nr, result.ok ? 'success' : 'failure');
-        return result.ok;
-      });
-
-      promises.set(nodeId, p);
-      return p;
-    };
-
     const reachableIds = this.reachable(graph, startNode.id);
-    await Promise.all(reachableIds.filter((id) => id !== startNode.id).map((id) => getPromise(id)));
+    await Promise.all(
+      reachableIds
+        .filter((id) => id !== startNode.id)
+        .map((id) => this.buildNodePromise(id, graph, chainMap, run, promises)),
+    );
 
     // Mark any unreached idle nodes as skipped
     run.nodes
@@ -100,6 +62,57 @@ export class OrchestratorExecutorService {
     this.push(run);
     this.audit.log(`Graph run ${run.status}`, graph.name);
     this.orchSvc.saveRun({ ...run, nodes: run.nodes.map((n) => ({ ...n })) });
+  }
+
+  private buildNodePromise(
+    nodeId: string,
+    graph: OrchGraph,
+    chainMap: Map<string, Chain>,
+    run: OrchRun,
+    promises: Map<string, Promise<boolean>>,
+  ): Promise<boolean> {
+    const cached = promises.get(nodeId);
+    if (cached !== undefined) return cached;
+    const node = graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return Promise.resolve(false);
+    const predIds = graph.edges.filter((e) => e.toId === nodeId).map((e) => e.fromId);
+
+    const p = Promise.all(
+      predIds.map((id) => this.buildNodePromise(id, graph, chainMap, run, promises)),
+    ).then(async (results) => {
+      const nr = run.nodes.find((n) => n.nodeId === nodeId);
+      if (!nr) return false;
+
+      if (this.stopRequested || results.some((r) => !r)) {
+        this.setStatus(run, nr, 'skipped');
+        return false;
+      }
+
+      if (node.disabled) {
+        this.setStatus(run, nr, 'skipped');
+        return true; // pass-through so downstream nodes still run
+      }
+
+      const chain = chainMap.get(node.chainId!);
+      if (!chain) {
+        nr.error = 'Chain not found';
+        this.setStatus(run, nr, 'failure');
+        return false;
+      }
+
+      const effectiveChain = node.disabledSteps?.length
+        ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps?.includes(s.id)) }
+        : chain;
+
+      this.setStatus(run, nr, 'running');
+      const result = await this.runChain(effectiveChain);
+      if (!result.ok && result.error) nr.error = result.error;
+      this.setStatus(run, nr, result.ok ? 'success' : 'failure');
+      return result.ok;
+    });
+
+    promises.set(nodeId, p);
+    return p;
   }
 
   private setStatus(run: OrchRun, nr: OrchNodeRun, status: NodeRunStatus): void {
@@ -180,43 +193,31 @@ export class OrchestratorExecutorService {
     );
   }
 
-  private waitForStep(
+  private async waitForStep(
     fullName: string,
     workflowId: number,
     since: number,
   ): Promise<{ ok: boolean; reason?: string }> {
-    return new Promise((resolve) => {
-      let polls = 0;
-      const tick = () => {
-        if (this.stopRequested) {
-          resolve({ ok: false, reason: 'stopped' });
-          return;
+    const maxPolls = this.settings.maxPolls();
+    const interval = this.settings.pollIntervalSec() * 1000;
+    await new Promise<void>((r) => setTimeout(r, 4000));
+
+    for (let polls = 0; polls <= maxPolls; polls++) {
+      if (this.stopRequested) return { ok: false, reason: 'stopped' };
+      try {
+        const res = await firstValueFrom(this.gh.listRuns(fullName, workflowId));
+        const run = res.workflow_runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
+        if (run?.status === 'completed') {
+          return run.conclusion === 'success'
+            ? { ok: true }
+            : { ok: false, reason: run.conclusion ?? 'failure' };
         }
-        const maxPolls = this.settings.maxPolls();
-        const interval = this.settings.pollIntervalSec() * 1000;
-        if (polls++ > maxPolls) {
-          resolve({ ok: false, reason: 'timed out' });
-          return;
-        }
-        this.gh.listRuns(fullName, workflowId).subscribe({
-          next: (res) => {
-            const run = res.workflow_runs.find(
-              (r) => new Date(r.created_at).getTime() >= since - 8000,
-            );
-            if (run?.status !== 'completed') {
-              setTimeout(tick, interval);
-              return;
-            }
-            resolve(
-              run.conclusion === 'success'
-                ? { ok: true }
-                : { ok: false, reason: run.conclusion ?? 'failure' },
-            );
-          },
-          error: () => setTimeout(tick, interval),
-        });
-      };
-      setTimeout(tick, 4000);
-    });
+      } catch {
+        /* retry on network error */
+      }
+      await new Promise<void>((r) => setTimeout(r, interval));
+    }
+
+    return { ok: false, reason: 'timed out' };
   }
 }

@@ -6,8 +6,8 @@ const RUNS_KEY = 'cdm:chain-runs';
 
 @Injectable({ providedIn: 'root' })
 export class ChainService {
-  private _chains = signal<Chain[]>(this.loadChains());
-  private _runs = signal<ChainRun[]>(this.loadRuns());
+  private readonly _chains = signal<Chain[]>(this.loadChains());
+  private readonly _runs = signal<ChainRun[]>(this.loadRuns());
 
   readonly chains = this._chains.asReadonly();
   readonly runs = this._runs.asReadonly();

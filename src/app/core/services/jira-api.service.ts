@@ -78,7 +78,7 @@ export class JiraApiService {
     const email = this.tokens.jiraEmail() ?? '';
     const token = this.tokens.jiraToken() ?? '';
     return new HttpHeaders({
-      Authorization: `Basic ${btoa(`${email}:${token}`)}`,
+      Authorization: `Basic ${btoa(email + ':' + token)}`,
       Accept: 'application/json',
       'Content-Type': 'application/json',
     });

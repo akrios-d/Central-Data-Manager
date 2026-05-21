@@ -27,6 +27,20 @@ export interface PullRequest {
   reviewers: string[];
 }
 
+type PrStateFilter = 'open' | 'closed' | 'all';
+type GlPrState = 'opened' | 'closed' | 'merged' | 'all';
+
+const GL_FILTER_STATE: Record<PrStateFilter, GlPrState> = {
+  open: 'opened',
+  closed: 'closed',
+  all: 'all',
+};
+
+const GL_MR_STATE: Record<string, PullRequest['state']> = {
+  merged: 'merged',
+  opened: 'open',
+};
+
 @Component({
   selector: 'app-pull-requests',
   imports: [FormsModule, TranslateModule, DatePipe, PrDetailPanelComponent],
@@ -51,7 +65,7 @@ export class PullRequestsComponent implements OnInit {
   prs = signal<PullRequest[]>([]);
   prsLoading = signal(false);
   prsError = signal<string | null>(null);
-  stateFilter = signal<'open' | 'closed' | 'all'>('open');
+  stateFilter = signal<PrStateFilter>('open');
   authorFilter = signal('');
   labelFilter = signal('');
   selectedPr = signal<PullRequest | null>(null);
@@ -114,7 +128,7 @@ export class PullRequestsComponent implements OnInit {
     this.pinned.toggle(fullName);
   }
 
-  setStateFilter(state: 'open' | 'closed' | 'all'): void {
+  setStateFilter(state: PrStateFilter): void {
     this.stateFilter.set(state);
     const repo = this.selectedRepo();
     if (repo) this.loadPrs(repo);
@@ -125,23 +139,16 @@ export class PullRequestsComponent implements OnInit {
     this.prsError.set(null);
 
     if (this.isGitHub()) {
-      const ghState = this.stateFilter() as 'open' | 'closed' | 'all';
       this.gh
-        .listPullRequests(repo.full_name, ghState)
+        .listPullRequests(repo.full_name, this.stateFilter())
         .pipe(catchError(() => of([] as GhPullRequest[])))
         .subscribe((data) => {
           this.prs.set(data.map(this.fromGhPr));
           this.prsLoading.set(false);
         });
     } else {
-      const glState =
-        this.stateFilter() === 'open'
-          ? 'opened'
-          : this.stateFilter() === 'closed'
-            ? 'closed'
-            : 'all';
       this.gl
-        .listMergeRequests(repo.full_name, glState as 'opened' | 'closed' | 'merged' | 'all')
+        .listMergeRequests(repo.full_name, GL_FILTER_STATE[this.stateFilter()])
         .pipe(catchError(() => of([] as GlMergeRequest[])))
         .subscribe((data) => {
           this.prs.set(data.map(this.fromGlMr));
@@ -150,11 +157,11 @@ export class PullRequestsComponent implements OnInit {
     }
   }
 
-  private fromGhPr = (pr: GhPullRequest): PullRequest => ({
+  private readonly fromGhPr = (pr: GhPullRequest): PullRequest => ({
     id: pr.id,
     number: pr.number,
     title: pr.title,
-    state: pr.merged_at ? 'merged' : (pr.state as 'open' | 'closed'),
+    state: this.ghPrState(pr),
     draft: pr.draft,
     author: pr.user.login,
     createdAt: pr.created_at,
@@ -166,11 +173,11 @@ export class PullRequestsComponent implements OnInit {
     reviewers: pr.requested_reviewers.map((r) => r.login),
   });
 
-  private fromGlMr = (mr: GlMergeRequest): PullRequest => ({
+  private readonly fromGlMr = (mr: GlMergeRequest): PullRequest => ({
     id: mr.id,
     number: mr.iid,
     title: mr.title,
-    state: mr.state === 'merged' ? 'merged' : mr.state === 'opened' ? 'open' : 'closed',
+    state: GL_MR_STATE[mr.state] ?? 'closed',
     draft: mr.draft,
     author: mr.author.username,
     createdAt: mr.created_at,
@@ -181,6 +188,12 @@ export class PullRequestsComponent implements OnInit {
     labels: mr.labels.map((l) => ({ name: l })),
     reviewers: mr.reviewers.map((r) => r.username),
   });
+
+  private ghPrState(pr: GhPullRequest): PullRequest['state'] {
+    if (pr.merged_at) return 'merged';
+    if (pr.state === 'open') return 'open';
+    return 'closed';
+  }
 
   prStateClass(state: PullRequest['state'], draft: boolean): string {
     if (draft) return 'draft';

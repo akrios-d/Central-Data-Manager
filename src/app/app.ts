@@ -47,7 +47,7 @@ export class App {
   }
 
   onResize(): void {
-    if (window.innerWidth > 768) this.sidebarOpen.set(false);
+    if (globalThis.innerWidth > 768) this.sidebarOpen.set(false);
   }
 
   setLang(lang: string): void {

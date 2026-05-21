@@ -55,22 +55,26 @@ export class WorkspaceService {
       if (Array.isArray(data.releaseEnvs) && Array.isArray(data.releaseRepos)) {
         this.releaseSvc.restoreAll(data.releaseEnvs, data.releaseRepos);
       }
-
-      const s = data.settings;
-      if (s) {
-        if (s.pollIntervalSec && s.maxPolls) this.appSettings.save(s.pollIntervalSec, s.maxPolls);
-        if (s.sessionTimeoutHours) this.appSettings.saveTimeoutHours(s.sessionTimeoutHours);
-        if (s.activeCiProvider) this.tokens.setActiveCiProvider(s.activeCiProvider);
-        if (s.activeBoardsProvider) this.tokens.setActiveBoardsProvider(s.activeBoardsProvider);
-        if (s.devopsProject) this.tokens.updateDevOpsProject(s.devopsProject);
-        if (s.devopsTeam) this.tokens.updateDevOpsTeam(s.devopsTeam);
-        if (s.jiraProject) this.tokens.updateJiraProject(s.jiraProject);
-      }
+      if (data.settings) this.restoreSettings(data.settings);
 
       this.audit.log('Workspace imported', file.name);
       return { ok: true };
     } catch {
       return { ok: false, error: 'Failed to parse workspace file.' };
     }
+  }
+
+  private restoreSettings(s: Record<string, unknown>): void {
+    if (s['pollIntervalSec'] && s['maxPolls'])
+      this.appSettings.save(s['pollIntervalSec'] as number, s['maxPolls'] as number);
+    if (s['sessionTimeoutHours'])
+      this.appSettings.saveTimeoutHours(s['sessionTimeoutHours'] as number);
+    if (s['activeCiProvider'])
+      this.tokens.setActiveCiProvider(s['activeCiProvider'] as 'github' | 'gitlab');
+    if (s['activeBoardsProvider'])
+      this.tokens.setActiveBoardsProvider(s['activeBoardsProvider'] as 'devops' | 'jira');
+    if (s['devopsProject']) this.tokens.updateDevOpsProject(s['devopsProject'] as string);
+    if (s['devopsTeam']) this.tokens.updateDevOpsTeam(s['devopsTeam'] as string);
+    if (s['jiraProject']) this.tokens.updateJiraProject(s['jiraProject'] as string);
   }
 }

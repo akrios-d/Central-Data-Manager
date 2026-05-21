@@ -13,7 +13,7 @@ export interface CiRepo {
 export interface CiRun {
   id: number;
   name: string;
-  status: 'queued' | 'in_progress' | 'completed' | string;
+  status: string;
   conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | null;
   html_url: string;
   created_at: string;

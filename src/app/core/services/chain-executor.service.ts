@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Chain, ChainRun, ChainRunStatus, ChainStepRun } from '../models/chain.model';
+import { Chain, ChainRun, ChainStepRun } from '../models/chain.model';
 import { CiProviderService } from './ci-provider.service';
 import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { ChainService } from './chain.service';
@@ -259,7 +259,7 @@ export class ChainExecutorService {
       this.ci.pollGitHubRuns(fullName, workflowId).subscribe({
         next: (runs) => {
           const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
-          if (!run || run.status !== 'completed') {
+          if (run?.status !== 'completed') {
             resolve('pending');
             return;
           }
