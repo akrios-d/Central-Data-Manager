@@ -101,10 +101,10 @@ export class ReleaseService {
       list.map((r) =>
         r.id === repoId
           ? {
-            ...r,
-            deployments: {...r.deployments, [envId]: tag},
-            updatedAt: {...r.updatedAt, [envId]: now},
-          }
+              ...r,
+              deployments: { ...r.deployments, [envId]: tag },
+              updatedAt: { ...r.updatedAt, [envId]: now },
+            }
           : r,
       ),
     );
