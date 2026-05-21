@@ -13,7 +13,21 @@
       "Bash(cat node_modules/@ngx-translate/http-loader/lib/translate-http-loader.d.ts)",
       "Bash(cat node_modules/@ngx-translate/http-loader/public-api.d.ts)",
       "Bash(npm run *)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npx prettier *)",
+      "Bash(npm test *)",
+      "Bash(npm start *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\({deps: Object.keys\\(p.dependencies||{}\\), devDeps: Object.keys\\(p.devDependencies||{}\\)}, null, 2\\)\\)\")",
+      "Bash(node -e \"const t = require\\('./node_modules/@ngx-translate/core'\\); console.log\\(Object.keys\\(t\\).filter\\(k => k.toLowerCase\\(\\).includes\\('provide'\\) || k.toLowerCase\\(\\).includes\\('translate'\\)\\)\\);\")",
+      "Bash(grep -v \"spec\\\\|interface\\\\|type\\\\|//\")",
+      "Bash(xargs sed -i 's/  private \\\\\\([a-zA-Z][a-zA-Z0-9]*\\\\\\) = inject\\(/  private readonly \\\\1 = inject\\(/g')",
+      "Bash(grep -v \"\\\\.spec\\\\.\\\\|//\\\\|'[^']*![^']*'\\\\|\\\\\"[^\\\\\"]*![^\\\\\"]*\\\\\"\\\\|^\\\\s*//\")",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"')",
+      "Bash(xargs grep -l \".\")",
+      "Bash(xargs '-I{}' node -e ' *)",
+      "Bash(grep -v \"\\\\.spec\\\\.\\\\|//\")",
+      "Bash(npx stylelint *)",
+      "Bash(Remove-Item .stylelintrc-temp.json)"
     ]
   }
 }

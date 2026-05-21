@@ -1,238 +1,110 @@
+<div align="center">
+
 # Central Data Manager
 
-A client-side dashboard for managing CI/CD pipelines, work boards, releases and chain automation across multiple providers — all data stays in your browser, no backend required.
+**One dashboard. Every CI/CD pipeline, board, release, and chain — all in your browser.**
+
+[![CI](https://github.com/akrios-d/Central-Data-Manager/actions/workflows/ci.yml/badge.svg)](https://github.com/akrios-d/Central-Data-Manager/actions)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://github.com/akrios-d/Central-Data-Manager/blob/main/LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-21-dd0031?logo=angular)](https://angular.dev)
+[![Version](https://img.shields.io/badge/version-1.0.0-success)](https://github.com/akrios-d/Central-Data-Manager/releases)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://centraldatamanager.vercel.app/)
+
+[Live Demo](https://centraldatamanager.vercel.app/) · [Report a Bug](https://github.com/akrios-d/Central-Data-Manager/issues) · [Request a Feature](https://github.com/akrios-d/Central-Data-Manager/issues)
+
+</div>
+
+---
+
+## Why CDM?
+
+Modern development teams work across multiple providers: GitHub for one project, GitLab for another, Azure DevOps for planning, Jira for tickets. Switching between four browser tabs to monitor a release is the norm — not the exception.
+
+**Central Data Manager** solves this by aggregating pipelines, boards, pull requests, releases, and blockers into a single client-side dashboard. There is no backend, no account to create, and no data leaves your browser except in the API calls you already make manually. Tokens are stored in `sessionStorage` by default and cleared when the tab closes.
+
+---
 
 ## Supported integrations
 
-| Category           | Providers                   |
-| ------------------ | --------------------------- |
-| CI/CD & Pipelines  | GitHub Actions, GitLab CI   |
-| Work Boards        | Azure DevOps, Jira          |
-| Releases           | GitHub, GitLab              |
-| Pull Requests      | GitHub, GitLab              |
-| Chain Builder      | GitHub Actions, GitLab CI   |
-| Chain Orchestrator | GitHub Actions, GitLab CI   |
-
----
-
-## Prerequisites
-
-### 1. Node.js
-
-Download and install **Node.js 20 LTS** (or later) from:
-
-- **Windows / macOS**: https://nodejs.org/en/download — use the LTS installer
-- **Linux**: use your package manager or [nvm](https://github.com/nvm-sh/nvm)
-
-```bash
-# Verify installation
-node -v   # should print v20.x.x or higher
-npm -v    # should print 10.x.x or higher
-```
-
-### 2. Angular CLI
-
-```bash
-npm install -g @angular/cli
-```
-
-```bash
-# Verify installation
-ng version   # should show Angular CLI 21.x.x
-```
-
----
-
-## Getting started
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/central-data-manager.git
-cd central-data-manager
-
-# 2. Install dependencies
-npm install
-
-# 3. Start the development server
-ng serve
-```
-
-Open your browser at **http://localhost:4200**.
-
-On first launch the Onboarding page will guide you through connecting your integrations. You can also configure everything later in **Settings**.
-
----
-
-## Configuration (tokens)
-
-All tokens are stored locally in your browser (sessionStorage by default, localStorage if you opt in to persistent storage in Settings). Nothing is sent to any server other than the provider APIs directly.
-
-| Provider         | What you need                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| **GitHub**       | Personal Access Token with `repo` and `workflow` scopes + your username/org                 |
-| **GitLab**       | Personal Access Token with `api` scope + base URL (default `https://gitlab.com`)            |
-| **Azure DevOps** | Personal Access Token with full access + organisation name                                  |
-| **Jira**         | Atlassian API token + account email + base URL (e.g. `https://your-org.atlassian.net`)      |
-
-Go to **Settings → CI Provider** to switch between GitHub and GitLab. The selected provider is used across Pipelines, Chain Builder, Orchestrator and Releases.
-
-Go to **Settings → Boards Provider** to switch between Azure DevOps and Jira. The selected provider is used across Boards, Blockers Map and the sprint widget. After configuring Jira, set the default project under **Settings → Sprint Project**.
+| Category           | Providers                              |
+| ------------------ | -------------------------------------- |
+| CI/CD & Pipelines  | GitHub Actions, GitLab CI              |
+| Work Boards        | Azure DevOps, Jira                     |
+| Releases           | GitHub Tags, GitLab Tags               |
+| Pull / Merge Reqs  | GitHub Pull Requests, GitLab MRs       |
+| Chain Builder      | GitHub Actions, GitLab CI              |
+| Chain Orchestrator | GitHub Actions, GitLab CI              |
 
 ---
 
 ## Features
 
-### Dashboard
-Overview of recent pipeline runs and the current sprint work items from the configured boards provider. Includes:
-- **Token health bar** — shows how long ago each provider token was saved, with a warning when approaching the configured maximum age
-- **Recent activity** — last 5 audit log entries and a shortcut to the most recent chain run
+### 🔗 Chain Builder
+Define ordered sequences of pipelines across multiple repositories and trigger them with a single click. Per-step branch override, latest-tag resolution at runtime, Actions cache clearing, custom workflow inputs, and step enable/disable toggles. Full run history with step-level status and links to the provider run. Import/export chains as JSON.
 
-### Pipelines
-Browse repositories and workflows, inspect run history, re-run or cancel jobs, and open runs directly in GitHub or GitLab. Includes a **Pipeline Health** tab with success rate, average duration and a trend sparkline for each workflow.
+### 🕸️ Chain Orchestrator
+Build pipelines of chains as a **visual drag-and-drop graph**. Parallel and sequential execution based on DAG topology. Click any chain node to open a live status popup — enable/disable the whole chain or individual steps without deleting them. Import/export graphs as JSON.
 
-### Pull Requests
-Browse open and closed pull requests (GitHub) and merge requests (GitLab) per repository.
+### 🚀 Pipelines
+Browse workflows and run history across all repositories. Re-run or cancel jobs directly from the UI. The **Pipeline Health** tab shows success rate, average duration, and a trend sparkline (last 10 runs) per workflow.
 
-- Filter by state: Open / Closed / All
-- Client-side filter by author and label (no additional API calls)
-- Direct links to each PR/MR on the provider
+### 📦 Releases
+Track which tag or branch is deployed in each environment per repository. Compare any two refs and view the commit list or an auto-generated changelog. Copy the changelog as Markdown. Supports GitHub and GitLab.
 
-### Chain Builder
-Define ordered sequences of pipelines across multiple repositories and trigger them with a single click.
+### 📋 Boards
+Kanban view with drag-and-drop state transitions. Configurable columns (show/hide, reorder), sprint/assignee/state filters, and a full work-item side panel. Supports Azure DevOps and Jira.
 
-- Per-step branch/ref override or latest-tag resolution at runtime
-- Clear Actions cache before a step
-- Custom workflow inputs (key/value)
-- Step enable/disable toggles for one-off runs
-- Full run history with step-level status and links to provider runs
-- Import / Export chains as JSON
-- Supports GitHub Actions and GitLab CI
+### 🚧 Blockers Map
+Visual dependency graph showing which work items are blocking others, with transitive impact scores and a top-blocker ranking. Filter by type, state, or "only blockers". Supports Azure DevOps and Jira.
 
-### Chain Orchestrator
-Build pipelines of chains as a **visual graph** with a drag-and-drop canvas.
+### 📜 Audit Log
+In-browser audit trail (up to 500 entries, FIFO) covering token events, chain runs, session expiry, and settings changes. Filter by category, full-text search, export as CSV, and optionally forward every entry to an HTTP webhook (SIEM, Slack, n8n, Zapier…).
 
-- Connect chain nodes by dragging edges between them
-- Parallel and sequential execution depending on graph topology
-- Click any chain node to open a popup: live status, step list, enable/disable the whole chain or individual steps
-- Disable individual nodes or steps without deleting them
-- Run full graphs and inspect execution history per run
-- Import / Export graphs as JSON
-- Graph search
-
-### Releases
-Track which tag or branch is deployed in each environment per repository.
-
-- Compare two refs and view commit list or auto-generated changelog
-- Copy changelog as Markdown
-- Supports GitHub and GitLab
-
-### Boards
-Kanban view of your work items with drag-and-drop state transitions.
-
-- Configurable columns (show/hide, reorder)
-- Filter by sprint, assignee and state
-- Side panel with full work item details
-- Supports Azure DevOps and Jira
-
-### Blockers Map
-Visual dependency graph showing which work items are blocking others and their transitive impact score.
-
-- Top-blockers ranking
-- Filter by type, state and whether an item blocks others
-- Supports Azure DevOps and Jira
-
-### Audit Log
-Dedicated page for reviewing and exporting the in-browser audit trail.
-
-- Filter by event category (tokens, chains, graphs, session, settings)
-- Full-text search across entries
-- Export as CSV
-- Clear log with confirmation
+### 📊 Dashboard
+Overview of recent pipeline runs and current sprint items from the configured boards provider. Token health indicators show how long ago each PAT was saved, with a warning when approaching the rotation threshold.
 
 ---
 
-## Settings
+## Getting started
 
-### Integrations
-Configure tokens for GitHub, GitLab, Azure DevOps and Jira. Each provider shows connection status, the owner/org, and how long ago the token was saved.
+### Prerequisites
 
-### CI / Boards Provider
-Switch the active provider for pipelines and boards independently.
+- **Node.js 20 LTS** — [nodejs.org/en/download](https://nodejs.org/en/download) or [nvm](https://github.com/nvm-sh/nvm)
+- **Angular CLI 21** — `npm install -g @angular/cli`
 
-### Token Storage
-Session-only mode (default) clears tokens when the browser closes or after inactivity. Opt-in persistent storage saves tokens to `localStorage` — requires explicit acceptance of the security risk. Persistent storage can be disabled at the operator level via `config.json`.
+### Quick start
 
-### Chain Execution
-Configure the polling interval (default 6 s) and maximum polls per step (default 120) used when monitoring pipeline runs.
-
-### Session Timeout
-Configurable inactivity limit in session-only mode (default 8 h, range 1–24 h).
-
-### Browser Notifications
-Toggle desktop notifications for chain step completion. Includes a browser permission request flow.
-
-### Audit Webhook
-Forward every audit log entry as a JSON POST to a custom HTTP endpoint (SIEM, Slack, n8n, Zapier, etc.). The endpoint must accept CORS POST requests. Includes a test button to verify connectivity.
-
-### Workspace Backup
-Export all chains, graphs, releases and settings to a single JSON file. Import a previously exported workspace. Tokens are never included in the export.
-
----
-
-## Security features
-
-### Session inactivity timeout
-In session-only mode the app automatically clears all tokens after a configurable period of inactivity (default 8 h). A modal overlay appears when the session expires — no automatic redirect.
-
-### PAT age warnings
-The dashboard shows how long ago each provider token was last saved. When the age exceeds the operator-configured threshold (`tokenMaxAgeDays`, default 90 d), the indicator turns red as a rotation reminder.
-
-### Audit log
-Key actions are logged to the browser's `localStorage` (up to 500 entries, FIFO):
-- Token save / remove events per provider
-- Chain and graph run start and result
-- Session expiry events
-- Execution settings changes
-- Workspace export / import
-
-The log is visible in **Audit Log** and clearable there or in **Settings**.
-
-### Audit webhook
-Each audit entry can optionally be forwarded to an HTTP endpoint configured in Settings. The browser POSTs directly to the endpoint — no intermediate server. Failed posts are silently ignored to keep the audit log functional.
-
-### Operator config (`public/config.json`)
-Served alongside the app at runtime. Supports two flags:
-
-```json
-{
-  "allowPersistentStorage": false,
-  "tokenMaxAgeDays": 60
-}
+```bash
+git clone https://github.com/akrios-d/Central-Data-Manager.git
+cd Central-Data-Manager
+npm install
+ng serve
 ```
 
-If the file is absent, defaults apply (`allowPersistentStorage: true`, `tokenMaxAgeDays: 90`).
-
-### Content Security Policy
-The provided `nginx.conf` enforces a strict CSP:
-- `default-src 'self'`
-- `connect-src` limited to GitHub, GitLab, Azure DevOps and Jira API endpoints
-- `object-src 'none'`
-- `base-uri 'self'`
-- `frame-ancestors 'none'`
+Open **http://localhost:4200**. The Onboarding page will guide you through connecting your first provider. You can also configure everything later in **Settings**.
 
 ---
 
-## Light / Dark theme
+## Token configuration
 
-Toggle between light and dark themes using the ☀/🌙 button in the sidebar. The preference is saved to `localStorage` and applied immediately on next load (no flash of unstyled content).
+All tokens are stored in your browser only — nothing is sent to any server other than the provider APIs you target directly.
+
+| Provider         | Required credentials                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| **GitHub**       | PAT with `repo` + `workflow` scopes · your username or org name                               |
+| **GitLab**       | PAT with `api` scope · base URL (default `https://gitlab.com`)                                |
+| **Azure DevOps** | PAT with full access · organisation name                                                      |
+| **Jira**         | Atlassian API token · account email · base URL (e.g. `https://your-org.atlassian.net`)        |
+
+Go to **Settings → CI Provider** to switch between GitHub Actions and GitLab CI across Pipelines, Chain Builder, Orchestrator, and Releases.
+
+Go to **Settings → Boards Provider** to switch between Azure DevOps and Jira across Boards and the Blockers Map.
 
 ---
 
 ## Deployment
 
-Central Data Manager compiles to a folder of static files — any web server can serve it.
-
-### Production build
+CDM compiles to a folder of static files — any web server can serve it.
 
 ```bash
 npm run build
@@ -242,41 +114,41 @@ npm run build
 ### Option 1 — Docker (recommended)
 
 ```bash
-# Build image
 docker build -t central-data-manager .
-
-# Run on port 8080
 docker run -p 8080:80 central-data-manager
 ```
 
-Open **http://localhost:8080**.
+Open **http://localhost:8080**. The included `nginx.conf` handles SPA routing, asset caching, and security headers.
 
-### Option 2 — Nginx (static files)
+### Option 2 — Nginx
 
 ```bash
 npm run build
-cp -r dist/Central-Data-Manager/browser/* /var/www/central-data-manager/
+cp -r dist/Central-Data-Manager/browser/* /var/www/cdm/
+# Copy nginx.conf to /etc/nginx/conf.d/cdm.conf and reload nginx
 ```
 
-Copy `nginx.conf` from this repository to `/etc/nginx/conf.d/central-data-manager.conf` and adjust the `root` path. The config includes SPA fallback routing, asset caching, and security headers.
+### Option 3 — Netlify / Vercel
 
-### Option 3 — Netlify / Vercel / GitHub Pages
+Point the platform at `dist/Central-Data-Manager/browser/`. Add a SPA redirect rule:
 
-Point the platform at the `dist/Central-Data-Manager/browser/` output folder. For Netlify and Vercel, add a redirect rule so all routes return `index.html` (required for client-side routing):
-
-**Netlify** — create `public/_redirects`:
+**Netlify** (`public/_redirects`):
 ```
 /* /index.html 200
 ```
 
-**Vercel** — create `vercel.json`:
+**Vercel** (`vercel.json`):
 ```json
 { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
 ```
 
-### Operator config
+> **Always serve over HTTPS in production.** Tokens are stored in the browser and must not travel over plain HTTP.
 
-Place a `config.json` file at the root of the served directory to override defaults:
+---
+
+## Operator configuration
+
+Place a `config.json` at the root of the served directory to override runtime defaults:
 
 ```json
 {
@@ -285,43 +157,76 @@ Place a `config.json` file at the root of the served directory to override defau
 }
 ```
 
-The app fetches this file at startup and falls back to defaults if it is absent or invalid.
+| Flag                     | Default | Description                                                           |
+| ------------------------ | ------- | --------------------------------------------------------------------- |
+| `allowPersistentStorage` | `true`  | Set to `false` to hide the persistent storage opt-in in Settings      |
+| `tokenMaxAgeDays`        | `90`    | Days before the PAT age indicator turns red on the Dashboard          |
 
-### HTTPS
-
-Always serve over HTTPS in production. Tokens are stored in the browser and must not travel over plain HTTP.
+The file is fetched at startup and falls back to defaults if absent or invalid.
 
 ---
 
 ## Security
 
-See [SECURITY.md](SECURITY.md) for the full security model, token storage details, and how to report vulnerabilities.
+| Concern                   | Approach                                                                                      |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| Token storage             | `sessionStorage` by default; `localStorage` opt-in with explicit user acknowledgement         |
+| Session timeout           | Inactivity timer clears all tokens after a configurable period (default 8 h, session mode)    |
+| PAT age warnings          | Dashboard shows time since last save; red indicator after `tokenMaxAgeDays`                   |
+| Audit trail               | Up to 500 entries in `localStorage`; optional HTTP webhook forward                            |
+| Content Security Policy   | `nginx.conf` restricts `connect-src` to provider API origins; `object-src 'none'`            |
+| Workspace export          | Chains, graphs, releases, and settings only — tokens are never exported                       |
+
+See [SECURITY.md](https://github.com/akrios-d/Central-Data-Manager/blob/main/SECURITY.md) for the full security model and vulnerability reporting process.
 
 ---
 
-## Future work (enterprise readiness)
+## Tech stack
 
-The following items are identified gaps for formal enterprise or compliance deployments.
+| Layer       | Choice                                                              |
+| ----------- | ------------------------------------------------------------------- |
+| Framework   | Angular 21, standalone components, no NgModules                     |
+| State       | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state    |
+| HTTP        | `HttpClient` with `withFetch()`                                     |
+| i18n        | `@ngx-translate/core` — English, Portuguese, French, Chinese        |
+| Styling     | Global SCSS variables, per-component SCSS, light/dark theme         |
+| Build       | Angular CLI 21 / Vite                                               |
+| Container   | Docker multi-stage (Node 20 build → `nginx:alpine` serve)           |
+| Testing     | Vitest + Angular Testing Library                                    |
 
-### SSO / SAML / OIDC integration
-The app has no centralised authentication — each user manages their own PATs. Enterprise deployments should be placed behind an identity provider (Azure AD, Okta, etc.). A future reverse-proxy auth layer or OIDC callback page would allow session tokens to be injected automatically, removing the need for manual PAT entry.
+---
 
-### Role-based access control (RBAC)
-There is currently no distinction between read-only and write users. Anyone with access to the URL can trigger pipelines and modify boards. Planned: an operator-level config that can restrict destructive actions (trigger, cancel, board moves) to specific users or groups.
+## Roadmap
+
+- [ ] Self-hosted GitLab / GitHub Enterprise support
+- [ ] Rate-limit retry with exponential back-off
+- [ ] Refresh timestamp on each data panel
+- [ ] Export audit log as PDF
+- [ ] Export release changelogs as CSV
+- [ ] Unit test coverage to 80%+
+- [ ] SSO / SAML / OIDC reverse-proxy auth layer
+- [ ] RBAC operator config (restrict trigger / cancel / board-move by role)
 
 ---
 
 ## Development
 
 ```bash
-# Start dev server with hot reload
-ng serve
-
-# Production build
-npm run build
-
-# Run unit tests
-ng test
+ng serve           # dev server at http://localhost:4200
+npm run build      # production build → dist/
+npx vitest run     # unit tests
 ```
 
-Build output goes to `dist/Central-Data-Manager/browser/`.
+---
+
+## Contributing
+
+Pull requests are welcome. Please open an issue first to discuss what you'd like to change. See [CONTRIBUTING.md](https://github.com/akrios-d/Central-Data-Manager/blob/main/CONTRIBUTING.md) for guidelines.
+
+---
+
+<div align="center">
+
+Made by [Felipe Oliveira](mailto:ghfelipe@hotmail.com) · [Open an issue](https://github.com/akrios-d/Central-Data-Manager/issues) · Licensed under [GPL-3.0](https://github.com/akrios-d/Central-Data-Manager/blob/main/LICENSE)
+
+</div>
