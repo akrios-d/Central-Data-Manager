@@ -60,8 +60,8 @@ export class BlockersComponent implements OnInit {
   filterStates = signal<Set<string>>(new Set());
   filterOnlyBlockers = signal(false);
 
-  availableTypes = computed(() => [...new Set(this.nodes().map((n) => n.item.type))].sort());
-  availableStates = computed(() => [...new Set(this.nodes().map((n) => n.item.state))].sort());
+  availableTypes = computed(() => [...new Set(this.nodes().map((n) => n.item.type))].sort((a, b) => a.localeCompare(b)));
+  availableStates = computed(() => [...new Set(this.nodes().map((n) => n.item.state))].sort((a, b) => a.localeCompare(b)));
 
   filteredNodes = computed(() => {
     const types = this.filterTypes();

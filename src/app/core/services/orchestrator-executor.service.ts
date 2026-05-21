@@ -6,6 +6,8 @@ import { AppSettingsService } from './app-settings.service';
 import { AuditLogService } from './audit-log.service';
 import { OrchestratorService } from './orchestrator.service';
 
+const TERMINAL_STATUSES = new Set<NodeRunStatus>(['success', 'failure', 'skipped']);
+
 @Injectable({ providedIn: 'root' })
 export class OrchestratorExecutorService {
   private readonly gh = inject(GitHubApiService);
@@ -71,7 +73,7 @@ export class OrchestratorExecutorService {
         }
 
         const effectiveChain = node.disabledSteps?.length
-          ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps!.includes(s.id)) }
+          ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps?.includes(s.id)) }
           : chain;
 
         this.setStatus(run, nr, 'running');
@@ -103,8 +105,7 @@ export class OrchestratorExecutorService {
   private setStatus(run: OrchRun, nr: OrchNodeRun, status: NodeRunStatus): void {
     nr.status = status;
     if (status === 'running') nr.startedAt = new Date().toISOString();
-    if (['success', 'failure', 'skipped'].includes(status))
-      nr.completedAt = new Date().toISOString();
+    if (TERMINAL_STATUSES.has(status)) nr.completedAt = new Date().toISOString();
     this.push(run);
   }
 

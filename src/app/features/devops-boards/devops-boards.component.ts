@@ -177,7 +177,7 @@ export class DevopsBoardsComponent implements OnInit {
       })),
     );
     this.columnConfigs.set(this.loadColConfig(ordered));
-    this.availableTypes.set([...new Set(items.map((i) => i.type))].sort());
+    this.availableTypes.set([...new Set(items.map((i) => i.type))].sort((a, b) => a.localeCompare(b)));
     this.boardLoading.set(false);
     this.boardReady.set(true);
   }

@@ -308,9 +308,7 @@
     border-color: var(--accent);
     background: rgba(88, 166, 255, 0.05);
   }
-}
 
-.kanban-col {
   &.col-board-dragging {
     opacity: 0.4;
   }

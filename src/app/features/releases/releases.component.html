@@ -29,7 +29,9 @@
                 @for (r of filteredRepos(); track r.id) {
                   <li
                     [class.already-added]="alreadyAdded().has(r.full_name)"
+                    [attr.tabindex]="alreadyAdded().has(r.full_name) ? null : '0'"
                     (click)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)"
+                    (keydown.enter)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)"
                   >
                     <span class="repo-provider-badge">{{ providerBadge(r.provider) }}</span>
                     {{ r.full_name }}
@@ -80,9 +82,14 @@
                 (blur)="commitRenameEnv()"
               />
             } @else {
-              <span class="env-name" (click)="startRenameEnv(env.id, env.name)">{{
-                env.name
-              }}</span>
+              <span
+                class="env-name"
+                role="button"
+                tabindex="0"
+                (click)="startRenameEnv(env.id, env.name)"
+                (keydown.enter)="startRenameEnv(env.id, env.name)"
+                >{{ env.name }}</span
+              >
               <span class="env-hint text-muted text-sm">{{
                 'releases.clickToRename' | translate
               }}</span>
@@ -135,10 +142,12 @@
               @for (env of envs(); track env.id) {
                 <td
                   class="cell-tag"
+                  tabindex="0"
                   [class.cell-active]="
                     editTarget()?.repoId === repo.id && editTarget()?.envId === env.id
                   "
                   (click)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')"
+                  (keydown.enter)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')"
                 >
                   @if (repo.deployments[env.id]) {
                     <span
@@ -312,7 +321,7 @@
 
 <!-- ── Ref picker popup ──────────────────────────────────────────────────── -->
 @if (showRefPopup()) {
-  <div class="ref-popup-backdrop" (click)="closePopup()">
+  <div class="ref-popup-backdrop" (click)="closePopup()" (keydown.escape)="closePopup()">
     <div class="ref-popup" (click)="$event.stopPropagation()" (keydown.escape)="closePopup()">
       <div class="ref-popup-header">
         <input
@@ -363,13 +372,14 @@
             <div class="ref-empty-msg">—</div>
           } @else {
             @for (tag of displayedTags(); track tag) {
-              <div
+              <button
+                type="button"
                 class="ref-item"
                 [class.ref-item-current]="tag === currentRef()"
                 (click)="selectRef(tag)"
               >
                 <span class="ref-icon">🏷</span> {{ tag }}
-              </div>
+              </button>
             }
             @if (hasMoreTags()) {
               <div class="ref-more-hint">scroll for more</div>
@@ -380,13 +390,14 @@
             <div class="ref-empty-msg">—</div>
           } @else {
             @for (branch of displayedBranches(); track branch) {
-              <div
+              <button
+                type="button"
                 class="ref-item"
                 [class.ref-item-current]="branch === currentRef()"
                 (click)="selectRef(branch)"
               >
                 <span class="ref-icon">⎇</span> {{ branch }}
-              </div>
+              </button>
             }
             @if (hasMoreBranches()) {
               <div class="ref-more-hint">scroll for more</div>

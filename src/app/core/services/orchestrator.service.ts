@@ -15,7 +15,12 @@ export class OrchestratorService {
   saveGraph(g: OrchGraph): void {
     this._graphs.update((gs) => {
       const idx = gs.findIndex((x) => x.id === g.id);
-      const next = idx >= 0 ? gs.map((x, i) => (i === idx ? g : x)) : [...gs, g];
+      let next: OrchGraph[];
+      if (idx >= 0) {
+        next = gs.map((x, i) => (i === idx ? g : x));
+      } else {
+        next = [...gs, g];
+      }
       localStorage.setItem(GRAPHS_KEY, JSON.stringify(next));
       return next;
     });
@@ -32,7 +37,12 @@ export class OrchestratorService {
   saveRun(run: OrchRun): void {
     this._runs.update((rs) => {
       const idx = rs.findIndex((r) => r.id === run.id);
-      const next = idx >= 0 ? rs.map((r, i) => (i === idx ? run : r)) : [run, ...rs];
+      let next: OrchRun[];
+      if (idx >= 0) {
+        next = rs.map((r, i) => (i === idx ? run : r));
+      } else {
+        next = [run, ...rs];
+      }
       const trimmed = next.slice(0, 50);
       localStorage.setItem(RUNS_KEY, JSON.stringify(trimmed));
       return trimmed;

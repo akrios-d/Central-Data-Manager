@@ -105,7 +105,7 @@ export class DashboardComponent implements OnInit {
   wiStateFilter = signal<Set<string>>(new Set());
 
   readonly availableWiStates = computed(() =>
-    [...new Set(this.workItems().map((wi) => wi.state))].sort(),
+    [...new Set(this.workItems().map((wi) => wi.state))].sort((a, b) => a.localeCompare(b)),
   );
 
   readonly filteredWorkItems = computed(() => {
@@ -271,7 +271,7 @@ export class DashboardComponent implements OnInit {
         }),
       )
       .subscribe((res) => {
-        const items = (res as any).value ?? [];
+        const items = res.value ?? [];
         this.workItems.set(items.map((wi: any) => this.boards.normalizeAdoWorkItem(wi)));
         this.adoLoading.set(false);
       });

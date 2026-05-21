@@ -211,9 +211,12 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">{{ 'builder.repository' | translate }}</label>
+              <label class="form-label" for="step-repo-search">{{
+                'builder.repository' | translate
+              }}</label>
               <div class="repo-search-wrap">
                 <input
+                  id="step-repo-search"
                   class="form-control"
                   [placeholder]="'builder.searchRepos' | translate"
                   [ngModel]="repoSearch()"
@@ -235,11 +238,14 @@
             @if (stepRepo()) {
               @if (!isGitLabRepo()) {
                 <div class="form-group">
-                  <label class="form-label">{{ 'builder.workflow' | translate }}</label>
+                  <label class="form-label" for="step-workflow-select">{{
+                    'builder.workflow' | translate
+                  }}</label>
                   @if (stepWfLoad()) {
                     <div class="spinner-sm"></div>
                   } @else {
                     <select
+                      id="step-workflow-select"
                       class="form-control"
                       [ngModel]="stepWf()"
                       (ngModelChange)="onWorkflowSelect($event)"
@@ -319,13 +325,13 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label">
+                <p class="form-label">
                   {{ 'builder.inputs' | translate }}
                   <span class="text-muted">{{ 'builder.optional' | translate }}</span>
                   @if (wfInputsLoading()) {
                     <span class="spinner-sm" style="margin-left: 6px"></span>
                   }
-                </label>
+                </p>
                 @for (inp of stepInputs(); track $index; let i = $index) {
                   <div class="input-row">
                     <input

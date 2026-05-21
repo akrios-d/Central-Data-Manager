@@ -2,6 +2,7 @@ import { Component, ElementRef, inject, signal, effect, computed } from '@angula
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReleaseService } from '../../core/services/release.service';
+import { RepoEntry } from '../../core/models/release.model';
 import { CiProviderService } from '../../core/services/ci-provider.service';
 import { CiRepo, CiComparison } from '../../core/interfaces/ci-provider.interface';
 import { ToastService } from '../../shared/services/toast.service';
@@ -31,6 +32,7 @@ interface EditTarget {
   repoId: string;
   envId: string;
 }
+type EnvDeployment = { envId: string; envName: string; tag: string };
 
 @Component({
   selector: 'app-releases',
@@ -55,8 +57,8 @@ export class ReleasesComponent {
   showRefPopup = signal(false);
   refMode = signal<'tags' | 'branches'>('tags');
 
-  private tagsCache = new Map<string, string[]>();
-  private branchesCache = new Map<string, string[]>();
+  private readonly tagsCache = new Map<string, string[]>();
+  private readonly branchesCache = new Map<string, string[]>();
   cellTags = signal<string[]>([]);
   cellBranches = signal<string[]>([]);
   refsLoading = signal(false);
@@ -281,7 +283,7 @@ export class ReleasesComponent {
 
   onRepoSearchChange(val: string): void {
     this.repoSearch.set(val);
-    if (this.selectedCiRepo() && val !== this.selectedCiRepo()!.full_name) {
+    if (this.selectedCiRepo() && val !== this.selectedCiRepo()?.full_name) {
       this.selectedCiRepo.set(null);
     }
   }
@@ -379,7 +381,7 @@ export class ReleasesComponent {
     navigator.clipboard.writeText(this.changelogMarkdown()).catch(() => {});
   }
 
-  envsWithTag(repoId: string): { envId: string; envName: string; tag: string }[] {
+  envsWithTag(repoId: string): EnvDeployment[] {
     const repo = this.repos().find((r) => r.id === repoId);
     if (!repo) return [];
     return this.envs()
@@ -403,8 +405,8 @@ export class ReleasesComponent {
     this.compareRepoId.set(repoId);
     const tagged = this.envsWithTag(repoId);
     if (tagged.length >= 2) {
-      this.compareBaseEnvId.set(tagged[tagged.length - 1].envId);
-      this.compareHeadEnvId.set(tagged[tagged.length - 2].envId);
+      this.compareBaseEnvId.set(tagged.at(-1)!.envId);
+      this.compareHeadEnvId.set(tagged.at(-2)!.envId);
       this.runCompare();
     }
   }
@@ -461,7 +463,7 @@ export class ReleasesComponent {
     return `cell-${repoId}-${envId}`;
   }
 
-  updatedTitle(repo: { updatedAt: Record<string, string> }, envId: string): string {
+  updatedTitle(repo: RepoEntry, envId: string): string {
     const d = repo.updatedAt[envId];
     return d ? new Date(d).toLocaleString() : '';
   }

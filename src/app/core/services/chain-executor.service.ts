@@ -21,7 +21,7 @@ export class ChainExecutorService {
   private readonly translate = inject(TranslateService);
 
   readonly activeRuns = signal<Record<string, ChainRun>>({});
-  private stopRequested = new Set<string>();
+  private readonly stopRequested = new Set<string>();
 
   async execute(chain: Chain): Promise<void> {
     this.stopRequested.delete(chain.id);

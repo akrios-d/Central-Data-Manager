@@ -29,15 +29,21 @@
         </button>
         @if (expanded() === 'github') {
           <div class="provider-form">
-            <label class="form-label">{{ 'onboarding.ownerLabel' | translate }}</label>
+            <label class="form-label" for="ob-gh-owner">{{
+              'onboarding.ownerLabel' | translate
+            }}</label>
             <input
+              id="ob-gh-owner"
               class="form-control"
               [placeholder]="'settings.orgPlaceholder' | translate"
               [value]="ghOwner()"
               (input)="ghOwner.set($any($event.target).value)"
             />
-            <label class="form-label">{{ 'onboarding.tokenLabel' | translate }}</label>
+            <label class="form-label" for="ob-gh-token">{{
+              'onboarding.tokenLabel' | translate
+            }}</label>
             <input
+              id="ob-gh-token"
               class="form-control"
               type="password"
               placeholder="ghp_..."
@@ -71,15 +77,21 @@
         </button>
         @if (expanded() === 'gitlab') {
           <div class="provider-form">
-            <label class="form-label">{{ 'onboarding.gitlabUrlLabel' | translate }}</label>
+            <label class="form-label" for="ob-gl-url">{{
+              'onboarding.gitlabUrlLabel' | translate
+            }}</label>
             <input
+              id="ob-gl-url"
               class="form-control"
               placeholder="https://gitlab.com"
               [value]="glUrl()"
               (input)="glUrl.set($any($event.target).value)"
             />
-            <label class="form-label">{{ 'onboarding.tokenLabel' | translate }}</label>
+            <label class="form-label" for="ob-gl-token">{{
+              'onboarding.tokenLabel' | translate
+            }}</label>
             <input
+              id="ob-gl-token"
               class="form-control"
               type="password"
               placeholder="glpat-..."
@@ -113,15 +125,21 @@
         </button>
         @if (expanded() === 'devops') {
           <div class="provider-form">
-            <label class="form-label">{{ 'onboarding.orgLabel' | translate }}</label>
+            <label class="form-label" for="ob-ado-org">{{
+              'onboarding.orgLabel' | translate
+            }}</label>
             <input
+              id="ob-ado-org"
               class="form-control"
               [placeholder]="'settings.companyPlaceholder' | translate"
               [value]="adoOrg()"
               (input)="adoOrg.set($any($event.target).value)"
             />
-            <label class="form-label">{{ 'onboarding.patLabel' | translate }}</label>
+            <label class="form-label" for="ob-ado-pat">{{
+              'onboarding.patLabel' | translate
+            }}</label>
             <input
+              id="ob-ado-pat"
               class="form-control"
               type="password"
               [placeholder]="'settings.patPlaceholder' | translate"
@@ -151,23 +169,32 @@
         </button>
         @if (expanded() === 'jira') {
           <div class="provider-form">
-            <label class="form-label">{{ 'onboarding.jiraUrlLabel' | translate }}</label>
+            <label class="form-label" for="ob-jira-url">{{
+              'onboarding.jiraUrlLabel' | translate
+            }}</label>
             <input
+              id="ob-jira-url"
               class="form-control"
               placeholder="https://your-domain.atlassian.net"
               [value]="jiraUrl()"
               (input)="jiraUrl.set($any($event.target).value)"
             />
-            <label class="form-label">{{ 'onboarding.jiraEmailLabel' | translate }}</label>
+            <label class="form-label" for="ob-jira-email">{{
+              'onboarding.jiraEmailLabel' | translate
+            }}</label>
             <input
+              id="ob-jira-email"
               class="form-control"
               type="email"
               placeholder="you@example.com"
               [value]="jiraEmail()"
               (input)="jiraEmail.set($any($event.target).value)"
             />
-            <label class="form-label">{{ 'onboarding.tokenLabel' | translate }}</label>
+            <label class="form-label" for="ob-jira-token">{{
+              'onboarding.tokenLabel' | translate
+            }}</label>
             <input
+              id="ob-jira-token"
               class="form-control"
               type="password"
               [placeholder]="'settings.jiraTokenHint' | translate"

@@ -122,7 +122,7 @@ export class BoardsProviderService {
               ...new Set(
                 issues.map((i) => i.fields.assignee?.displayName).filter((n): n is string => !!n),
               ),
-            ].sort(),
+            ].sort((a, b) => a.localeCompare(b)),
           ),
         );
     }
@@ -134,7 +134,7 @@ export class BoardsProviderService {
         ),
       ),
       map((results) =>
-        [...new Set(results.flatMap((r) => r.value.map((m) => m.identity.displayName)))].sort(),
+        [...new Set(results.flatMap((r) => r.value.map((m) => m.identity.displayName)))].sort((a, b) => a.localeCompare(b)),
       ),
     );
   }

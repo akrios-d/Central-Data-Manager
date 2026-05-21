@@ -502,14 +502,11 @@
     border-color: var(--danger);
     background: rgba(248, 81, 73, 0.1);
     color: var(--danger);
+    max-width: 260px;
+    white-space: normal;
   }
   &.chip-skipped {
     opacity: 0.45;
-  }
-
-  &.chip-failure {
-    max-width: 260px;
-    white-space: normal;
   }
 }
 

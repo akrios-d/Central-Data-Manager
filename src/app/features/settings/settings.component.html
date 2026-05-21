@@ -73,8 +73,9 @@
     @if (!hasGh() || showGhForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>{{ 'settings.username' | translate }}</label>
+          <label for="gh-owner-input">{{ 'settings.username' | translate }}</label>
           <input
+            id="gh-owner-input"
             class="form-control"
             type="text"
             [ngModel]="ghOwner2()"
@@ -83,8 +84,9 @@
           />
         </div>
         <div class="form-group mt-1">
-          <label>{{ 'settings.pat' | translate }}</label>
+          <label for="gh-token-input">{{ 'settings.pat' | translate }}</label>
           <input
+            id="gh-token-input"
             class="form-control"
             type="password"
             [ngModel]="ghToken()"
@@ -153,8 +155,9 @@
     @if (!hasGl() || showGlForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>{{ 'settings.gitlabSelfHosted' | translate }}</label>
+          <label for="gl-url-input">{{ 'settings.gitlabSelfHosted' | translate }}</label>
           <input
+            id="gl-url-input"
             class="form-control"
             type="url"
             [ngModel]="glUrl()"
@@ -164,8 +167,9 @@
           <span class="text-muted text-sm">{{ 'settings.gitlabUrlHint' | translate }}</span>
         </div>
         <div class="form-group mt-1">
-          <label>{{ 'settings.pat' | translate }}</label>
+          <label for="gl-token-input">{{ 'settings.pat' | translate }}</label>
           <input
+            id="gl-token-input"
             class="form-control"
             type="password"
             [ngModel]="glToken()"
@@ -190,9 +194,12 @@
     <p class="text-muted text-sm">{{ 'settings.chainExecSubtitle' | translate }}</p>
     <div class="exec-params mt-2">
       <div class="form-group">
-        <label class="form-label">{{ 'settings.pollInterval' | translate }}</label>
+        <label class="form-label" for="poll-interval-input">{{
+          'settings.pollInterval' | translate
+        }}</label>
         <div class="inline-row mt-1">
           <input
+            id="poll-interval-input"
             class="form-control exec-input"
             type="number"
             min="2"
@@ -204,9 +211,12 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ 'settings.maxPolls' | translate }}</label>
+        <label class="form-label" for="max-polls-input">{{
+          'settings.maxPolls' | translate
+        }}</label>
         <div class="inline-row mt-1">
           <input
+            id="max-polls-input"
             class="form-control exec-input"
             type="number"
             min="10"
@@ -220,9 +230,12 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ 'security.sessionTimeout' | translate }}</label>
+        <label class="form-label" for="session-timeout-input">{{
+          'security.sessionTimeout' | translate
+        }}</label>
         <div class="inline-row mt-1">
           <input
+            id="session-timeout-input"
             class="form-control exec-input"
             type="number"
             min="1"
@@ -337,8 +350,9 @@
     @if (!hasAdo() || showAdoForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>{{ 'settings.orgName' | translate }}</label>
+          <label for="ado-org-input">{{ 'settings.orgName' | translate }}</label>
           <input
+            id="ado-org-input"
             class="form-control"
             type="text"
             [ngModel]="adoOrg2()"
@@ -347,8 +361,9 @@
           />
         </div>
         <div class="form-group mt-1">
-          <label>{{ 'settings.pat' | translate }}</label>
+          <label for="ado-token-input">{{ 'settings.pat' | translate }}</label>
           <input
+            id="ado-token-input"
             class="form-control"
             type="password"
             [ngModel]="adoToken()"
@@ -393,7 +408,7 @@
         @if (showSprintEdit()) {
           <div class="settings-form mt-2">
             <div class="form-group">
-              <label>{{ 'settings.projectLabel' | translate }}</label>
+              <label for="ado-project-select">{{ 'settings.projectLabel' | translate }}</label>
               @if (projectsLoading()) {
                 <div class="inline-row mt-1">
                   <span class="spinner"></span>
@@ -403,6 +418,7 @@
                 </div>
               } @else {
                 <select
+                  id="ado-project-select"
                   class="form-control mt-1"
                   [ngModel]="editAdoProject()"
                   (ngModelChange)="onProjectChange($event)"
@@ -422,8 +438,9 @@
               </div>
             } @else if (availableTeams().length > 0) {
               <div class="form-group mt-1">
-                <label>{{ 'settings.teamLabel' | translate }}</label>
+                <label for="ado-team-select">{{ 'settings.teamLabel' | translate }}</label>
                 <select
+                  id="ado-team-select"
                   class="form-control"
                   [ngModel]="editAdoTeam()"
                   (ngModelChange)="editAdoTeam.set($event)"
@@ -503,8 +520,9 @@
     @if (!hasJira() || showJiraForm()) {
       <div class="settings-form mt-2">
         <div class="form-group">
-          <label>{{ 'settings.jiraUrl' | translate }}</label>
+          <label for="jira-url-input">{{ 'settings.jiraUrl' | translate }}</label>
           <input
+            id="jira-url-input"
             class="form-control"
             type="url"
             [ngModel]="jiraUrl()"
@@ -513,8 +531,9 @@
           />
         </div>
         <div class="form-group mt-1">
-          <label>{{ 'settings.jiraEmail' | translate }}</label>
+          <label for="jira-email-input">{{ 'settings.jiraEmail' | translate }}</label>
           <input
+            id="jira-email-input"
             class="form-control"
             type="email"
             [ngModel]="jiraEmail()"
@@ -523,8 +542,9 @@
           />
         </div>
         <div class="form-group mt-1">
-          <label>{{ 'settings.pat' | translate }}</label>
+          <label for="jira-token-input">{{ 'settings.pat' | translate }}</label>
           <input
+            id="jira-token-input"
             class="form-control"
             type="password"
             [ngModel]="jiraToken()"
@@ -568,7 +588,7 @@
         @if (showJiraProjectEdit()) {
           <div class="settings-form mt-2">
             <div class="form-group">
-              <label>{{ 'settings.projectLabel' | translate }}</label>
+              <label for="jira-project-select">{{ 'settings.projectLabel' | translate }}</label>
               @if (jiraProjectsLoading()) {
                 <div class="inline-row mt-1">
                   <span class="spinner"></span>
@@ -578,6 +598,7 @@
                 </div>
               } @else {
                 <select
+                  id="jira-project-select"
                   class="form-control mt-1"
                   [ngModel]="jiraProject2()"
                   (ngModelChange)="jiraProject2.set($event)"
@@ -707,8 +728,11 @@
   </div>
 
   <div class="form-group mt-2">
-    <label class="form-label">{{ 'settings.webhookUrl' | translate }}</label>
+    <label class="form-label" for="webhook-url-input">{{
+      'settings.webhookUrl' | translate
+    }}</label>
     <input
+      id="webhook-url-input"
       class="form-control"
       type="url"
       [placeholder]="'settings.webhookUrlPlaceholder' | translate"

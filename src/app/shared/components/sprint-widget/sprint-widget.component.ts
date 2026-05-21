@@ -33,7 +33,7 @@ export class SprintWidgetComponent implements OnInit {
   selectedItem = signal<BoardWorkItem | null>(null);
 
   readonly availableTypes = computed(() =>
-    [...new Set(this.workItems().map((wi) => wi.type))].sort(),
+    [...new Set(this.workItems().map((wi) => wi.type))].sort((a, b) => a.localeCompare(b)),
   );
 
   readonly filteredItems = computed(() => {

@@ -225,7 +225,7 @@ export class ChainBuilderComponent {
 
   onRepoSearchChange(val: string): void {
     this.repoSearch.set(val);
-    if (this.stepRepo() && val !== this.stepRepo()!.full_name) {
+    if (this.stepRepo() && val !== this.stepRepo()?.full_name) {
       this.stepRepo.set(null);
       this.stepWfs.set([]);
       this.stepWf.set(null);
