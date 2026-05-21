@@ -118,7 +118,13 @@ export class DevOpsApiService {
       target: { id: number } | null;
     }[];
   }> {
-    return this.http.post<any>(
+    return this.http.post<{
+      workItemRelations: {
+        rel: string | null;
+        source: { id: number } | null;
+        target: { id: number } | null;
+      }[];
+    }>(
       `${this.base(project)}/wit/wiql?api-version=7.1`,
       { query: wiql },
       { headers: this.headers },

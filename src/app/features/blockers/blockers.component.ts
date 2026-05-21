@@ -256,8 +256,8 @@ export class BlockersComponent implements OnInit {
 
       this.nodes.set(bNodes);
       this.edges.set(rawEdges);
-    } catch (e: any) {
-      this.error.set(e?.message ?? 'Error loading graph');
+    } catch (e: unknown) {
+      this.error.set(e instanceof Error ? e.message : 'Error loading graph');
     } finally {
       this.loading.set(false);
     }

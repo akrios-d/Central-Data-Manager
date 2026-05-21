@@ -272,7 +272,7 @@ export class DashboardComponent implements OnInit {
       )
       .subscribe((res) => {
         const items = res.value ?? [];
-        this.workItems.set(items.map((wi: any) => this.boards.normalizeAdoWorkItem(wi)));
+        this.workItems.set(items.map((wi) => this.boards.normalizeAdoWorkItem(wi)));
         this.adoLoading.set(false);
       });
   }

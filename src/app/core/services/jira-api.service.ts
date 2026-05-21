@@ -58,7 +58,7 @@ export interface JiraIssue {
     priority?: { name: string } | null;
     created: string;
     updated: string;
-    description?: any;
+    description?: unknown;
     issuelinks?: JiraIssueLink[];
   };
 }

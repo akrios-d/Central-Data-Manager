@@ -141,7 +141,7 @@ export class SettingsComponent implements OnInit {
       orgs: this.gh.listOrgs().pipe(catchError(() => of([]))),
     }).subscribe({
       next: ({ user, repos, orgs }) => {
-        const orgList = orgs.map((o: any) => o.login).join(', ');
+        const orgList = orgs.map((o) => o.login).join(', ');
         const lines = [
           `✓ Authenticated as ${user.login}`,
           `Repos visíveis via API: ${repos.length}`,

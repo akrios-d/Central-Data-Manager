@@ -140,8 +140,10 @@ export class GithubActionsComponent implements OnInit {
     try {
       const res = await firstValueFrom(this.ci.listRunsForHealth(repo));
       this.stats.set(this.computeStats(res.workflow_runs ?? []));
-    } catch (e: any) {
-      this.statsError.set(e?.error?.message ?? 'Error loading runs');
+    } catch (e: unknown) {
+      this.statsError.set(
+        (e as { error?: { message?: string } })?.error?.message ?? 'Error loading runs',
+      );
     } finally {
       this.statsLoading.set(false);
     }

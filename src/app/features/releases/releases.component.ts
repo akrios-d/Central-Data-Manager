@@ -32,7 +32,11 @@ interface EditTarget {
   repoId: string;
   envId: string;
 }
-type EnvDeployment = { envId: string; envName: string; tag: string };
+interface EnvDeployment {
+  envId: string;
+  envName: string;
+  tag: string;
+}
 
 @Component({
   selector: 'app-releases',
@@ -440,8 +444,10 @@ export class ReleasesComponent {
     try {
       const result = await firstValueFrom(this.ci.compareRefs(repo.repoName, base, head, provider));
       this.comparison.set(result);
-    } catch (e: any) {
-      this.compError.set(e?.error?.message ?? 'Error loading comparison');
+    } catch (e: unknown) {
+      this.compError.set(
+        (e as { error?: { message?: string } })?.error?.message ?? 'Error loading comparison',
+      );
     } finally {
       this.compLoading.set(false);
     }

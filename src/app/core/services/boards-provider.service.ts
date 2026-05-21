@@ -108,7 +108,9 @@ export class BoardsProviderService {
           }),
         );
       }),
-      map((res: any) => (res.value as DevOpsWorkItem[]).map((wi) => this.normalizeAdoWorkItem(wi))),
+      map((res: { value: DevOpsWorkItem[] }) =>
+        res.value.map((wi) => this.normalizeAdoWorkItem(wi)),
+      ),
     );
   }
 
