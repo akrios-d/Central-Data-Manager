@@ -64,6 +64,7 @@
                 class="chain-item"
                 [class.selected]="selectedGraphId() === g.id"
                 (click)="selectGraph(g)"
+                (keydown.enter)="selectGraph(g)"
               >
                 <span class="chain-item-name">{{ g.name }}</span>
                 <span class="chain-item-meta text-muted text-sm">
@@ -107,7 +108,11 @@
               </button>
             }
 
-            <div class="orch-add-wrap" (click)="$event.stopPropagation()">
+            <div
+              class="orch-add-wrap"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
+            >
               <button class="btn btn-sm btn-outline" (click)="toggleAddChain()">
                 {{ 'orch.addChain' | translate }}
               </button>
@@ -125,10 +130,10 @@
                     </p>
                   } @else {
                     @for (c of filteredChains(); track c.id) {
-                      <div class="orch-add-item" (click)="addChainNode(c)">
+                      <button class="orch-add-item" (click)="addChainNode(c)">
                         <span class="orch-add-name">{{ c.name }}</span>
                         <span class="text-muted text-sm">{{ c.steps.length }}s</span>
-                      </div>
+                      </button>
                     }
                   }
                 </div>
@@ -154,7 +159,6 @@
           <div
             class="orch-canvas"
             #canvas
-            tabindex="0"
             (mousedown)="onCanvasMouseDown($event)"
             (keydown)="onCanvasKeyDown($event)"
           >
@@ -188,6 +192,7 @@
                   class="orch-edge-hit"
                   [attr.d]="getEdgePath(edge)"
                   (click)="onEdgeClick(edge.id, $event)"
+                  (keydown.enter)="onEdgeClick(edge.id, $event)"
                 />
                 <path
                   class="orch-edge"
@@ -218,23 +223,22 @@
                 [class.orch-node-skipped]="getNodeRunStatus(node.id) === 'skipped'"
                 [style.left.px]="node.x"
                 [style.top.px]="node.y"
-                tabindex="0"
                 (mousedown)="onNodeMouseDown($event, node)"
                 (keydown)="onNodeKeyDown($event, node)"
                 (click)="onNodeClick($event, node)"
               >
                 <!-- Input port (not on start node) -->
                 @if (node.type !== 'start') {
-                  <div
+                  <button
+                    type="button"
                     class="orch-port orch-port-in"
-                    tabindex="0"
                     (mousedown)="$event.stopPropagation()"
                     (keydown)="$event.stopPropagation()"
                     (mouseenter)="hoveredInPortNodeId.set(node.id)"
                     (focus)="hoveredInPortNodeId.set(node.id)"
                     (mouseleave)="hoveredInPortNodeId.set(null)"
                     (blur)="hoveredInPortNodeId.set(null)"
-                  ></div>
+                  ></button>
                 }
 
                 <!-- Node content -->
@@ -340,8 +344,8 @@
 
 <!-- ── Node detail popup ───────────────────────────────────────────────────── -->
 @if (popupNode(); as node) {
-  <div class="node-popup-backdrop" (click)="closeNodePopup()">
-    <div class="node-popup" (click)="$event.stopPropagation()">
+  <div class="node-popup-backdrop" (click)="closeNodePopup()" (keydown.escape)="closeNodePopup()">
+    <div class="node-popup" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <!-- Header -->
       <div class="node-popup-header">
         <div class="node-popup-title-row">

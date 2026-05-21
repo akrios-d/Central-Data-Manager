@@ -104,13 +104,7 @@
         } @else {
           <div class="pr-list mt-2">
             @for (pr of filteredPrs(); track pr.id) {
-              <div
-                class="pr-card"
-                role="button"
-                tabindex="0"
-                (click)="openPr(pr)"
-                (keydown.enter)="openPr(pr)"
-              >
+              <div class="pr-card" (click)="openPr(pr)" (keydown.enter)="openPr(pr)">
                 <div class="pr-card-top">
                   <span class="pr-badge" [class]="prStateClass(pr.state, pr.draft)">
                     @if (pr.draft) {

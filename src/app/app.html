@@ -8,7 +8,12 @@
     >
       <span></span><span></span><span></span>
     </button>
-    <div class="sidebar-backdrop" [class.visible]="sidebarOpen()" (click)="closeSidebar()"></div>
+    <div
+      class="sidebar-backdrop"
+      [class.visible]="sidebarOpen()"
+      (click)="closeSidebar()"
+      (keydown.escape)="closeSidebar()"
+    ></div>
     <nav class="sidebar" [class.open]="sidebarOpen()">
       <div class="sidebar-brand">
         <span class="brand-icon">⬡</span>

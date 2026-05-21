@@ -105,7 +105,7 @@ export class CiProviderService {
     if (provider === 'gitlab') return this.gl.compareRefs(fullName, base, head);
     return this.gh.compareRefs(fullName, base, head).pipe(
       map((c) => ({
-        status: c.status as CiComparison['status'],
+        status: c.status,
         ahead_by: c.ahead_by,
         behind_by: c.behind_by,
         html_url: c.permalink_url,

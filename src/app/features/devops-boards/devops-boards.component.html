@@ -77,6 +77,7 @@
               <div
                 class="assignee-option"
                 (mousedown)="filterAssignee.set(m); showAssigneeDrop.set(false)"
+                (keydown.enter)="filterAssignee.set(m); showAssigneeDrop.set(false)"
               >
                 {{ m }}
               </div>
@@ -182,6 +183,7 @@
                 [class.saving]="saving() === wi.id"
                 draggable="true"
                 (click)="openItem(wi)"
+                (keydown.enter)="openItem(wi)"
                 (dragstart)="onDragStart($event, wi)"
                 (dragend)="onDragEnd($event)"
               >

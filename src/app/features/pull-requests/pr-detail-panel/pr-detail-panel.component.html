@@ -1,4 +1,4 @@
-<div class="pdp-backdrop" (click)="closed.emit()"></div>
+<div class="pdp-backdrop" (click)="closed.emit()" (keydown.escape)="closed.emit()"></div>
 
 <aside class="pdp-panel">
   <div class="pdp-header">

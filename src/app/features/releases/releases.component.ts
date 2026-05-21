@@ -140,7 +140,7 @@ export class ReleasesComponent {
         this.compareHeadEnvId()
       ] ?? '';
     const sections = this.changelog()
-      .map((s) => `### ${s.icon} ${s.label}\n${s.items.map((i) => `- ${i}`).join('\n')}`)
+      .map((s) => `### ${s.icon} ${s.label}\n${s.items.map((i) => '- ' + i).join('\n')}`)
       .join('\n\n');
     return `## What's Changed\n\n> \`${base}\` → \`${head}\`\n\n${sections}`;
   });

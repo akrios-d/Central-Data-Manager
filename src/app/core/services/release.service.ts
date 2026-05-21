@@ -99,13 +99,13 @@ export class ReleaseService {
     const now = new Date().toISOString();
     this._repos.update((list) =>
       list.map((r) =>
-        r.id !== repoId
-          ? r
-          : {
-              ...r,
-              deployments: { ...r.deployments, [envId]: tag },
-              updatedAt: { ...r.updatedAt, [envId]: now },
-            },
+        r.id === repoId
+          ? {
+            ...r,
+            deployments: {...r.deployments, [envId]: tag},
+            updatedAt: {...r.updatedAt, [envId]: now},
+          }
+          : r,
       ),
     );
     this.saveRepos();

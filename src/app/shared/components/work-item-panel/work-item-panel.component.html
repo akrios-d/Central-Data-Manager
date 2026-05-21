@@ -1,4 +1,9 @@
-<div class="panel-backdrop" [class.visible]="!!item()" (click)="close()"></div>
+<div
+  class="panel-backdrop"
+  [class.visible]="!!item()"
+  (click)="close()"
+  (keydown.escape)="close()"
+></div>
 
 <aside class="panel" [class.open]="!!item()">
   @if (item(); as wi) {

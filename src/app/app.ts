@@ -29,7 +29,6 @@ export class App {
   constructor() {
     const saved = localStorage.getItem('cdm_lang') ?? 'en';
     this.translate.addLangs(['en', 'pt', 'fr', 'zh']);
-    this.translate.setDefaultLang('en');
     this.translate.use(saved);
     this.sessionTimeout.init();
   }

@@ -85,7 +85,11 @@
     @if (filteredItems().length > 0) {
       <ul class="sprint-items">
         @for (wi of filteredItems().slice(0, hasFilter() ? 50 : 8); track wi.id) {
-          <li class="sprint-item" (click)="selectedItem.set(wi)">
+          <li
+            class="sprint-item"
+            (click)="selectedItem.set(wi)"
+            (keydown.enter)="selectedItem.set(wi)"
+          >
             <span class="wi-state-dot" [class]="wi.state.toLowerCase().replace(' ', '-')"></span>
             <span class="wi-title">{{ wi.title }}</span>
             <span class="wi-type text-muted text-sm">{{ wi.type }}</span>

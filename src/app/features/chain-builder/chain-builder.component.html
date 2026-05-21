@@ -72,6 +72,7 @@
               class="chain-item"
               [class.selected]="selectedId() === c.id"
               (click)="selectChain(c)"
+              (keydown.enter)="selectChain(c)"
             >
               <span class="chain-item-name">{{ c.name }}</span>
               <span class="chain-item-meta text-muted text-sm">
@@ -228,7 +229,9 @@
                 @if (showRepoDropdown()) {
                   <ul class="repo-dropdown">
                     @for (r of filteredRepos(); track r.id) {
-                      <li (click)="selectStepRepo(r)">{{ r.full_name }}</li>
+                      <li (click)="selectStepRepo(r)" (keydown.enter)="selectStepRepo(r)">
+                        {{ r.full_name }}
+                      </li>
                     }
                   </ul>
                 }
@@ -424,7 +427,11 @@
                 class="run-step-item"
                 [class.step-deselected]="!selectedStepIds().includes(step.id)"
               >
-                <label class="step-run-checkbox" [title]="'builder.toggleStep' | translate">
+                <label
+                  class="step-run-checkbox"
+                  [title]="'builder.toggleStep' | translate"
+                  [attr.aria-label]="'builder.toggleStep' | translate"
+                >
                   <input
                     type="checkbox"
                     [checked]="selectedStepIds().includes(step.id)"

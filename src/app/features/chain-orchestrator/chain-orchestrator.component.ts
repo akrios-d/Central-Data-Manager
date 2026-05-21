@@ -315,7 +315,7 @@ export class ChainOrchestratorComponent {
     });
   }
 
-  onEdgeClick(edgeId: string, e: MouseEvent): void {
+  onEdgeClick(edgeId: string, e: Event): void {
     e.stopPropagation();
     this.selectedEdgeId.set(edgeId === this.selectedEdgeId() ? null : edgeId);
     this.selectedNodeId.set(null);
@@ -425,9 +425,18 @@ export class ChainOrchestratorComponent {
   @HostListener('document:keydown', ['$event'])
   onDocKeyDown(e: KeyboardEvent): void {
     if (this.activeTab() !== 'canvas') return;
-    if (e.key !== 'Delete') return;
     const target = e.target as HTMLElement;
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+
+    if (e.key === 'Escape') {
+      this.selectedNodeId.set(null);
+      this.selectedEdgeId.set(null);
+      this.showAddChain.set(false);
+      this.selectedNodePopupId.set(null);
+      return;
+    }
+
+    if (e.key !== 'Delete') return;
 
     const nodeId = this.selectedNodeId();
     const edgeId = this.selectedEdgeId();

@@ -82,14 +82,9 @@
                 (blur)="commitRenameEnv()"
               />
             } @else {
-              <span
-                class="env-name"
-                role="button"
-                tabindex="0"
-                (click)="startRenameEnv(env.id, env.name)"
-                (keydown.enter)="startRenameEnv(env.id, env.name)"
-                >{{ env.name }}</span
-              >
+              <button class="env-name" type="button" (click)="startRenameEnv(env.id, env.name)">
+                {{ env.name }}
+              </button>
               <span class="env-hint text-muted text-sm">{{
                 'releases.clickToRename' | translate
               }}</span>

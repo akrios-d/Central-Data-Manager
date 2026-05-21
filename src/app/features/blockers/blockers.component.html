@@ -109,6 +109,7 @@
               class="blocker-item"
               [class.selected]="selectedNodeId() === n.id"
               (click)="selectNode(n.id)"
+              (keydown.enter)="selectNode(n.id)"
             >
               <span class="type-dot" [style.background]="typeColor(n.item.type)"></span>
               <span class="blocker-title">{{ n.item.title }}</span>
@@ -255,6 +256,7 @@
             [style.left.px]="node.x"
             [style.top.px]="node.y"
             (click)="selectNode(node.id)"
+            (keydown.enter)="selectNode(node.id)"
           >
             <div class="node-type-bar" [style.background]="typeColor(node.item.type)"></div>
             <div class="node-body">

@@ -603,7 +603,7 @@
   }
   &.active {
     background: var(--accent, #58a6ff);
-    color: #fff;
+    color: var(--btn-primary-text);
   }
 }
 
@@ -659,7 +659,7 @@
 .btn.active {
   background: var(--color-primary, #6366f1);
   border-color: var(--color-primary, #6366f1);
-  color: #fff;
+  color: var(--btn-primary-text);
 }
 
 // ── Mobile ────────────────────────────────────────────────────────────────────

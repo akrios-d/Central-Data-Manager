@@ -133,7 +133,11 @@
         </div>
         <ul class="wi-list">
           @for (wi of filteredWorkItems(); track wi.id) {
-            <li class="wi-item" (click)="selectedItem.set(wi)">
+            <li
+              class="wi-item"
+              (click)="selectedItem.set(wi)"
+              (keydown.enter)="selectedItem.set(wi)"
+            >
               <span class="wi-id text-muted text-sm">#{{ wi.id }}</span>
               <div class="wi-info">
                 <span class="wi-title">{{ wi.title }}</span>

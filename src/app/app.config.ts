@@ -11,7 +11,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withFetch()),
-    provideTranslateService({ defaultLanguage: 'en' }),
+    provideTranslateService({ fallbackLang: 'en' }),
     provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' }),
     provideAppInitializer(() => inject(AppConfigService).load()),
     provideServiceWorker('ngsw-worker.js', {
