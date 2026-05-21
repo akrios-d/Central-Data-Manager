@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Chain, ChainRun, ChainStepRun } from '../models/chain.model';
+import { Chain, ChainRun, ChainRunStatus, ChainStepRun } from '../models/chain.model';
 import { CiProviderService } from './ci-provider.service';
 import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { ChainService } from './chain.service';
@@ -7,6 +7,9 @@ import { NotificationService } from './notification.service';
 import { AppSettingsService } from './app-settings.service';
 import { AuditLogService } from './audit-log.service';
 import { TranslateService } from '@ngx-translate/core';
+
+type PollResult = 'success' | 'failure' | 'pending';
+type StepOutcome = 'continue' | 'stopped' | 'failure';
 
 @Injectable({ providedIn: 'root' })
 export class ChainExecutorService {
@@ -34,73 +37,8 @@ export class ChainExecutorService {
     this.push(run);
 
     for (let i = 0; i < chain.steps.length; i++) {
-      if (this.stopRequested.has(chain.id)) {
-        run.status = 'stopped';
-        run.steps[i].status = 'skipped';
-        for (let j = i + 1; j < run.steps.length; j++) run.steps[j].status = 'skipped';
-        break;
-      }
-
-      const step = chain.steps[i];
-      const provider = step.provider ?? 'github';
-      run.steps[i].status = 'running';
-      run.steps[i].startedAt = new Date().toISOString();
-      this.push(run);
-
-      if (step.clearCache && provider === 'github') {
-        await this.ci.deleteRepoCaches(step.repoFullName, step.ref);
-      }
-
-      let ref = step.ref;
-      if (step.useLatestTag) {
-        const tag = await this.fetchLatestTag(step.repoFullName, provider);
-        if (tag) ref = tag;
-      }
-
-      const triggerTime = Date.now();
-      const triggerResult = await this.triggerStep(
-        step.repoFullName,
-        step.workflowId ?? 0,
-        ref,
-        step.inputs,
-        provider,
-      );
-
-      if (triggerResult.error !== null) {
-        run.steps[i].status = 'failure';
-        run.steps[i].error = triggerResult.error;
-        run.steps[i].completedAt = new Date().toISOString();
-        for (let j = i + 1; j < run.steps.length; j++) run.steps[j].status = 'skipped';
-        run.status = 'failure';
-        this.push(run);
-        this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', triggerResult.error);
-        break;
-      }
-
-      const result = await this.waitForRun(
-        step.repoFullName,
-        step.workflowId ?? 0,
-        triggerTime,
-        run.steps[i],
-        provider,
-        triggerResult.gitlabPipelineId,
-        chain.id,
-      );
-      run.steps[i].completedAt = new Date().toISOString();
-      this.push(run);
-      this.notifyStep(
-        step.workflowName,
-        i,
-        chain.steps.length,
-        result === 'success' ? 'success' : 'failure',
-        run.steps[i].error,
-      );
-
-      if (result !== 'success') {
-        for (let j = i + 1; j < run.steps.length; j++) run.steps[j].status = 'skipped';
-        run.status = result === 'stopped' ? 'stopped' : 'failure';
-        break;
-      }
+      const outcome = await this.executeStep(chain, run, i);
+      if (outcome !== 'continue') break;
     }
 
     if (run.status === 'running') run.status = 'success';
@@ -112,6 +50,79 @@ export class ChainExecutorService {
 
   stop(chainId: string): void {
     this.stopRequested.add(chainId);
+  }
+
+  private async executeStep(chain: Chain, run: ChainRun, i: number): Promise<StepOutcome> {
+    if (this.stopRequested.has(chain.id)) {
+      run.status = 'stopped';
+      this.skipRemaining(run.steps, i);
+      return 'stopped';
+    }
+
+    const step = chain.steps[i];
+    const provider = step.provider ?? 'github';
+    run.steps[i].status = 'running';
+    run.steps[i].startedAt = new Date().toISOString();
+    this.push(run);
+
+    if (step.clearCache && provider === 'github') {
+      await this.ci.deleteRepoCaches(step.repoFullName, step.ref);
+    }
+
+    const ref = step.useLatestTag
+      ? ((await this.fetchLatestTag(step.repoFullName, provider)) ?? step.ref)
+      : step.ref;
+
+    const triggerTime = Date.now();
+    const { error, gitlabPipelineId } = await this.triggerStep(
+      step.repoFullName,
+      step.workflowId ?? 0,
+      ref,
+      step.inputs,
+      provider,
+    );
+
+    if (error !== null) {
+      run.steps[i].status = 'failure';
+      run.steps[i].error = error;
+      run.steps[i].completedAt = new Date().toISOString();
+      this.skipRemaining(run.steps, i + 1);
+      run.status = 'failure';
+      this.push(run);
+      this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', error);
+      return 'failure';
+    }
+
+    const pollResult = await this.waitForRun(
+      step.repoFullName,
+      step.workflowId ?? 0,
+      triggerTime,
+      run.steps[i],
+      provider,
+      gitlabPipelineId,
+      chain.id,
+    );
+    run.steps[i].completedAt = new Date().toISOString();
+    this.push(run);
+    this.notifyStep(
+      step.workflowName,
+      i,
+      chain.steps.length,
+      pollResult === 'success' ? 'success' : 'failure',
+      run.steps[i].error,
+    );
+
+    if (pollResult !== 'success') {
+      this.skipRemaining(run.steps, i + 1);
+      run.status = pollResult === 'stopped' ? 'stopped' : 'failure';
+      return pollResult === 'stopped' ? 'stopped' : 'failure';
+    }
+
+    return 'continue';
+  }
+
+  private skipRemaining(steps: ChainStepRun[], fromIndex: number): void {
+    for (let j = fromIndex; j < steps.length; j++) steps[j].status = 'skipped';
   }
 
   private push(run: ChainRun): void {
@@ -190,6 +201,11 @@ export class ChainExecutorService {
     gitlabPipelineId?: number,
     chainId?: string,
   ): Promise<'success' | 'failure' | 'stopped'> {
+    const poll =
+      provider === 'gitlab' && gitlabPipelineId !== undefined
+        ? () => this.pollGitLab(fullName, gitlabPipelineId, stepRun)
+        : () => this.pollGitHub(fullName, workflowId, since, stepRun);
+
     return new Promise((resolve) => {
       let polls = 0;
       const tick = () => {
@@ -197,53 +213,63 @@ export class ChainExecutorService {
           resolve('stopped');
           return;
         }
-        const maxPolls = this.settings.maxPolls();
-        const pollInterval = this.settings.pollIntervalSec() * 1000;
-        if (polls++ > maxPolls) {
+        if (polls++ > this.settings.maxPolls()) {
           resolve('failure');
           return;
         }
-
-        if (provider === 'gitlab' && gitlabPipelineId !== undefined) {
-          this.ci.pollGitLabPipeline(fullName, gitlabPipelineId).subscribe({
-            next: (run) => {
-              stepRun.runId = run.id;
-              stepRun.runUrl = run.html_url;
-              if (run.status !== 'completed') {
-                setTimeout(tick, pollInterval);
-                return;
-              }
-              stepRun.status = run.conclusion === 'success' ? 'success' : 'failure';
-              resolve(stepRun.status);
-            },
-            error: () => {
-              setTimeout(tick, pollInterval);
-            },
-          });
-        } else {
-          this.ci.pollGitHubRuns(fullName, workflowId).subscribe({
-            next: (runs) => {
-              const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
-              if (!run) {
-                setTimeout(tick, pollInterval);
-                return;
-              }
-              stepRun.runId = run.id;
-              stepRun.runUrl = run.html_url;
-              if (run.status !== 'completed') {
-                setTimeout(tick, pollInterval);
-                return;
-              }
-              stepRun.status = run.conclusion === 'success' ? 'success' : 'failure';
-              resolve(stepRun.status);
-            },
-            error: () => {
-              setTimeout(tick, pollInterval);
-            },
-          });
-        }
+        const interval = this.settings.pollIntervalSec() * 1000;
+        poll().then((result) => {
+          if (result === 'pending') setTimeout(tick, interval);
+          else resolve(result);
+        });
       };
       setTimeout(tick, 4000);
+    });
+  }
+
+  private pollGitLab(
+    fullName: string,
+    pipelineId: number,
+    stepRun: ChainStepRun,
+  ): Promise<PollResult> {
+    return new Promise((resolve) => {
+      this.ci.pollGitLabPipeline(fullName, pipelineId).subscribe({
+        next: (run) => {
+          stepRun.runId = run.id;
+          stepRun.runUrl = run.html_url;
+          if (run.status !== 'completed') {
+            resolve('pending');
+            return;
+          }
+          stepRun.status = run.conclusion === 'success' ? 'success' : 'failure';
+          resolve(stepRun.status);
+        },
+        error: () => resolve('pending'),
+      });
+    });
+  }
+
+  private pollGitHub(
+    fullName: string,
+    workflowId: number,
+    since: number,
+    stepRun: ChainStepRun,
+  ): Promise<PollResult> {
+    return new Promise((resolve) => {
+      this.ci.pollGitHubRuns(fullName, workflowId).subscribe({
+        next: (runs) => {
+          const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
+          if (!run || run.status !== 'completed') {
+            resolve('pending');
+            return;
+          }
+          stepRun.runId = run.id;
+          stepRun.runUrl = run.html_url;
+          stepRun.status = run.conclusion === 'success' ? 'success' : 'failure';
+          resolve(stepRun.status);
+        },
+        error: () => resolve('pending'),
+      });
     });
   }
 }
