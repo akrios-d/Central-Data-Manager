@@ -1,48 +1,77 @@
 # Commercial License — Central Data Manager
 
-Copyright (c) 2026 Felipe Oliveira. All rights reserved.
+Copyright (c) 2026 Felipe Oliveira.
+All rights reserved.
 
 ---
 
-## Who needs a commercial license?
+# Dual Licensing
 
-The public version of Central Data Manager is licensed under the GNU General Public License v3.0 (GPL-3.0). Under the GPL, if you use, modify, or distribute this software as part of a **closed-source or commercial product**, you must release your full source code under the same license.
+Central Data Manager is offered under a dual-license model.
 
-If you cannot or do not wish to comply with the GPL terms — for example, because you want to:
+You may choose ONE of the following:
 
-- Integrate Central Data Manager into a proprietary or closed-source product
-- Offer it as a paid SaaS or managed service
-- Distribute it without publishing your source code
-- Embed it in a commercial tool or platform
+## Option 1 — GNU GPL v3
 
-— then you need a **Commercial License**.
+Use under the terms of the GNU General Public License v3.0.
 
----
+Requirements generally include:
 
-## What the commercial license includes
+- Source code disclosure when distributing modified versions
+- Preservation of copyright notices
+- Distribution under GPL-compatible terms
 
-- Right to use, modify, and distribute Central Data Manager in closed-source and commercial products
-- No obligation to publish your source code
-- Priority support channel (by agreement)
-- Terms negotiated per case (one-time fee, subscription, or revenue share)
+See `LICENSE`.
 
 ---
 
-## How to obtain a commercial license
+## Option 2 — Commercial License
 
-Contact:
+If your intended use does not fit GPL obligations, you may obtain a commercial license.
 
-**Felipe Oliveira**
-Email: ghfelipe@hotmail.com
+Examples:
 
-Please describe your intended use case and we will get back to you with terms.
+- Closed-source products
+- Proprietary integrations
+- Enterprise deployments
+- Redistribution under private terms
+- Internal company licensing requirements
+- Commercial support agreements
+
+Commercial terms are negotiated individually.
 
 ---
 
-## Attribution
+# Commercial Rights
 
-Even under a commercial license, the original copyright notice must be preserved in any distributed version.
+Commercial licensing may include:
+
+- Proprietary use
+- Closed-source distribution
+- Internal modification rights
+- Priority support (if agreed)
+- Custom agreements
 
 ---
 
-*This document is not a legal contract. A formal license agreement will be issued upon request.*
+# Contact
+
+Felipe Oliveira
+
+Email:
+ghfelipe@hotmail.com
+
+Please include:
+
+- Company or individual name
+- Project description
+- Intended usage
+- Estimated scale
+
+---
+
+# Disclaimer
+
+This document is informational only.
+
+Commercial use is authorized only after a signed agreement or explicit written approval.q
