@@ -7,6 +7,8 @@ import { GitHubApiService, GhPullRequest } from '../../core/services/github-api.
 import { GitLabApiService, GlMergeRequest } from '../../core/services/gitlab-api.service';
 import { CiRepo } from '../../core/interfaces/ci-provider.interface';
 import { CiProviderService } from '../../core/services/ci-provider.service';
+import { PinnedReposService } from '../../core/services/pinned-repos.service';
+import { PrDetailPanelComponent } from './pr-detail-panel/pr-detail-panel.component';
 import { catchError, of } from 'rxjs';
 
 export interface PullRequest {
@@ -27,15 +29,16 @@ export interface PullRequest {
 
 @Component({
   selector: 'app-pull-requests',
-  imports: [FormsModule, TranslateModule, DatePipe],
+  imports: [FormsModule, TranslateModule, DatePipe, PrDetailPanelComponent],
   templateUrl: './pull-requests.component.html',
   styleUrl: './pull-requests.component.scss',
 })
 export class PullRequestsComponent implements OnInit {
-  private tokens = inject(TokenService);
-  private gh = inject(GitHubApiService);
-  private gl = inject(GitLabApiService);
-  private ci = inject(CiProviderService);
+  private readonly tokens = inject(TokenService);
+  private readonly gh = inject(GitHubApiService);
+  private readonly gl = inject(GitLabApiService);
+  private readonly ci = inject(CiProviderService);
+  readonly pinned = inject(PinnedReposService);
 
   readonly provider = this.tokens.activeCiProvider;
   readonly isGitHub = computed(() => this.provider() === 'github');
@@ -51,12 +54,18 @@ export class PullRequestsComponent implements OnInit {
   stateFilter = signal<'open' | 'closed' | 'all'>('open');
   authorFilter = signal('');
   labelFilter = signal('');
+  selectedPr = signal<PullRequest | null>(null);
 
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase();
-    return q
+    const all = q
       ? this.allRepos().filter((r) => r.full_name.toLowerCase().includes(q))
       : this.allRepos();
+    const pins = this.pinned.pinned();
+    return [
+      ...all.filter((r) => pins.has(r.full_name)),
+      ...all.filter((r) => !pins.has(r.full_name)),
+    ];
   });
 
   readonly filteredPrs = computed(() => {
@@ -92,7 +101,17 @@ export class PullRequestsComponent implements OnInit {
     this.prsError.set(null);
     this.authorFilter.set('');
     this.labelFilter.set('');
+    this.selectedPr.set(null);
     this.loadPrs(repo);
+  }
+
+  openPr(pr: PullRequest): void {
+    this.selectedPr.set(pr);
+  }
+
+  togglePin(event: MouseEvent, fullName: string): void {
+    event.stopPropagation();
+    this.pinned.toggle(fullName);
   }
 
   setStateFilter(state: 'open' | 'closed' | 'all'): void {

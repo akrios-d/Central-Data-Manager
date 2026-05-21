@@ -15,9 +15,9 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class BoardsProviderService {
-  private ado = inject(DevOpsApiService);
-  private jira = inject(JiraApiService);
-  private tokens = inject(TokenService);
+  private readonly ado = inject(DevOpsApiService);
+  private readonly jira = inject(JiraApiService);
+  private readonly tokens = inject(TokenService);
 
   get provider(): 'devops' | 'jira' {
     return this.tokens.activeBoardsProvider();

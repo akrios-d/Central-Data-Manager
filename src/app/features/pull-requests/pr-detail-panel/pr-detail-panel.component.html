@@ -1,0 +1,101 @@
+<div class="pdp-backdrop" (click)="closed.emit()"></div>
+
+<aside class="pdp-panel">
+  <div class="pdp-header">
+    <button
+      class="pdp-close btn btn-sm"
+      (click)="closed.emit()"
+      [title]="'panel.closeTitle' | translate"
+    >
+      ✕
+    </button>
+    <a class="btn btn-sm btn-outline" [href]="pr().url" target="_blank" rel="noopener">
+      {{ 'prs.openInProvider' | translate }}
+    </a>
+  </div>
+
+  <div class="pdp-body">
+    <div class="pdp-top">
+      <span class="pr-badge" [class]="stateClass()">
+        @if (pr().draft) {
+          Draft
+        } @else if (pr().state === 'merged') {
+          Merged
+        } @else if (pr().state === 'open') {
+          Open
+        } @else {
+          Closed
+        }
+      </span>
+      <h2 class="pdp-title">#{{ pr().number }} {{ pr().title }}</h2>
+    </div>
+
+    <div class="pdp-meta">
+      <span class="text-muted text-sm">{{ pr().author }}</span>
+      <span class="pr-branch">{{ pr().headBranch }} → {{ pr().baseBranch }}</span>
+      <span class="text-muted text-sm">{{ pr().createdAt | date: 'dd MMM yyyy' }}</span>
+    </div>
+
+    @if (loading()) {
+      <div class="pdp-loading"><span class="spinner"></span></div>
+    } @else if (detail()) {
+      @if (
+        detail()!.additions !== null ||
+        detail()!.changedFiles !== null ||
+        detail()!.commitsCount !== null ||
+        detail()!.comments !== null
+      ) {
+        <div class="pdp-stats">
+          @if (detail()!.additions !== null) {
+            <span class="stat-added">+{{ detail()!.additions }}</span>
+            <span class="stat-removed">−{{ detail()!.deletions }}</span>
+          }
+          @if (detail()!.changedFiles !== null) {
+            <span class="stat-item"
+              >{{ detail()!.changedFiles }} {{ 'prs.filesChanged' | translate }}</span
+            >
+          }
+          @if (detail()!.commitsCount !== null) {
+            <span class="stat-item"
+              >{{ detail()!.commitsCount }} {{ 'prs.commitsCount' | translate }}</span
+            >
+          }
+          @if (detail()!.comments !== null && detail()!.comments! > 0) {
+            <span class="stat-item">{{ detail()!.comments }} {{ 'prs.comments' | translate }}</span>
+          }
+        </div>
+      }
+    }
+
+    @if (pr().reviewers.length) {
+      <div class="pdp-section">
+        <div class="pdp-label">{{ 'panel.assignedTo' | translate }}</div>
+        <div class="text-sm">{{ pr().reviewers.join(', ') }}</div>
+      </div>
+    }
+
+    @if (pr().labels.length) {
+      <div class="pdp-section">
+        <div class="pr-labels">
+          @for (label of pr().labels; track label.name) {
+            <span
+              class="pr-label"
+              [style.background]="label.color ? '#' + label.color + '33' : undefined"
+              [style.color]="label.color ? '#' + label.color : undefined"
+              >{{ label.name }}</span
+            >
+          }
+        </div>
+      </div>
+    }
+
+    <div class="pdp-section">
+      <div class="pdp-label">{{ 'panel.description' | translate }}</div>
+      @if (!loading() && detail()?.body) {
+        <pre class="pdp-description">{{ detail()!.body }}</pre>
+      } @else if (!loading()) {
+        <p class="text-muted text-sm">{{ 'prs.noBody' | translate }}</p>
+      }
+    </div>
+  </div>
+</aside>

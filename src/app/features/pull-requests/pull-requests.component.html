@@ -18,7 +18,7 @@
     } @else {
       <ul class="repo-list mt-1">
         @for (repo of filteredRepos(); track repo.id) {
-          <li>
+          <li class="repo-item">
             <button
               class="repo-btn"
               [class.active]="selectedRepo()?.id === repo.id"
@@ -28,6 +28,16 @@
               @if (repo.private) {
                 <span class="private-badge">private</span>
               }
+            </button>
+            <button
+              class="pin-btn"
+              [class.pinned]="pinned.isPinned(repo.full_name)"
+              [title]="
+                (pinned.isPinned(repo.full_name) ? 'prs.unpinRepo' : 'prs.pinRepo') | translate
+              "
+              (click)="togglePin($event, repo.full_name)"
+            >
+              ◈
             </button>
           </li>
         }
@@ -94,7 +104,13 @@
         } @else {
           <div class="pr-list mt-2">
             @for (pr of filteredPrs(); track pr.id) {
-              <div class="pr-card">
+              <div
+                class="pr-card"
+                role="button"
+                tabindex="0"
+                (click)="openPr(pr)"
+                (keydown.enter)="openPr(pr)"
+              >
                 <div class="pr-card-top">
                   <span class="pr-badge" [class]="prStateClass(pr.state, pr.draft)">
                     @if (pr.draft) {
@@ -141,3 +157,12 @@
     }
   </section>
 </div>
+
+@if (selectedPr() && selectedRepo()) {
+  <app-pr-detail-panel
+    [pr]="selectedPr()!"
+    [repoFullName]="selectedRepo()!.full_name"
+    [isGitHub]="isGitHub()"
+    (closed)="selectedPr.set(null)"
+  />
+}

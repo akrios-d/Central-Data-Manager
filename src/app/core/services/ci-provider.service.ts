@@ -16,9 +16,9 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class CiProviderService {
-  private gh = inject(GitHubApiService);
-  private gl = inject(GitLabApiService);
-  private tokens = inject(TokenService);
+  private readonly gh = inject(GitHubApiService);
+  private readonly gl = inject(GitLabApiService);
+  private readonly tokens = inject(TokenService);
 
   // ── Repos ─────────────────────────────────────────────────────────────────────
 

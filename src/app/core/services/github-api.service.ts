@@ -12,8 +12,8 @@ export interface GhTokenScopes {
 
 @Injectable({ providedIn: 'root' })
 export class GitHubApiService {
-  private http = inject(HttpClient);
-  private tokens = inject(TokenService);
+  private readonly http = inject(HttpClient);
+  private readonly tokens = inject(TokenService);
 
   private get headers(): HttpHeaders {
     return new HttpHeaders({
@@ -144,6 +144,13 @@ export class GitHubApiService {
     );
   }
 
+  getPullRequest(fullName: string, number: number): Observable<GhPullRequestDetail> {
+    return this.http.get<GhPullRequestDetail>(
+      `https://api.github.com/repos/${fullName}/pulls/${number}`,
+      { headers: this.headers },
+    );
+  }
+
   compareRefs(fullName: string, base: string, head: string): Observable<GhComparison> {
     return this.http.get<GhComparison>(
       `https://api.github.com/repos/${fullName}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
@@ -209,6 +216,16 @@ export interface GhPullRequest {
   labels: { name: string; color: string }[];
   requested_reviewers: { login: string }[];
   merged_at: string | null;
+}
+
+export interface GhPullRequestDetail extends GhPullRequest {
+  body: string | null;
+  additions: number;
+  deletions: number;
+  changed_files: number;
+  commits: number;
+  comments: number;
+  review_comments: number;
 }
 
 export interface GhRun {

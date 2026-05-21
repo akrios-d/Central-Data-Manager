@@ -408,7 +408,14 @@
     "noRepos": "未找到仓库。",
     "selectRepo": "选择仓库以查看其 Pull Requests。",
     "filterAuthor": "按作者筛选…",
-    "filterLabel": "按 label 筛选…"
+    "filterLabel": "按 label 筛选…",
+    "openInProvider": "打开 ↗",
+    "filesChanged": "文件变更",
+    "commitsCount": "提交",
+    "comments": "评论",
+    "noBody": "暂无描述。",
+    "pinRepo": "固定仓库",
+    "unpinRepo": "取消固定仓库"
   },
   "lang": {
     "en": "EN",

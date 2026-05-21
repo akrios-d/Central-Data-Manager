@@ -1,0 +1,184 @@
+.pdp-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 200;
+  animation: fadeIn 0.15s ease;
+}
+
+.pdp-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  background: var(--surface-1);
+  border-left: 1px solid var(--border);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+
+.pdp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pdp-close {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+// ── Body ────────────────────────────────────────────────────────────────────
+
+.pdp-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pdp-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pdp-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.pdp-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.pdp-loading {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+// ── Stats ───────────────────────────────────────────────────────────────────
+
+.pdp-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+
+.stat-added {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.stat-removed {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.stat-item {
+  color: var(--text-muted);
+}
+
+// ── Section ─────────────────────────────────────────────────────────────────
+
+.pdp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pdp-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.pdp-description {
+  font-size: 0.83rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  font-family: inherit;
+  color: var(--text);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+// ── Shared badge / label (reuse PR component tokens) ────────────────────────
+
+.pr-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+
+  &.open    { background: rgba(63, 185, 80, 0.15);  color: var(--success); }
+  &.closed  { background: rgba(248, 81, 73, 0.15);  color: var(--danger); }
+  &.merged  { background: rgba(188, 140, 255, 0.15); color: #bc8cff; }
+  &.draft   { background: var(--surface-2); color: var(--text-muted); }
+}
+
+.pr-branch {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
+.pr-labels {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.pr-label {
+  font-size: 0.7rem;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid transparent;
+  font-weight: 500;
+}

@@ -10,12 +10,12 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({ providedIn: 'root' })
 export class ChainExecutorService {
-  private ci = inject(CiProviderService);
-  private chainSvc = inject(ChainService);
-  private notif = inject(NotificationService);
-  private settings = inject(AppSettingsService);
-  private audit = inject(AuditLogService);
-  private translate = inject(TranslateService);
+  private readonly ci = inject(CiProviderService);
+  private readonly chainSvc = inject(ChainService);
+  private readonly notif = inject(NotificationService);
+  private readonly settings = inject(AppSettingsService);
+  private readonly audit = inject(AuditLogService);
+  private readonly translate = inject(TranslateService);
 
   readonly activeRuns = signal<Record<string, ChainRun>>({});
   private stopRequested = new Set<string>();

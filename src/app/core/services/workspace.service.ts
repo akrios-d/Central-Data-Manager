@@ -8,12 +8,12 @@ import { AuditLogService } from './audit-log.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
-  private chainSvc = inject(ChainService);
-  private orchSvc = inject(OrchestratorService);
-  private releaseSvc = inject(ReleaseService);
-  private tokens = inject(TokenService);
-  private appSettings = inject(AppSettingsService);
-  private audit = inject(AuditLogService);
+  private readonly chainSvc = inject(ChainService);
+  private readonly orchSvc = inject(OrchestratorService);
+  private readonly releaseSvc = inject(ReleaseService);
+  private readonly tokens = inject(TokenService);
+  private readonly appSettings = inject(AppSettingsService);
+  private readonly audit = inject(AuditLogService);
 
   exportWorkspace(): void {
     const data = {

@@ -13,7 +13,7 @@ const MAX_ENTRIES = 500;
 
 @Injectable({ providedIn: 'root' })
 export class AuditLogService {
-  private appSettings = inject(AppSettingsService);
+  private readonly appSettings = inject(AppSettingsService);
 
   readonly entries = signal<AuditEntry[]>(this.load());
 

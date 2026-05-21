@@ -408,7 +408,14 @@
     "noRepos": "Nenhum repositório encontrado.",
     "selectRepo": "Selecciona um repositório para ver os seus pull requests.",
     "filterAuthor": "Filtrar por autor…",
-    "filterLabel": "Filtrar por label…"
+    "filterLabel": "Filtrar por label…",
+    "openInProvider": "Abrir ↗",
+    "filesChanged": "ficheiros alterados",
+    "commitsCount": "commits",
+    "comments": "comentários",
+    "noBody": "Sem descrição.",
+    "pinRepo": "Fixar repositório",
+    "unpinRepo": "Desafixar repositório"
   },
   "lang": {
     "en": "EN",

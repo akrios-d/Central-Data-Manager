@@ -3,7 +3,7 @@ import { AppSettingsService } from './app-settings.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private appSettings = inject(AppSettingsService);
+  private readonly appSettings = inject(AppSettingsService);
 
   private get supported(): boolean {
     return 'Notification' in window;
@@ -19,7 +19,7 @@ export class NotificationService {
     if (!this.supported || Notification.permission !== 'granted') return;
     if (!this.appSettings.notificationsEnabled()) return;
     try {
-      new Notification(title, { body, icon: '/favicon.ico' });
+      new Notification(title, { body, icon: '/favicon.svg' });
     } catch {
       /* unsupported context */
     }

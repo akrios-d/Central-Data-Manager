@@ -31,15 +31,27 @@
       </p>
 
       @for (repo of filteredRepos(); track repo.id) {
-        <button
-          class="repo-btn"
-          [class.active]="selectedRepo()?.id === repo.id"
-          [title]="repo.full_name"
-          (click)="selectRepo(repo)"
-        >
-          <span class="repo-private-icon">{{ repo.private ? '🔒' : '' }}</span>
-          {{ repo.name }}
-        </button>
+        <div class="repo-item-row">
+          <button
+            class="repo-btn"
+            [class.active]="selectedRepo()?.id === repo.id"
+            [title]="repo.full_name"
+            (click)="selectRepo(repo)"
+          >
+            <span class="repo-private-icon">{{ repo.private ? '🔒' : '' }}</span>
+            {{ repo.name }}
+          </button>
+          <button
+            class="pin-btn"
+            [class.pinned]="pinned.isPinned(repo.full_name)"
+            [title]="
+              (pinned.isPinned(repo.full_name) ? 'prs.unpinRepo' : 'prs.pinRepo') | translate
+            "
+            (click)="togglePin($event, repo.full_name)"
+          >
+            ◈
+          </button>
+        </div>
       }
 
       @if (filteredRepos().length === 0) {

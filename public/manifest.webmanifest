@@ -1,0 +1,23 @@
+{
+  "name": "Central Data Manager",
+  "short_name": "CDM",
+  "description": "CI/CD pipelines, DevOps boards and chain automation — all in your browser.",
+  "theme_color": "#1f6feb",
+  "background_color": "#0d1117",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

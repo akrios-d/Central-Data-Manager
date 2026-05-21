@@ -32,14 +32,14 @@ interface ConnectionTest {
 })
 export class SettingsComponent implements OnInit {
   readonly tokens = inject(TokenService);
-  private toasts = inject(ToastService);
-  private ado = inject(DevOpsApiService);
-  private gh = inject(GitHubApiService);
-  private gl = inject(GitLabApiService);
-  private jira = inject(JiraApiService);
-  private translate = inject(TranslateService);
-  private appSettings = inject(AppSettingsService);
-  private appConfig = inject(AppConfigService);
+  private readonly toasts = inject(ToastService);
+  private readonly ado = inject(DevOpsApiService);
+  private readonly gh = inject(GitHubApiService);
+  private readonly gl = inject(GitLabApiService);
+  private readonly jira = inject(JiraApiService);
+  private readonly translate = inject(TranslateService);
+  private readonly appSettings = inject(AppSettingsService);
+  private readonly appConfig = inject(AppConfigService);
 
   readonly persist = this.tokens.persist;
   readonly allowPersistentStorage = this.appConfig.allowPersistentStorage;
@@ -78,8 +78,8 @@ export class SettingsComponent implements OnInit {
   readonly glBaseUrl = this.tokens.gitlabBaseUrl;
 
   readonly audit = inject(AuditLogService);
-  private workspace = inject(WorkspaceService);
-  private notifSvc = inject(NotificationService);
+  private readonly workspace = inject(WorkspaceService);
+  private readonly notifSvc = inject(NotificationService);
 
   readonly notificationsEnabled = this.appSettings.notificationsEnabled;
   readonly notifPermission = signal<NotificationPermission>(

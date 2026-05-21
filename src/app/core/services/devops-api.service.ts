@@ -5,8 +5,8 @@ import { TokenService } from './token.service';
 
 @Injectable({ providedIn: 'root' })
 export class DevOpsApiService {
-  private http = inject(HttpClient);
-  private tokens = inject(TokenService);
+  private readonly http = inject(HttpClient);
+  private readonly tokens = inject(TokenService);
 
   private get headers(): HttpHeaders {
     const pat = this.tokens.devopsToken() ?? '';

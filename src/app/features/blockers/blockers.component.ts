@@ -38,8 +38,8 @@ interface BEdge {
   styleUrl: './blockers.component.scss',
 })
 export class BlockersComponent implements OnInit {
-  private boardsProvider = inject(BoardsProviderService);
-  private tokens = inject(TokenService);
+  private readonly boardsProvider = inject(BoardsProviderService);
+  private readonly tokens = inject(TokenService);
 
   readonly NODE_W = NODE_W;
   readonly NODE_H = NODE_H;

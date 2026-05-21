@@ -21,8 +21,8 @@ interface StateGroup {
   styleUrl: './sprint-widget.component.scss',
 })
 export class SprintWidgetComponent implements OnInit {
-  private boardsProvider = inject(BoardsProviderService);
-  private tokens = inject(TokenService);
+  private readonly boardsProvider = inject(BoardsProviderService);
+  private readonly tokens = inject(TokenService);
 
   sprint = signal<BoardSprint | null>(null);
   workItems = signal<BoardWorkItem[]>([]);

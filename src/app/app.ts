@@ -13,11 +13,11 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   styleUrl: './app.scss',
 })
 export class App {
-  private tokens = inject(TokenService);
-  private translate = inject(TranslateService);
-  private router = inject(Router);
-  private sessionTimeout = inject(SessionTimeoutService);
-  private themeService = inject(ThemeService);
+  private readonly tokens = inject(TokenService);
+  private readonly translate = inject(TranslateService);
+  private readonly router = inject(Router);
+  private readonly sessionTimeout = inject(SessionTimeoutService);
+  private readonly themeService = inject(ThemeService);
 
   readonly showNav = computed(() => this.tokens.hasAnyToken());
   readonly currentLang = signal(localStorage.getItem('cdm_lang') ?? 'en');

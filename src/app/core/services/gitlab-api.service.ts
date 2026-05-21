@@ -62,6 +62,12 @@ export interface GlMergeRequest {
   merged_at: string | null;
 }
 
+export interface GlMergeRequestDetail extends GlMergeRequest {
+  description: string | null;
+  changes_count: string | null;
+  user_notes_count: number;
+}
+
 interface GlComparison {
   commits: GlCommit[];
   compare_same_ref: boolean;
@@ -69,8 +75,8 @@ interface GlComparison {
 
 @Injectable({ providedIn: 'root' })
 export class GitLabApiService {
-  private http = inject(HttpClient);
-  private tokens = inject(TokenService);
+  private readonly http = inject(HttpClient);
+  private readonly tokens = inject(TokenService);
 
   private get base(): string {
     return (this.tokens.gitlabBaseUrl() ?? 'https://gitlab.com').replace(/\/$/, '') + '/api/v4';
@@ -207,6 +213,13 @@ export class GitLabApiService {
   ): Observable<GlMergeRequest[]> {
     return this.http.get<GlMergeRequest[]>(
       `${this.base}/projects/${this.enc(fullPath)}/merge_requests?state=${state}&per_page=50&order_by=updated_at&sort=desc`,
+      { headers: this.headers },
+    );
+  }
+
+  getMergeRequest(fullPath: string, iid: number): Observable<GlMergeRequestDetail> {
+    return this.http.get<GlMergeRequestDetail>(
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests/${iid}`,
       { headers: this.headers },
     );
   }

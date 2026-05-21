@@ -15,8 +15,8 @@ type FilterKey = 'all' | 'token' | 'chain' | 'graph' | 'session' | 'settings';
 })
 export class AuditLogComponent {
   readonly audit = inject(AuditLogService);
-  private toasts = inject(ToastService);
-  private translate = inject(TranslateService);
+  private readonly toasts = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly search = signal('');
   readonly activeFilter = signal<FilterKey>('all');

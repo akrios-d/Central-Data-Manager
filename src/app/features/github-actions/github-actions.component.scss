@@ -36,6 +36,34 @@
   margin-bottom: 0.2rem;
 }
 
+.repo-item-row {
+  display: flex;
+  align-items: center;
+}
+
+.pin-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--radius);
+  opacity: 0.4;
+  transition: opacity 0.12s, color 0.12s;
+
+  &:hover {
+    opacity: 1;
+    color: var(--accent);
+  }
+
+  &.pinned {
+    opacity: 1;
+    color: var(--accent);
+  }
+}
+
 .repo-btn {
   background: none;
   border: none;

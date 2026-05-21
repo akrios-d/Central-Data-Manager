@@ -71,8 +71,8 @@ export interface JiraTransition {
 
 @Injectable({ providedIn: 'root' })
 export class JiraApiService {
-  private http = inject(HttpClient);
-  private tokens = inject(TokenService);
+  private readonly http = inject(HttpClient);
+  private readonly tokens = inject(TokenService);
 
   private get headers(): HttpHeaders {
     const email = this.tokens.jiraEmail() ?? '';

@@ -14,10 +14,10 @@ type Provider = 'github' | 'gitlab' | 'devops' | 'jira';
   styleUrl: './onboarding.component.scss',
 })
 export class OnboardingComponent {
-  private tokens = inject(TokenService);
-  private router = inject(Router);
-  private toasts = inject(ToastService);
-  private translate = inject(TranslateService);
+  private readonly tokens = inject(TokenService);
+  private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly hasGitHub = this.tokens.hasGitHub;
   readonly hasGitLab = this.tokens.hasGitLab;

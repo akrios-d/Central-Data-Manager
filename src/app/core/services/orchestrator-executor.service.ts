@@ -8,10 +8,10 @@ import { OrchestratorService } from './orchestrator.service';
 
 @Injectable({ providedIn: 'root' })
 export class OrchestratorExecutorService {
-  private gh = inject(GitHubApiService);
-  private settings = inject(AppSettingsService);
-  private audit = inject(AuditLogService);
-  private orchSvc = inject(OrchestratorService);
+  private readonly gh = inject(GitHubApiService);
+  private readonly settings = inject(AppSettingsService);
+  private readonly audit = inject(AuditLogService);
+  private readonly orchSvc = inject(OrchestratorService);
 
   readonly activeRun = signal<OrchRun | null>(null);
   private stopRequested = false;

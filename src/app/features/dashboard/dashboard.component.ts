@@ -58,13 +58,13 @@ const MAX_REPOS_FOR_RUNS = 15;
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
-  private tokens = inject(TokenService);
-  private ci = inject(CiProviderService);
-  private ado = inject(DevOpsApiService);
-  private boards = inject(BoardsProviderService);
-  private audit = inject(AuditLogService);
-  private chainSvc = inject(ChainService);
-  private appConfig = inject(AppConfigService);
+  private readonly tokens = inject(TokenService);
+  private readonly ci = inject(CiProviderService);
+  private readonly ado = inject(DevOpsApiService);
+  private readonly boards = inject(BoardsProviderService);
+  private readonly audit = inject(AuditLogService);
+  private readonly chainSvc = inject(ChainService);
+  private readonly appConfig = inject(AppConfigService);
 
   readonly hasCi = computed(() => this.tokens.hasGitHub() || this.tokens.hasGitLab());
   readonly hasAdo = this.tokens.hasDevOps;

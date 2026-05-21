@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { CiProviderService } from '../../core/services/ci-provider.service';
+import { PinnedReposService } from '../../core/services/pinned-repos.service';
 import { CiRepo, CiRun } from '../../core/interfaces/ci-provider.interface';
 import { RunStatusPipe } from '../../shared/pipes/run-status.pipe';
 import { firstValueFrom } from 'rxjs';
@@ -24,7 +25,8 @@ interface WorkflowStat {
   styleUrl: './github-actions.component.scss',
 })
 export class GithubActionsComponent implements OnInit {
-  private ci = inject(CiProviderService);
+  private readonly ci = inject(CiProviderService);
+  readonly pinned = inject(PinnedReposService);
 
   // ── Shared ────────────────────────────────────────────────────────────────
   repos = signal<CiRepo[]>([]);
@@ -35,7 +37,14 @@ export class GithubActionsComponent implements OnInit {
 
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase().trim();
-    return q ? this.repos().filter((r) => r.full_name.toLowerCase().includes(q)) : this.repos();
+    const all = q
+      ? this.repos().filter((r) => r.full_name.toLowerCase().includes(q))
+      : this.repos();
+    const pins = this.pinned.pinned();
+    return [
+      ...all.filter((r) => pins.has(r.full_name)),
+      ...all.filter((r) => !pins.has(r.full_name)),
+    ];
   });
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
@@ -113,6 +122,11 @@ export class GithubActionsComponent implements OnInit {
 
   runClass(run: CiRun): string {
     return run.status !== 'completed' ? run.status : (run.conclusion ?? 'unknown');
+  }
+
+  togglePin(event: MouseEvent, fullName: string): void {
+    event.stopPropagation();
+    this.pinned.toggle(fullName);
   }
 
   private showFeedback(id: number, msg: string): void {
