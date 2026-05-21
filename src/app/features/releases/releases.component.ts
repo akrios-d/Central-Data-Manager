@@ -365,7 +365,7 @@ export class ReleasesComponent {
   // ── Compare ──────────────────────────────────────────────────────────────────
 
   private parseConvType(msg: string): string {
-    const m = msg.match(/^(\w+)(?:\(.*?\))?!?:/);
+    const m = /^(\w+)(?:\(.*?\))?!?:/.exec(msg);
     const t = m?.[1]?.toLowerCase() ?? 'other';
     return CONV_TYPES[t] ? t : 'other';
   }

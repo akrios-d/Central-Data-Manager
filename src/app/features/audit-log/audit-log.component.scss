@@ -115,7 +115,7 @@
 
   &.badge-graph {
     background: rgba(188, 140, 255, 0.15);
-    color: #bc8cff;
+    color: var(--merged);
   }
 
   &.badge-session {

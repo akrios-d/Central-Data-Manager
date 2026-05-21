@@ -22,13 +22,21 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 // ── Header ──────────────────────────────────────────────────────────────────
@@ -154,10 +162,22 @@
   letter-spacing: 0.03em;
   flex-shrink: 0;
 
-  &.open    { background: rgba(63, 185, 80, 0.15);  color: var(--success); }
-  &.closed  { background: rgba(248, 81, 73, 0.15);  color: var(--danger); }
-  &.merged  { background: rgba(188, 140, 255, 0.15); color: #bc8cff; }
-  &.draft   { background: var(--surface-2); color: var(--text-muted); }
+  &.open {
+    background: rgba(63, 185, 80, 0.15);
+    color: var(--success);
+  }
+  &.closed {
+    background: rgba(248, 81, 73, 0.15);
+    color: var(--danger);
+  }
+  &.merged {
+    background: rgba(188, 140, 255, 0.15);
+    color: var(--merged);
+  }
+  &.draft {
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
 }
 
 .pr-branch {

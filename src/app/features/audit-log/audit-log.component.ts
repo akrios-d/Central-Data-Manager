@@ -70,7 +70,7 @@ export class AuditLogComponent {
       e.detail ?? '',
     ]);
     const csv = [header, ...rows]
-      .map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(','))
+      .map((r) => r.map((c) => `"${c.replaceAll('"', '""')}"`).join(','))
       .join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);

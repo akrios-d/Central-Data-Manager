@@ -80,7 +80,7 @@ export class GitHubApiService {
       .get<{
         content: string;
       }>(`https://api.github.com/repos/${fullName}/contents/${path}`, { headers: this.headers })
-      .pipe(map((r) => atob(r.content.replace(/\s+/g, ''))));
+      .pipe(map((r) => atob(r.content.replaceAll(/\s+/g, ''))));
   }
 
   listTags(fullName: string): Observable<{ name: string }[]> {

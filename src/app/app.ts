@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from './core/services/token.service';
@@ -11,6 +11,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent, TranslateModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  host: { '(window:resize)': 'onResize()' },
 })
 export class App {
   private readonly tokens = inject(TokenService);
@@ -45,7 +46,6 @@ export class App {
     this.sidebarOpen.set(false);
   }
 
-  @HostListener('window:resize')
   onResize(): void {
     if (window.innerWidth > 768) this.sidebarOpen.set(false);
   }

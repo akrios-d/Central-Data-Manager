@@ -10,42 +10,61 @@ export interface WorkflowInput {
 
 export function parseDispatchInputs(yaml: string): WorkflowInput[] {
   const lines = yaml.split('\n');
-
-  // Locate `workflow_dispatch:` line
   const wdIdx = lines.findIndex((l) => /^\s*workflow_dispatch\s*:/.test(l));
   if (wdIdx === -1) return [];
-  const wdIndent = lines[wdIdx].search(/\S/);
 
-  // Find `inputs:` block directly under workflow_dispatch
-  let inputsIdx = -1;
-  let inputsIndent = -1;
+  const inputsBlock = findInputsBlock(lines, wdIdx);
+  if (!inputsBlock) return [];
+
+  const keyIndent = findKeyIndent(lines, inputsBlock.idx, inputsBlock.indent);
+  if (keyIndent === -1) return [];
+
+  return collectInputs(lines, inputsBlock.idx, inputsBlock.indent, keyIndent);
+}
+
+function findInputsBlock(lines: string[], wdIdx: number): { idx: number; indent: number } | null {
+  const wdIndent = lines[wdIdx].search(/\S/);
   for (let i = wdIdx + 1; i < lines.length; i++) {
     const l = lines[i];
     if (!l.trim() || l.trim().startsWith('#')) continue;
     const ind = l.search(/\S/);
     if (ind <= wdIndent) break;
-    if (/^\s*inputs\s*:/.test(l)) {
-      inputsIdx = i;
-      inputsIndent = ind;
-      break;
-    }
+    if (/^\s*inputs\s*:/.test(l)) return { idx: i, indent: ind };
   }
-  if (inputsIdx === -1) return [];
+  return null;
+}
 
-  // Detect the indentation of the first input key
-  let keyIndent = -1;
+function findKeyIndent(lines: string[], inputsIdx: number, inputsIndent: number): number {
   for (let i = inputsIdx + 1; i < lines.length; i++) {
     const l = lines[i];
     if (!l.trim() || l.trim().startsWith('#')) continue;
     const ind = l.search(/\S/);
-    if (ind <= inputsIndent) return [];
-    keyIndent = ind;
-    break;
+    if (ind <= inputsIndent) return -1;
+    return ind;
   }
-  if (keyIndent === -1) return [];
+  return -1;
+}
 
+function applyProperty(entry: WorkflowInput | undefined, prop: string, trimmed: string): void {
+  if (!entry) return;
+  if (prop === 'default') {
+    const vm = /^default\s*:\s*(.*)$/.exec(trimmed);
+    if (vm) entry.value = vm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
+  } else if (prop === 'description') {
+    const dm = /^description\s*:\s*(.*)$/.exec(trimmed);
+    if (dm) entry.description = dm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
+  }
+}
+
+function collectInputs(
+  lines: string[],
+  inputsIdx: number,
+  inputsIndent: number,
+  keyIndent: number,
+): WorkflowInput[] {
   const result: WorkflowInput[] = [];
   let currentKey: string | null = null;
+  const keyRe = /^([\w-]+)\s*:/;
 
   for (let i = inputsIdx + 1; i < lines.length; i++) {
     const l = lines[i];
@@ -53,28 +72,14 @@ export function parseDispatchInputs(yaml: string): WorkflowInput[] {
     const ind = l.search(/\S/);
     if (ind <= inputsIndent) break;
 
-    const trimmed = l.trim();
-    const km = trimmed.match(/^([\w-]+)\s*:/);
+    const km = keyRe.exec(l.trim());
     if (!km) continue;
 
     if (ind === keyIndent) {
       currentKey = km[1];
       result.push({ key: currentKey, value: '', description: '' });
     } else if (currentKey) {
-      const entry = result[result.length - 1];
-      if (!entry || entry.key !== currentKey) continue;
-
-      if (km[1] === 'default') {
-        const vm = trimmed.match(/^default\s*:\s*(.*)$/);
-        if (vm) {
-          entry.value = vm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
-        }
-      } else if (km[1] === 'description') {
-        const dm = trimmed.match(/^description\s*:\s*(.*)$/);
-        if (dm) {
-          entry.description = dm[1].trim().replace(/^(['"])(.*)\1$/, '$2');
-        }
-      }
+      applyProperty(result.at(-1), km[1], l.trim());
     }
   }
 
