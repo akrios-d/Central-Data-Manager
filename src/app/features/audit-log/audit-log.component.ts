@@ -122,7 +122,7 @@ export class AuditLogComponent {
       @page { margin: 1.5cm; size: A4; }
     }
   </style>
-  <script>window.addEventListener('load', () => window.print());<\/script>
+  <script>window.addEventListener('load', () => window.print());</script>
 </head>
 <body>
   <header>

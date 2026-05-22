@@ -95,7 +95,7 @@ export class BlockersComponent implements OnInit {
 
   selectedNode = computed(() => {
     const sid = this.selectedNodeId();
-    return sid != null ? (this.nodeById().get(sid) ?? null) : null;
+    return sid == null ? null : (this.nodeById().get(sid) ?? null);
   });
 
   topBlockers = computed(() =>
