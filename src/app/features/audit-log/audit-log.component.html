@@ -5,8 +5,11 @@
       <p>{{ 'audit.subtitle' | translate }}</p>
     </div>
     <div class="audit-header-actions">
-      <button class="btn btn-sm" (click)="exportCsv()" [disabled]="!filtered().length">
-        {{ 'audit.export' | translate }}
+      <button class="btn btn-sm btn-outline" (click)="exportCsv()" [disabled]="!filtered().length">
+        {{ 'audit.exportCsv' | translate }}
+      </button>
+      <button class="btn btn-sm btn-outline" (click)="exportPdf()" [disabled]="!filtered().length">
+        {{ 'audit.exportPdf' | translate }}
       </button>
       <button
         class="btn btn-sm btn-danger"

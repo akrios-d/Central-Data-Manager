@@ -389,13 +389,14 @@
     "filterGraph": "Grafos",
     "filterSession": "Sessão",
     "filterSettings": "Definições",
-    "export": "↓ Exportar CSV",
     "clear": "Limpar registo",
     "clearConfirm": "Apagar todas as entradas do registo? Esta acção não pode ser desfeita.",
     "clearConfirmBtn": "Sim, limpar",
     "noEntries": "Sem eventos registados ainda.",
     "empty": "Nenhuma entrada encontrada.",
-    "total": "{{count}} entradas"
+    "total": "{{count}} entradas",
+    "exportCsv": "↓ Exportar CSV",
+    "exportPdf": "↓ Exportar PDF"
   },
   "prs": {
     "title": "Pull Requests",

@@ -80,4 +80,73 @@ export class AuditLogComponent {
     a.click();
     URL.revokeObjectURL(url);
   }
+  exportPdf(): void {
+    const entries = this.filtered();
+    const now = new Date().toLocaleString();
+    const rows = entries
+      .map(
+        (e) => `
+        <tr>
+          <td>${e.timestamp}</td>
+          <td><span class="badge badge-${this.entryCategory(e.action)}">${this.translate.instant(this.filterLabel(e.action))}</span></td>
+          <td>${e.action}</td>
+          <td>${e.detail ?? ''}</td>
+        </tr>`,
+      )
+      .join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CDM Audit Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #222; padding: 24px; }
+    header { margin-bottom: 16px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p  { font-size: 11px; color: #555; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th { background: #f4f4f4; font-weight: 600; text-align: left;
+         padding: 6px 8px; border-top: 1px solid #ccc; border-bottom: 2px solid #999; }
+    td { padding: 5px 8px; border-bottom: 1px solid #e8e8e8; vertical-align: top; word-break: break-word; }
+    tr:last-child td { border-bottom: none; }
+    .badge { font-size: 9px; padding: 2px 6px; border-radius: 3px;
+             background: #e0e0e0; color: #333; white-space: nowrap; }
+    .badge-token   { background: #dbeafe; color: #1e40af; }
+    .badge-chain   { background: #dcfce7; color: #166534; }
+    .badge-graph   { background: #fef9c3; color: #854d0e; }
+    .badge-session { background: #fce7f3; color: #9d174d; }
+    @media print {
+      body { padding: 0; }
+      @page { margin: 1.5cm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CDM — Audit Log</h1>
+    <p>Exported ${now} &nbsp;·&nbsp; ${entries.length} entries</p>
+  </header>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:14em">Timestamp</th>
+        <th style="width:8em">Category</th>
+        <th style="width:22em">Action</th>
+        <th>Detail</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.addEventListener('load', () => win.print());
+  }
 }

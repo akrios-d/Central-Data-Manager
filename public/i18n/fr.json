@@ -389,13 +389,14 @@
     "filterGraph": "Graphes",
     "filterSession": "Session",
     "filterSettings": "Paramètres",
-    "export": "↓ Exporter CSV",
     "clear": "Effacer le journal",
     "clearConfirm": "Supprimer toutes les entrées du journal ? Cette action est irréversible.",
     "clearConfirmBtn": "Oui, effacer",
     "noEntries": "Aucun événement enregistré.",
     "empty": "Aucune entrée trouvée.",
-    "total": "{{count}} entrées"
+    "total": "{{count}} entrées",
+    "exportCsv": "↓ Exporter CSV",
+    "exportPdf": "↓ Exporter PDF"
   },
   "prs": {
     "title": "Pull Requests",

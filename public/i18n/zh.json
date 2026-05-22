@@ -389,13 +389,14 @@
     "filterGraph": "图",
     "filterSession": "会话",
     "filterSettings": "设置",
-    "export": "↓ 导出 CSV",
     "clear": "清除日志",
     "clearConfirm": "删除所有审计日志条目？此操作不可撤销。",
     "clearConfirmBtn": "确认清除",
     "noEntries": "暂无事件记录。",
     "empty": "未找到匹配条目。",
-    "total": "共 {{count}} 条"
+    "total": "共 {{count}} 条",
+    "exportCsv": "↓ 导出 CSV",
+    "exportPdf": "↓ 导出 PDF"
   },
   "prs": {
     "title": "Pull Requests",
