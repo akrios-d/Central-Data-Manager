@@ -97,6 +97,8 @@ export class DashboardComponent implements OnInit {
   adoLoading = signal(false);
   ghError = signal<string | null>(null);
   adoError = signal<string | null>(null);
+  ciLastRefreshed = signal<Date | null>(null);
+  adoLastRefreshed = signal<Date | null>(null);
 
   selectedItem = signal<BoardWorkItem | null>(null);
 
@@ -204,6 +206,7 @@ export class DashboardComponent implements OnInit {
         this.allRepos.set(repos);
         this.fetchRunsForRepos(repos).subscribe((pipelines) => {
           this.pipelines.set(pipelines);
+          this.ciLastRefreshed.set(new Date());
           this.ghLoading.set(false);
         });
       });
@@ -273,8 +276,17 @@ export class DashboardComponent implements OnInit {
       .subscribe((res) => {
         const items = res.value ?? [];
         this.workItems.set(items.map((wi) => this.boards.normalizeAdoWorkItem(wi)));
+        this.adoLastRefreshed.set(new Date());
         this.adoLoading.set(false);
       });
+  }
+
+  reloadCi(): void {
+    this.loadCiRepos();
+  }
+
+  reloadAdo(): void {
+    this.loadDevOps();
   }
 
   runClass(run: CiRun): string {

@@ -1,6 +1,23 @@
-<div class="page-header">
-  <h1>{{ 'blockers.title' | translate }}</h1>
-  <p>{{ 'blockers.subtitle' | translate }}</p>
+<div class="page-header flex-between">
+  <div>
+    <h1>{{ 'blockers.title' | translate }}</h1>
+    <p>{{ 'blockers.subtitle' | translate }}</p>
+  </div>
+  <div class="refresh-bar">
+    @if (lastRefreshed()) {
+      <span class="text-muted text-sm"
+        >{{ 'common.updatedAt' | translate }} {{ lastRefreshed() | date: 'HH:mm:ss' }}</span
+      >
+    }
+    <button
+      class="btn btn-sm btn-outline"
+      (click)="reload()"
+      [disabled]="loading()"
+      [title]="'common.refresh' | translate"
+    >
+      ↻
+    </button>
+  </div>
 </div>
 
 <div class="card blockers-card">

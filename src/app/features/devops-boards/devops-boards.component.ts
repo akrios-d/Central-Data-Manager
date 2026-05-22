@@ -1,4 +1,5 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BoardsProviderService } from '../../core/services/boards-provider.service';
@@ -17,7 +18,7 @@ interface ColumnConfig {
 
 @Component({
   selector: 'app-devops-boards',
-  imports: [FormsModule, WorkItemPanelComponent, TranslateModule],
+  imports: [DatePipe, FormsModule, WorkItemPanelComponent, TranslateModule],
   templateUrl: './devops-boards.component.html',
   styleUrl: './devops-boards.component.scss',
 })
@@ -32,6 +33,7 @@ export class DevopsBoardsComponent implements OnInit {
   loading = signal(true);
   boardLoading = signal(false);
   boardReady = signal(false);
+  lastRefreshed = signal<Date | null>(null);
   error = signal<string | null>(null);
   dragItem = signal<BoardWorkItem | null>(null);
   dragOverState = signal<string | null>(null);
@@ -103,6 +105,10 @@ export class DevopsBoardsComponent implements OnInit {
 
   isTypeSelected(type: string): boolean {
     return this.filterTypes().has(type);
+  }
+
+  reload(): void {
+    this.loadBoard();
   }
 
   loadBoard(): void {
@@ -181,6 +187,7 @@ export class DevopsBoardsComponent implements OnInit {
       [...new Set(items.map((i) => i.type))].sort((a, b) => a.localeCompare(b)),
     );
     this.boardLoading.set(false);
+    this.lastRefreshed.set(new Date());
     this.boardReady.set(true);
   }
 

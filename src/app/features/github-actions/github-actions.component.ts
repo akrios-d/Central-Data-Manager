@@ -59,6 +59,7 @@ export class GithubActionsComponent implements OnInit {
   stats = signal<WorkflowStat[]>([]);
   statsLoading = signal(false);
   statsError = signal('');
+  lastRefreshed = signal<Date | null>(null);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   ngOnInit(): void {
@@ -94,12 +95,18 @@ export class GithubActionsComponent implements OnInit {
     }
   }
 
+  reload(): void {
+    const repo = this.selectedRepo();
+    if (repo) this.loadRuns(repo);
+  }
+
   // ── Runs ──────────────────────────────────────────────────────────────────
   private loadRuns(repo: CiRepo): void {
     this.runsLoading.set(true);
     this.ci.listRuns(repo).subscribe({
       next: (res) => {
         this.runs.set(res.workflow_runs);
+        this.lastRefreshed.set(new Date());
         this.runsLoading.set(false);
       },
       error: () => this.runsLoading.set(false),

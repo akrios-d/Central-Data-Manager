@@ -422,5 +422,9 @@
     "pt": "PT",
     "fr": "FR",
     "zh": "中文"
+  },
+  "common": {
+    "updatedAt": "Updated at",
+    "refresh": "Refresh"
   }
 }

@@ -29,12 +29,27 @@
     <section class="card">
       <div class="section-header">
         <h2 class="section-title">{{ 'dashboard.pipelines' | translate }}</h2>
-        @if (!ghLoading()) {
-          <span class="text-muted text-sm"
-            >{{ filteredRepos().length }} / {{ allRepos().length }}
-            {{ 'actions.repos' | translate }}</span
+        <div class="refresh-bar">
+          @if (!ghLoading()) {
+            <span class="text-muted text-sm"
+              >{{ filteredRepos().length }} / {{ allRepos().length }}
+              {{ 'actions.repos' | translate }}</span
+            >
+          }
+          @if (ciLastRefreshed()) {
+            <span class="text-muted text-sm"
+              >{{ 'common.updatedAt' | translate }} {{ ciLastRefreshed() | date: 'HH:mm:ss' }}</span
+            >
+          }
+          <button
+            class="btn btn-sm btn-outline"
+            (click)="reloadCi()"
+            [disabled]="ghLoading()"
+            [title]="'common.refresh' | translate"
           >
-        }
+            ↻
+          </button>
+        </div>
       </div>
 
       <input
@@ -110,7 +125,25 @@
 
   @if (hasAdo()) {
     <section class="card">
-      <h2 class="section-title">{{ 'dashboard.recentWorkItems' | translate }}</h2>
+      <div class="section-header">
+        <h2 class="section-title">{{ 'dashboard.recentWorkItems' | translate }}</h2>
+        <div class="refresh-bar">
+          @if (adoLastRefreshed()) {
+            <span class="text-muted text-sm"
+              >{{ 'common.updatedAt' | translate }}
+              {{ adoLastRefreshed() | date: 'HH:mm:ss' }}</span
+            >
+          }
+          <button
+            class="btn btn-sm btn-outline"
+            (click)="reloadAdo()"
+            [disabled]="adoLoading()"
+            [title]="'common.refresh' | translate"
+          >
+            ↻
+          </button>
+        </div>
+      </div>
       @if (adoLoading()) {
         <div class="empty-state"><div class="spinner"></div></div>
       } @else if (adoError()) {

@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -33,7 +33,7 @@ interface BEdge {
 @Component({
   selector: 'app-blockers',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormsModule],
+  imports: [CommonModule, DatePipe, TranslateModule, FormsModule],
   templateUrl: './blockers.component.html',
   styleUrl: './blockers.component.scss',
 })
@@ -49,6 +49,7 @@ export class BlockersComponent implements OnInit {
   loadingProjects = signal(false);
   loading = signal(false);
   error = signal('');
+  lastRefreshed = signal<Date | null>(null);
 
   nodes = signal<BNode[]>([]);
   edges = signal<BEdge[]>([]);
@@ -146,6 +147,10 @@ export class BlockersComponent implements OnInit {
     } finally {
       this.loadingProjects.set(false);
     }
+  }
+
+  reload(): void {
+    void this.load();
   }
 
   async load() {
@@ -256,6 +261,7 @@ export class BlockersComponent implements OnInit {
 
       this.nodes.set(bNodes);
       this.edges.set(rawEdges);
+      this.lastRefreshed.set(new Date());
     } catch (e: unknown) {
       this.error.set(e instanceof Error ? e.message : 'Error loading graph');
     } finally {

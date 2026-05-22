@@ -3,20 +3,35 @@
     <h1>{{ 'boards.title' | translate }}</h1>
     <p>{{ 'boards.subtitle' | translate }}</p>
   </div>
-  @if (projects().length > 1) {
-    <select
-      class="form-control"
-      style="width: auto"
-      [ngModel]="selectedProject()"
-      (ngModelChange)="
-        selectedProject.set($event); loadAssignees($event); loadSavedColConfig($event)
-      "
+  <div class="refresh-bar">
+    @if (lastRefreshed()) {
+      <span class="text-muted text-sm"
+        >{{ 'common.updatedAt' | translate }} {{ lastRefreshed() | date: 'HH:mm:ss' }}</span
+      >
+    }
+    @if (projects().length > 1) {
+      <select
+        class="form-control"
+        style="width: auto"
+        [ngModel]="selectedProject()"
+        (ngModelChange)="
+          selectedProject.set($event); loadAssignees($event); loadSavedColConfig($event)
+        "
+      >
+        @for (p of projects(); track p.id) {
+          <option [value]="p.id">{{ p.name }}</option>
+        }
+      </select>
+    }
+    <button
+      class="btn btn-sm btn-outline"
+      (click)="reload()"
+      [disabled]="boardLoading()"
+      [title]="'common.refresh' | translate"
     >
-      @for (p of projects(); track p.id) {
-        <option [value]="p.id">{{ p.name }}</option>
-      }
-    </select>
-  }
+      ↻
+    </button>
+  </div>
 </div>
 
 @if (loading()) {

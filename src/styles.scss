@@ -207,6 +207,12 @@ a:hover {
   justify-content: space-between;
   align-items: center;
 }
+.refresh-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
 .gap-sm {
   gap: 0.5rem;
 }

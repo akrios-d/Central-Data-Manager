@@ -65,6 +65,7 @@ export class PullRequestsComponent implements OnInit {
   prs = signal<PullRequest[]>([]);
   prsLoading = signal(false);
   prsError = signal<string | null>(null);
+  lastRefreshed = signal<Date | null>(null);
   stateFilter = signal<PrStateFilter>('open');
   authorFilter = signal('');
   labelFilter = signal('');
@@ -134,6 +135,11 @@ export class PullRequestsComponent implements OnInit {
     if (repo) this.loadPrs(repo);
   }
 
+  reload(): void {
+    const repo = this.selectedRepo();
+    if (repo) this.loadPrs(repo);
+  }
+
   private loadPrs(repo: CiRepo): void {
     this.prsLoading.set(true);
     this.prsError.set(null);
@@ -144,6 +150,7 @@ export class PullRequestsComponent implements OnInit {
         .pipe(catchError(() => of([] as GhPullRequest[])))
         .subscribe((data) => {
           this.prs.set(data.map(this.fromGhPr));
+          this.lastRefreshed.set(new Date());
           this.prsLoading.set(false);
         });
     } else {
@@ -152,6 +159,7 @@ export class PullRequestsComponent implements OnInit {
         .pipe(catchError(() => of([] as GlMergeRequest[])))
         .subscribe((data) => {
           this.prs.set(data.map(this.fromGlMr));
+          this.lastRefreshed.set(new Date());
           this.prsLoading.set(false);
         });
     }
