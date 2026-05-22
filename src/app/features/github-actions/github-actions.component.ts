@@ -114,14 +114,18 @@ export class GithubActionsComponent implements OnInit {
   }
 
   rerun(run: CiRun): void {
-    this.ci.rerunRun(this.selectedRepo()!, run.id).subscribe({
+    const repo = this.selectedRepo();
+    if (!repo) return;
+    this.ci.rerunRun(repo, run.id).subscribe({
       next: () => this.showFeedback(run.id, 'Re-run triggered'),
       error: (e) => this.showFeedback(run.id, e?.error?.message ?? 'Error'),
     });
   }
 
   cancel(run: CiRun): void {
-    this.ci.cancelRun(this.selectedRepo()!, run.id).subscribe({
+    const repo = this.selectedRepo();
+    if (!repo) return;
+    this.ci.cancelRun(repo, run.id).subscribe({
       next: () => this.showFeedback(run.id, 'Cancelled'),
       error: (e) => this.showFeedback(run.id, e?.error?.message ?? 'Error'),
     });
@@ -159,8 +163,12 @@ export class GithubActionsComponent implements OnInit {
   private computeStats(runs: CiRun[]): WorkflowStat[] {
     const byWorkflow = new Map<number, CiRun[]>();
     for (const r of runs) {
-      if (!byWorkflow.has(r.workflow_id)) byWorkflow.set(r.workflow_id, []);
-      byWorkflow.get(r.workflow_id)!.push(r);
+      let wfRuns = byWorkflow.get(r.workflow_id);
+      if (!wfRuns) {
+        wfRuns = [];
+        byWorkflow.set(r.workflow_id, wfRuns);
+      }
+      wfRuns.push(r);
     }
     return [...byWorkflow.entries()]
       .map(([id, wRuns]) => {

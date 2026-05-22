@@ -101,8 +101,12 @@ export class SprintWidgetComponent implements OnInit {
     ];
     const map = new Map<string, BoardWorkItem[]>();
     for (const wi of this.workItems()) {
-      if (!map.has(wi.state)) map.set(wi.state, []);
-      map.get(wi.state)!.push(wi);
+      let stateItems = map.get(wi.state);
+      if (!stateItems) {
+        stateItems = [];
+        map.set(wi.state, stateItems);
+      }
+      stateItems.push(wi);
     }
     return [...map.entries()]
       .sort((a, b) => {

@@ -130,7 +130,8 @@ export class SettingsComponent implements OnInit {
     this.editAdoTeam.set(this.tokens.devopsTeam() ?? '');
     this.glUrl.set(this.tokens.gitlabBaseUrl() ?? 'https://gitlab.com');
     this.jiraUrl.set(this.tokens.jiraBaseUrl() ?? 'https://your-domain.atlassian.net');
-    if (this.tokens.jiraEmail()) this.jiraEmail.set(this.tokens.jiraEmail()!);
+    const savedEmail = this.tokens.jiraEmail();
+    if (savedEmail) this.jiraEmail.set(savedEmail);
   }
 
   testGitHub(): void {

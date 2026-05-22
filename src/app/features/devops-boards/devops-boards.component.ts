@@ -308,7 +308,8 @@ export class DevopsBoardsComponent implements OnInit {
     const item = this.dragItem();
     if (!item || item.state === targetState) return;
 
-    const projectId = this.selectedProject()!;
+    const projectId = this.selectedProject();
+    if (!projectId) return;
     const prevState = item.state;
     item.state = targetState;
     this.rebucketItems(this.columns().flatMap((c) => c.items));

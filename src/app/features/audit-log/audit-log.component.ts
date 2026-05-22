@@ -122,6 +122,7 @@ export class AuditLogComponent {
       @page { margin: 1.5cm; size: A4; }
     }
   </style>
+  <script>window.addEventListener('load', () => window.print());<\/script>
 </head>
 <body>
   <header>
@@ -142,11 +143,9 @@ export class AuditLogComponent {
 </body>
 </html>`;
 
-    const win = window.open('', '_blank', 'width=900,height=700');
-    if (!win) return;
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    win.addEventListener('load', () => win.print());
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, '_blank', 'width=900,height=700');
+    if (!win) URL.revokeObjectURL(url);
   }
 }

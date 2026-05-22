@@ -93,7 +93,10 @@ export class BlockersComponent implements OnInit {
 
   nodeById = computed(() => new Map(this.nodes().map((n) => [n.id, n])));
 
-  selectedNode = computed(() => this.nodeById().get(this.selectedNodeId()!) ?? null);
+  selectedNode = computed(() => {
+    const sid = this.selectedNodeId();
+    return sid != null ? (this.nodeById().get(sid) ?? null) : null;
+  });
 
   topBlockers = computed(() =>
     [...this.filteredNodes()]
@@ -194,7 +197,8 @@ export class BlockersComponent implements OnInit {
       // Level assignment via DFS memoization (handles cycles)
       const levels = new Map<number | string, number>();
       const getLevel = (id: number | string, visiting: Set<number | string>): number => {
-        if (levels.has(id)) return levels.get(id)!;
+        const cached = levels.get(id);
+        if (cached !== undefined) return cached;
         if (visiting.has(id)) return 0;
         visiting.add(id);
         const preds = [...(blockedBy.get(id) ?? [])];
@@ -208,8 +212,12 @@ export class BlockersComponent implements OnInit {
       // Group by level for vertical stacking
       const levelGroups = new Map<number, (number | string)[]>();
       for (const [id, lvl] of levels) {
-        if (!levelGroups.has(lvl)) levelGroups.set(lvl, []);
-        levelGroups.get(lvl)!.push(id);
+        let lvlGroup = levelGroups.get(lvl);
+        if (!lvlGroup) {
+          lvlGroup = [];
+          levelGroups.set(lvl, lvlGroup);
+        }
+        lvlGroup.push(id);
       }
 
       // Impact score: transitive count of blocked items
@@ -217,8 +225,8 @@ export class BlockersComponent implements OnInit {
         const visited = new Set<number | string>();
         const stack = [...(blocks.get(startId) ?? [])];
         while (stack.length) {
-          const id = stack.pop()!;
-          if (visited.has(id)) continue;
+          const id = stack.pop();
+          if (id === undefined || visited.has(id)) continue;
           visited.add(id);
           for (const next of blocks.get(id) ?? []) stack.push(next);
         }
@@ -248,16 +256,22 @@ export class BlockersComponent implements OnInit {
 
       const bNodes: BNode[] = allIds
         .filter((id) => items.has(id) && positions.has(id))
-        .map((id) => ({
-          id,
-          item: items.get(id)!,
-          x: positions.get(id)!.x,
-          y: positions.get(id)!.y,
-          level: levels.get(id)!,
-          impactScore: impacts.get(id)!,
-          blocks: [...(blocks.get(id) ?? [])],
-          blockedBy: [...(blockedBy.get(id) ?? [])],
-        }));
+        .map((id) => {
+          const item = items.get(id);
+          const pos = positions.get(id);
+          if (!item || !pos) return null;
+          return {
+            id,
+            item,
+            x: pos.x,
+            y: pos.y,
+            level: levels.get(id) ?? 0,
+            impactScore: impacts.get(id) ?? 0,
+            blocks: [...(blocks.get(id) ?? [])],
+            blockedBy: [...(blockedBy.get(id) ?? [])],
+          };
+        })
+        .filter((n): n is BNode => n !== null);
 
       this.nodes.set(bNodes);
       this.edges.set(rawEdges);

@@ -1,7 +1,13 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Chain } from '../models/chain.model';
-import { OrchGraph, OrchNodeRun, OrchRun, NodeRunStatus } from '../models/orchestrator.model';
+import {
+  OrchGraph,
+  OrchNode,
+  OrchNodeRun,
+  OrchRun,
+  NodeRunStatus,
+} from '../models/orchestrator.model';
 import { CiProviderService } from './ci-provider.service';
 import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { AppSettingsService } from './app-settings.service';
@@ -80,40 +86,48 @@ export class OrchestratorExecutorService {
 
     const p = Promise.all(
       predIds.map((id) => this.buildNodePromise(id, graph, chainMap, run, promises)),
-    ).then(async (results) => {
-      const nr = run.nodes.find((n) => n.nodeId === nodeId);
-      if (!nr) return false;
-
-      if (this.stopRequested || results.some((r) => !r)) {
-        this.setStatus(run, nr, 'skipped');
-        return false;
-      }
-
-      if (node.disabled) {
-        this.setStatus(run, nr, 'skipped');
-        return true; // pass-through so downstream nodes still run
-      }
-
-      const chain = chainMap.get(node.chainId!);
-      if (!chain) {
-        nr.error = 'Chain not found';
-        this.setStatus(run, nr, 'failure');
-        return false;
-      }
-
-      const effectiveChain = node.disabledSteps?.length
-        ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps?.includes(s.id)) }
-        : chain;
-
-      this.setStatus(run, nr, 'running');
-      const result = await this.runChain(effectiveChain);
-      if (!result.ok && result.error) nr.error = result.error;
-      this.setStatus(run, nr, result.ok ? 'success' : 'failure');
-      return result.ok;
-    });
+    ).then((results) => this.executeNodeAfterDeps(results, nodeId, node, chainMap, run));
 
     promises.set(nodeId, p);
     return p;
+  }
+
+  private async executeNodeAfterDeps(
+    results: boolean[],
+    nodeId: string,
+    node: OrchNode,
+    chainMap: Map<string, Chain>,
+    run: OrchRun,
+  ): Promise<boolean> {
+    const nr = run.nodes.find((n) => n.nodeId === nodeId);
+    if (!nr) return false;
+
+    if (this.stopRequested || results.some((r) => !r)) {
+      this.setStatus(run, nr, 'skipped');
+      return false;
+    }
+
+    if (node.disabled) {
+      this.setStatus(run, nr, 'skipped');
+      return true; // pass-through so downstream nodes still run
+    }
+
+    const chain = chainMap.get(node.chainId ?? '');
+    if (!chain) {
+      nr.error = 'Chain not found';
+      this.setStatus(run, nr, 'failure');
+      return false;
+    }
+
+    const effectiveChain = node.disabledSteps?.length
+      ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps?.includes(s.id)) }
+      : chain;
+
+    this.setStatus(run, nr, 'running');
+    const result = await this.runChain(effectiveChain);
+    if (!result.ok && result.error) nr.error = result.error;
+    this.setStatus(run, nr, result.ok ? 'success' : 'failure');
+    return result.ok;
   }
 
   private setStatus(run: OrchRun, nr: OrchNodeRun, status: NodeRunStatus): void {

@@ -153,7 +153,10 @@ export class ChainBuilderComponent {
       this.toasts.show('Add at least one step', 'danger');
       return;
     }
-    const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
+    const id =
+      this.selectedId() === 'new'
+        ? crypto.randomUUID()
+        : (this.selectedId() ?? crypto.randomUUID());
     const chain: Chain = {
       id,
       name,
@@ -443,7 +446,10 @@ export class ChainBuilderComponent {
     const selected = new Set(this.selectedStepIds());
     const steps = allSteps.filter((s) => selected.has(s.id));
     if (!name || !steps.length) return;
-    const id = this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!;
+    const id =
+      this.selectedId() === 'new'
+        ? crypto.randomUUID()
+        : (this.selectedId() ?? crypto.randomUUID());
     const chain: Chain = {
       id,
       name,
@@ -519,7 +525,10 @@ export class ChainBuilderComponent {
       return null;
     }
     return {
-      id: this.selectedId() === 'new' ? crypto.randomUUID() : this.selectedId()!,
+      id:
+        this.selectedId() === 'new'
+          ? crypto.randomUUID()
+          : (this.selectedId() ?? crypto.randomUUID()),
       name,
       ref: this.chainRef().trim(),
       steps: this.editSteps(),

@@ -99,11 +99,11 @@ export class BoardsProviderService {
     return this.ado.getCurrentIteration(projectId, teamId).pipe(
       switchMap((res) => {
         const iter = res.value[0];
-        if (!iter) return of({ value: [] as DevOpsWorkItem[] });
+        if (!iter) return of<{ value: DevOpsWorkItem[] }>({ value: [] });
         return this.ado.getIterationWorkItemIds(projectId, teamId, iter.id).pipe(
           switchMap((iwi) => {
             const ids = iwi.workItemRelations.filter((r) => r.rel === null).map((r) => r.target.id);
-            if (!ids.length) return of({ value: [] as DevOpsWorkItem[] });
+            if (!ids.length) return of<{ value: DevOpsWorkItem[] }>({ value: [] });
             return this.ado.listWorkItems(projectId, ids);
           }),
         );
@@ -234,8 +234,8 @@ export class BoardsProviderService {
 
         const allIds = new Set<number>();
         for (const r of relations) {
-          allIds.add(r.source!.id);
-          allIds.add(r.target!.id);
+          allIds.add(r.source?.id ?? 0);
+          allIds.add(r.target?.id ?? 0);
         }
 
         const idArr = [...allIds];
@@ -251,10 +251,10 @@ export class BoardsProviderService {
             const seen = new Set<string>();
             const deduped: BlockerRelation[] = [];
             for (const r of relations) {
-              const key = `${r.source!.id}-${r.target!.id}`;
+              const key = `${r.source?.id ?? 0}-${r.target?.id ?? 0}`;
               if (!seen.has(key)) {
                 seen.add(key);
-                deduped.push({ sourceId: r.source!.id, targetId: r.target!.id });
+                deduped.push({ sourceId: r.source?.id ?? 0, targetId: r.target?.id ?? 0 });
               }
             }
             return { items, relations: deduped };
@@ -329,7 +329,7 @@ export class BoardsProviderService {
     return this.ado.queryWorkItems(project, this.buildWiql(project, filters)).pipe(
       switchMap((res) => {
         const ids = res.workItems?.slice(0, 500).map((w) => w.id) ?? [];
-        if (!ids.length) return of([] as BoardWorkItem[]);
+        if (!ids.length) return of<BoardWorkItem[]>([]);
         const batches: number[][] = [];
         for (let i = 0; i < ids.length; i += 200) batches.push(ids.slice(i, i + 200));
         return forkJoin(batches.map((b) => this.ado.listWorkItems(project, b))).pipe(

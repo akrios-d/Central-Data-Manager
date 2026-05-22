@@ -123,8 +123,12 @@ export class ReleasesComponent {
     const map = new Map<string, string[]>();
     for (const c of commits) {
       const type = this.parseConvType(c.message);
-      if (!map.has(type)) map.set(type, []);
-      map.get(type)!.push(this.parseConvDesc(c.message));
+      let typeItems = map.get(type);
+      if (!typeItems) {
+        typeItems = [];
+        map.set(type, typeItems);
+      }
+      typeItems.push(this.parseConvDesc(c.message));
     }
     const order = Object.keys(CONV_TYPES);
     return [...map.entries()]
@@ -195,8 +199,8 @@ export class ReleasesComponent {
     const tagsReady = this.tagsCache.has(name);
     const branchesReady = this.branchesCache.has(name);
 
-    if (tagsReady) this.cellTags.set(this.tagsCache.get(name)!);
-    if (branchesReady) this.cellBranches.set(this.branchesCache.get(name)!);
+    if (tagsReady) this.cellTags.set(this.tagsCache.get(name) ?? []);
+    if (branchesReady) this.cellBranches.set(this.branchesCache.get(name) ?? []);
     if (tagsReady && branchesReady) return;
 
     this.refsLoading.set(true);
@@ -409,8 +413,8 @@ export class ReleasesComponent {
     this.compareRepoId.set(repoId);
     const tagged = this.envsWithTag(repoId);
     if (tagged.length >= 2) {
-      this.compareBaseEnvId.set(tagged.at(-1)!.envId);
-      this.compareHeadEnvId.set(tagged.at(-2)!.envId);
+      this.compareBaseEnvId.set(tagged.at(-1)?.envId ?? '');
+      this.compareHeadEnvId.set(tagged.at(-2)?.envId ?? '');
       this.runCompare();
     }
   }

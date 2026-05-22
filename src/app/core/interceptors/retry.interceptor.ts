@@ -24,8 +24,8 @@ const BASE_DELAY_MS = 1_000;
 function resolveDelay(error: HttpErrorResponse, attempt: number): number {
   const retryAfterHeader = error.headers?.get('Retry-After');
   if (retryAfterHeader) {
-    const secs = parseInt(retryAfterHeader, 10);
-    if (!isNaN(secs) && secs > 0) return secs * 1_000;
+    const secs = Number.parseInt(retryAfterHeader, 10);
+    if (!Number.isNaN(secs) && secs > 0) return secs * 1_000;
   }
   return BASE_DELAY_MS * Math.pow(2, attempt);
 }
@@ -41,9 +41,7 @@ function withRetry(
         return throwError(() => error);
       }
       const delay = resolveDelay(error, attempt);
-      return timer(delay).pipe(switchMap(() => withRetry(req, next, attempt + 1))) as Observable<
-        HttpEvent<unknown>
-      >;
+      return timer(delay).pipe(switchMap(() => withRetry(req, next, attempt + 1)));
     }),
   );
 }
