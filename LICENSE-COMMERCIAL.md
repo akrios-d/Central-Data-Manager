@@ -74,4 +74,4 @@ Please include:
 
 This document is informational only.
 
-Commercial use is authorized only after a signed agreement or explicit written approval.q
+Commercial use is authorized only after a signed agreement or explicit written approval.
