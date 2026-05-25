@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, switchMap, forkJoin, of } from 'rxjs';
 import { TokenService } from './token.service';
 
 export interface GhOrg {
@@ -8,6 +8,15 @@ export interface GhOrg {
 }
 export interface GhTokenScopes {
   scopes: string[] | null;
+}
+
+export interface GhActionsCache {
+  id: number;
+  key: string;
+  ref: string;
+  size_in_bytes: number;
+  created_at: string;
+  last_accessed_at: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,15 +53,12 @@ export class GitHubApiService {
   }
 
   listRepos(): Observable<GhRepo[]> {
-    // /user/repos returns all repos (public + private) for the authenticated user
-    // affiliation=owner,collaborator,organization_member covers org repos too
     return this.http.get<GhRepo[]>(
       `https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member`,
       { headers: this.headers },
     );
   }
 
-  // fullName = "owner/repo"
   listWorkflows(fullName: string): Observable<{ workflows: GhWorkflow[] }> {
     return this.http.get<{ workflows: GhWorkflow[] }>(
       `https://api.github.com/repos/${fullName}/actions/workflows`,
@@ -110,12 +116,34 @@ export class GitHubApiService {
     );
   }
 
+  /**
+   * Lists all caches for a given ref, then deletes each one by key.
+   * This is required because the GitHub API no longer accepts ref-only deletes
+   * without also providing a key.
+   */
   deleteRepoCaches(fullName: string, ref: string): Observable<unknown> {
-    const encodedRef = encodeURIComponent(ref.startsWith('refs/') ? ref : `refs/heads/${ref}`);
-    return this.http.delete<unknown>(
-      `https://api.github.com/repos/${fullName}/actions/caches?ref=${encodedRef}`,
-      { headers: this.headers },
-    );
+    const normalizedRef = ref.startsWith('refs/') ? ref : `refs/heads/${ref}`;
+
+    return this.http
+      .get<{
+        actions_caches: GhActionsCache[];
+      }>(
+        `https://api.github.com/repos/${fullName}/actions/caches?ref=${normalizedRef}&per_page=100`,
+        { headers: this.headers },
+      )
+      .pipe(
+        switchMap(({ actions_caches }) => {
+          if (!actions_caches.length) return of(null);
+          return forkJoin(
+            actions_caches.map((cache) =>
+              this.http.delete<unknown>(
+                `https://api.github.com/repos/${fullName}/actions/caches/${cache.id}`,
+                { headers: this.headers },
+              ),
+            ),
+          );
+        }),
+      );
   }
 
   rerunWorkflow(fullName: string, runId: number): Observable<void> {

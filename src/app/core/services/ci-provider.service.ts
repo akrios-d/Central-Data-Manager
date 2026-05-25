@@ -156,10 +156,10 @@ export class CiProviderService {
   }
 
   deleteRepoCaches(fullName: string, ref: string): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.gh
         .deleteRepoCaches(fullName, ref)
-        .subscribe({ next: () => resolve(), error: () => resolve() });
+        .subscribe({ next: () => resolve(), error: (e) => reject(e) });
     });
   }
 

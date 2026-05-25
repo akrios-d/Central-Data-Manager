@@ -65,8 +65,25 @@ export class ChainExecutorService {
     run.steps[i].startedAt = new Date().toISOString();
     this.push(run);
 
+    // Clear cache before resolving ref and triggering
     if (step.clearCache && provider === 'github') {
-      await this.ci.deleteRepoCaches(step.repoFullName, step.ref);
+      let cacheError: string | null = null;
+      try {
+        await this.ci.deleteRepoCaches(step.repoFullName, step.ref);
+      } catch (e: any) {
+        cacheError = e?.error?.message ?? e?.message ?? 'Failed to delete cache';
+      }
+
+      if (cacheError) {
+        run.steps[i].status = 'failure';
+        run.steps[i].error = cacheError;
+        run.steps[i].completedAt = new Date().toISOString();
+        this.skipRemaining(run.steps, i + 1);
+        run.status = 'failure';
+        this.push(run);
+        this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', cacheError);
+        return 'failure';
+      }
     }
 
     const ref = step.useLatestTag
