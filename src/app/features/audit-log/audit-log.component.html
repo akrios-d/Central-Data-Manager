@@ -59,7 +59,11 @@
           <span class="entry-badge badge-{{ entryCategory(entry.action) }}">{{
             filterLabel(entry.action) | translate
           }}</span>
-          <span class="entry-action">{{ entry.action }}</span>
+          <span
+            class="entry-action"
+            [class]="'entry-action entry-status-' + entryStatus(entry.action)"
+            >{{ entry.action }}</span
+          >
           @if (entry.detail) {
             <span class="entry-detail">{{ entry.detail }}</span>
           }

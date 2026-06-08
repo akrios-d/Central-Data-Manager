@@ -40,6 +40,14 @@ export class AuditLogComponent {
     });
   });
 
+  entryStatus(action: string): 'success' | 'failure' | 'started' | '' {
+    const a = action.toLowerCase();
+    if (a.includes('success')) return 'success';
+    if (a.includes('failure') || a.includes('failed') || a.includes('error')) return 'failure';
+    if (a.includes('started') || a.includes('running')) return 'started';
+    return '';
+  }
+
   entryCategory(action: string): FilterKey {
     const a = action.toLowerCase();
     if (a.includes('token') || a.includes('tokens')) return 'token';

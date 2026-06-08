@@ -134,6 +134,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &.entry-status-success {
+    color: var(--success, #3fb950);
+  }
+
+  &.entry-status-failure {
+    color: var(--danger, #f85149);
+  }
+
+  &.entry-status-started {
+    color: var(--text-muted);
+    font-style: italic;
+  }
 }
 
 .entry-detail {
