@@ -25,12 +25,23 @@ export interface OrchGraph {
   createdAt: string;
 }
 
+export type NodeStepStatus = 'pending' | 'running' | 'success' | 'failure' | 'skipped';
+
+export interface OrchNodeStepRun {
+  stepName: string;
+  repoFullName: string;
+  status: NodeStepStatus;
+  error?: string;
+  runUrl?: string;
+}
+
 export interface OrchNodeRun {
   nodeId: string;
   status: NodeRunStatus;
   error?: string;
   startedAt?: string;
   completedAt?: string;
+  steps?: OrchNodeStepRun[];
 }
 
 export interface OrchRun {

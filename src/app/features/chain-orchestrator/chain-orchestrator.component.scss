@@ -478,36 +478,124 @@
 
 .orch-run-chip {
   font-size: 0.72rem;
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 4px 7px;
+  border-radius: 6px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  white-space: nowrap;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 90px;
+  max-width: 220px;
 
   &.chip-running {
     border-color: var(--info);
-    background: rgba(88, 166, 255, 0.1);
-    color: var(--info);
-    animation: orchChipPulse 1.5s ease-in-out infinite;
+    background: rgba(88, 166, 255, 0.08);
   }
   &.chip-success {
     border-color: var(--success);
-    background: rgba(63, 185, 80, 0.1);
-    color: var(--success);
+    background: rgba(63, 185, 80, 0.08);
   }
   &.chip-failure {
     border-color: var(--danger);
-    background: rgba(248, 81, 73, 0.1);
-    color: var(--danger);
+    background: rgba(248, 81, 73, 0.08);
     max-width: 260px;
-    white-space: normal;
   }
   &.chip-skipped {
     opacity: 0.45;
   }
+}
+
+.chip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .chip-running & {
+    color: var(--info);
+  }
+  .chip-success & {
+    color: var(--success);
+  }
+  .chip-failure & {
+    color: var(--danger);
+  }
+  .chip-skipped & {
+    color: var(--text-muted);
+  }
+}
+
+.chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.chip-spinner {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--info);
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.chip-steps {
+  list-style: none;
+  padding: 0;
+  margin: 3px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-top: 1px solid var(--border);
+  padding-top: 3px;
+}
+
+.chip-step {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+
+  &.chip-step-running {
+    color: var(--info);
+  }
+  &.chip-step-success {
+    color: var(--success);
+  }
+  &.chip-step-failure {
+    color: var(--danger);
+    white-space: normal;
+    flex-wrap: wrap;
+  }
+  &.chip-step-skipped {
+    opacity: 0.5;
+  }
+}
+
+.chip-step-icon {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+}
+
+.chip-step-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.chip-step-error {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  word-break: break-word;
+  width: 100%;
+  margin-left: 0.9rem;
 }
 
 .orch-chip-error {
@@ -515,7 +603,7 @@
   font-size: 0.68rem;
   color: var(--danger);
   opacity: 0.85;
-  margin-top: 1px;
+  margin-top: 2px;
   word-break: break-word;
 }
 
@@ -788,60 +876,4 @@
   text-overflow: ellipsis;
 }
 
-// ── Mobile ────────────────────────────────────────────────────────────────────
-
-@media (max-width: 768px) {
-  .vtab-card {
-    flex-direction: column;
-    min-height: unset;
-  }
-
-  .vtab-strip {
-    width: 100%;
-    flex-direction: row;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 0;
-    flex-shrink: 0;
-    overflow-x: auto;
-  }
-
-  .vtab-btn {
-    border-left: none;
-    border-bottom: 3px solid transparent;
-    white-space: nowrap;
-    padding: 0.6rem 0.85rem;
-    width: auto;
-    flex-shrink: 0;
-
-    &.active {
-      border-left-color: transparent;
-      border-bottom-color: var(--accent, #58a6ff);
-    }
-  }
-
-  .vtab-body-canvas {
-    min-height: 400px;
-  }
-
-  // ── Toolbar ──────────────────────────────────────────────────────────────────
-  .orch-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.4rem;
-  }
-
-  .orch-name-input {
-    width: 100%;
-  }
-
-  .orch-toolbar-right {
-    flex-wrap: wrap;
-    margin-left: 0;
-    justify-content: flex-end;
-  }
-
-  .orch-sep {
-    display: none;
-  }
-}
+// ── Mobile ─────────

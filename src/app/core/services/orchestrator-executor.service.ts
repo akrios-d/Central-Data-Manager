@@ -5,6 +5,7 @@ import {
   OrchGraph,
   OrchNode,
   OrchNodeRun,
+  OrchNodeStepRun,
   OrchRun,
   NodeRunStatus,
 } from '../models/orchestrator.model';
@@ -124,7 +125,7 @@ export class OrchestratorExecutorService {
       : chain;
 
     this.setStatus(run, nr, 'running');
-    const result = await this.runChain(effectiveChain);
+    const result = await this.runChain(effectiveChain, nr, run);
     if (!result.ok && result.error) nr.error = result.error;
     this.setStatus(run, nr, result.ok ? 'success' : 'failure');
     return result.ok;
@@ -155,11 +156,41 @@ export class OrchestratorExecutorService {
 
   // ── Chain execution ─────────────────────────────────────────────────────────
 
-  private async runChain(chain: Chain): Promise<{ ok: boolean; error?: string }> {
-    for (const step of chain.steps) {
-      if (this.stopRequested) return { ok: false, error: 'Stopped' };
+  private async runChain(
+    chain: Chain,
+    nr: OrchNodeRun,
+    run: OrchRun,
+  ): Promise<{ ok: boolean; error?: string }> {
+    const total = chain.steps.length;
+
+    // Initialise step tracking
+    nr.steps = chain.steps.map(
+      (s): OrchNodeStepRun => ({
+        stepName: s.workflowName,
+        repoFullName: s.repoFullName,
+        status: 'pending',
+      }),
+    );
+    this.push(run);
+
+    for (let i = 0; i < chain.steps.length; i++) {
+      const step = chain.steps[i];
+      const stepRun = nr.steps[i];
+
+      if (this.stopRequested) {
+        for (let j = i; j < total; j++) nr.steps[j].status = 'skipped';
+        this.push(run);
+        return { ok: false, error: 'Stopped' };
+      }
 
       const provider: CiProviderType = step.provider ?? 'github';
+
+      stepRun.status = 'running';
+      this.push(run);
+      this.audit.log(
+        `Step ${i + 1}/${total} started`,
+        `${step.workflowName} (${step.repoFullName})`,
+      );
 
       if (step.clearCache && provider === 'github') {
         await this.clearCache(step.repoFullName, step.ref);
@@ -179,7 +210,15 @@ export class OrchestratorExecutorService {
         step.inputs,
         provider,
       );
-      if (err !== null) return { ok: false, error: `${step.workflowName}: ${err}` };
+
+      if (err !== null) {
+        stepRun.status = 'failure';
+        stepRun.error = err;
+        for (let j = i + 1; j < total; j++) nr.steps[j].status = 'skipped';
+        this.push(run);
+        this.audit.log(`Step ${i + 1}/${total} failure`, `${step.workflowName}: ${err}`);
+        return { ok: false, error: `${step.workflowName}: ${err}` };
+      }
 
       const stepResult = await this.waitForStep(
         step.repoFullName,
@@ -188,9 +227,24 @@ export class OrchestratorExecutorService {
         provider,
         gitlabPipelineId,
       );
-      if (!stepResult.ok)
+
+      stepRun.status = stepResult.ok ? 'success' : 'failure';
+      if (!stepResult.ok) stepRun.error = stepResult.reason;
+      this.push(run);
+
+      const label = `${step.workflowName} (${step.repoFullName})`;
+      this.audit.log(
+        `Step ${i + 1}/${total} ${stepRun.status}`,
+        stepResult.ok ? label : `${label} — ${stepResult.reason ?? 'failed'}`,
+      );
+
+      if (!stepResult.ok) {
+        for (let j = i + 1; j < total; j++) nr.steps[j].status = 'skipped';
+        this.push(run);
         return { ok: false, error: `${step.workflowName}: ${stepResult.reason ?? 'failed'}` };
+      }
     }
+
     return { ok: true };
   }
 

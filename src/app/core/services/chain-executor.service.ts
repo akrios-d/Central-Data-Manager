@@ -60,10 +60,12 @@ export class ChainExecutorService {
     }
 
     const step = chain.steps[i];
+    const total = chain.steps.length;
     const provider = step.provider ?? 'github';
     run.steps[i].status = 'running';
     run.steps[i].startedAt = new Date().toISOString();
     this.push(run);
+    this.audit.log(`Step ${i + 1}/${total} started`, `${step.workflowName} (${step.repoFullName})`);
 
     // Clear cache before resolving ref and triggering
     if (step.clearCache && provider === 'github') {
@@ -81,6 +83,10 @@ export class ChainExecutorService {
         this.skipRemaining(run.steps, i + 1);
         run.status = 'failure';
         this.push(run);
+        this.audit.log(
+          `Step ${i + 1}/${total} failure`,
+          `${step.workflowName} (${step.repoFullName}) — ${cacheError}`,
+        );
         this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', cacheError);
         return 'failure';
       }
@@ -106,6 +112,10 @@ export class ChainExecutorService {
       this.skipRemaining(run.steps, i + 1);
       run.status = 'failure';
       this.push(run);
+      this.audit.log(
+        `Step ${i + 1}/${total} failure`,
+        `${step.workflowName} (${step.repoFullName}) — ${error}`,
+      );
       this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', error);
       return 'failure';
     }
@@ -121,13 +131,13 @@ export class ChainExecutorService {
     );
     run.steps[i].completedAt = new Date().toISOString();
     this.push(run);
-    this.notifyStep(
-      step.workflowName,
-      i,
-      chain.steps.length,
-      pollResult === 'success' ? 'success' : 'failure',
-      run.steps[i].error,
+    const stepStatus = pollResult === 'success' ? 'success' : 'failure';
+    const stepLabel = `${step.workflowName} (${step.repoFullName})`;
+    this.audit.log(
+      `Step ${i + 1}/${total} ${stepStatus}`,
+      stepStatus === 'success' ? stepLabel : `${stepLabel} — ${run.steps[i].error ?? 'failed'}`,
     );
+    this.notifyStep(step.workflowName, i, chain.steps.length, stepStatus, run.steps[i].error);
 
     if (pollResult !== 'success') {
       this.skipRemaining(run.steps, i + 1);
