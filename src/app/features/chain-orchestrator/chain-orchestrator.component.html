@@ -160,6 +160,7 @@
             class="orch-canvas"
             #canvas
             (mousedown)="onCanvasMouseDown($event)"
+            (touchstart)="onCanvasTouchStart($event)"
             (keydown)="onCanvasKeyDown($event)"
           >
             <!-- SVG edges layer -->
@@ -224,6 +225,7 @@
                 [style.left.px]="node.x"
                 [style.top.px]="node.y"
                 (mousedown)="onNodeMouseDown($event, node)"
+                (touchstart)="onNodeTouchStart($event, node)"
                 (keydown)="onNodeKeyDown($event, node)"
                 (click)="onNodeClick($event, node)"
               >
@@ -232,6 +234,7 @@
                   <button
                     type="button"
                     class="orch-port orch-port-in"
+                    [attr.data-port-in-node-id]="node.id"
                     (mousedown)="$event.stopPropagation()"
                     (keydown)="$event.stopPropagation()"
                     (mouseenter)="hoveredInPortNodeId.set(node.id)"
@@ -280,6 +283,7 @@
                 <div
                   class="orch-port orch-port-out"
                   (mousedown)="onOutPortMouseDown($event, node)"
+                  (touchstart)="onOutPortTouchStart($event, node)"
                   (keydown)="$event.stopPropagation()"
                 ></div>
               </div>

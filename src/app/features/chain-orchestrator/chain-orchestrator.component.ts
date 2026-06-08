@@ -256,13 +256,35 @@ export class ChainOrchestratorComponent {
     this.mouseDownPos = { x: e.clientX, y: e.clientY };
     this.selectedNodeId.set(node.id);
     this.selectedEdgeId.set(null);
-    const { x, y } = this.canvasCoords(e);
+    const { x, y } = this.clientToCanvas(e.clientX, e.clientY);
     this.interaction.set({
       type: 'dragging-node',
       nodeId: node.id,
       offsetX: x - node.x,
       offsetY: y - node.y,
     });
+  }
+
+  onNodeTouchStart(e: TouchEvent, node: OrchNode): void {
+    e.stopPropagation();
+    const touch = e.touches[0];
+    this.selectedNodeId.set(node.id);
+    this.selectedEdgeId.set(null);
+    this.selectedNodePopupId.set(null);
+    const { x, y } = this.clientToCanvas(touch.clientX, touch.clientY);
+    this.interaction.set({
+      type: 'dragging-node',
+      nodeId: node.id,
+      offsetX: x - node.x,
+      offsetY: y - node.y,
+    });
+  }
+
+  onCanvasTouchStart(_e: TouchEvent): void {
+    this.selectedNodeId.set(null);
+    this.selectedEdgeId.set(null);
+    this.showAddChain.set(false);
+    this.selectedNodePopupId.set(null);
   }
 
   onNodeClick(e: MouseEvent, node: OrchNode): void {
@@ -303,6 +325,16 @@ export class ChainOrchestratorComponent {
 
   onOutPortMouseDown(e: MouseEvent, node: OrchNode): void {
     e.stopPropagation();
+    this.startDrawingEdge(node);
+  }
+
+  onOutPortTouchStart(e: TouchEvent, node: OrchNode): void {
+    e.stopPropagation();
+    e.preventDefault();
+    this.startDrawingEdge(node);
+  }
+
+  private startDrawingEdge(node: OrchNode): void {
     const w = node.type === 'start' ? START_W : NODE_W;
     const h = node.type === 'start' ? START_H : NODE_H;
     this.interaction.set({
@@ -385,7 +417,7 @@ export class ChainOrchestratorComponent {
   onDocMouseMove(e: MouseEvent): void {
     const mode = this.interaction();
     if (!mode) return;
-    const { x, y } = this.canvasCoords(e);
+    const { x, y } = this.clientToCanvas(e.clientX, e.clientY);
 
     if (mode.type === 'dragging-node') {
       const nx = Math.max(0, x - mode.offsetX);
@@ -400,26 +432,59 @@ export class ChainOrchestratorComponent {
 
   @HostListener('document:mouseup')
   onDocMouseUp(): void {
-    const mode = this.interaction();
-    if (mode?.type === 'drawing-edge') {
-      const targetId = this.hoveredInPortNodeId();
-      if (targetId && targetId !== mode.fromNodeId) {
-        if (this.wouldCreateCycle(mode.fromNodeId, targetId)) {
-          this.toasts.show('Cannot connect — this would create a cycle', 'danger');
-        } else {
-          const dup = this.graphEdges().some(
-            (e) => e.fromId === mode.fromNodeId && e.toId === targetId,
-          );
-          if (!dup) {
-            this.graphEdges.update((es) => [
-              ...es,
-              { id: crypto.randomUUID(), fromId: mode.fromNodeId, toId: targetId },
-            ]);
-          }
-        }
-      }
-    }
+    this.commitEdgeIfPossible();
     this.interaction.set(null);
+  }
+
+  @HostListener('document:touchmove', ['$event'])
+  onDocTouchMove(e: TouchEvent): void {
+    const mode = this.interaction();
+    if (!mode) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const { x, y } = this.clientToCanvas(touch.clientX, touch.clientY);
+
+    if (mode.type === 'dragging-node') {
+      const nx = Math.max(0, x - mode.offsetX);
+      const ny = Math.max(0, y - mode.offsetY);
+      this.graphNodes.update((ns) =>
+        ns.map((n) => (n.id === mode.nodeId ? { ...n, x: nx, y: ny } : n)),
+      );
+    } else if (mode.type === 'drawing-edge') {
+      this.interaction.set({ ...mode, curX: x, curY: y });
+      // Detect in-port under the finger via elementFromPoint
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const portNodeId =
+        el?.getAttribute('data-port-in-node-id') ??
+        el?.closest('[data-port-in-node-id]')?.getAttribute('data-port-in-node-id') ??
+        null;
+      this.hoveredInPortNodeId.set(portNodeId);
+    }
+  }
+
+  @HostListener('document:touchend')
+  onDocTouchEnd(): void {
+    this.commitEdgeIfPossible();
+    this.hoveredInPortNodeId.set(null);
+    this.interaction.set(null);
+  }
+
+  private commitEdgeIfPossible(): void {
+    const mode = this.interaction();
+    if (mode?.type !== 'drawing-edge') return;
+    const targetId = this.hoveredInPortNodeId();
+    if (!targetId || targetId === mode.fromNodeId) return;
+    if (this.wouldCreateCycle(mode.fromNodeId, targetId)) {
+      this.toasts.show('Cannot connect — this would create a cycle', 'danger');
+      return;
+    }
+    const dup = this.graphEdges().some((e) => e.fromId === mode.fromNodeId && e.toId === targetId);
+    if (!dup) {
+      this.graphEdges.update((es) => [
+        ...es,
+        { id: crypto.randomUUID(), fromId: mode.fromNodeId, toId: targetId },
+      ]);
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -511,11 +576,11 @@ export class ChainOrchestratorComponent {
     return { x: n.x, y: n.y + h / 2 };
   }
 
-  private canvasCoords(e: MouseEvent): { x: number; y: number } {
+  private clientToCanvas(clientX: number, clientY: number): { x: number; y: number } {
     const el = this.canvasRef?.nativeElement;
     if (!el) return { x: 0, y: 0 };
     const rect = el.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    return { x: clientX - rect.left, y: clientY - rect.top };
   }
 
   private wouldCreateCycle(fromId: string, toId: string): boolean {
