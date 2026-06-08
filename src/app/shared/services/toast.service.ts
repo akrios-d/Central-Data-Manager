@@ -30,7 +30,7 @@ export class ToastService {
   show(message: string, type: ToastType = 'info', durationOverride?: number): void {
     const id = ++this.nextId;
     const settingMs = this.settings.toastDurationSec() * 1000;
-    const duration = durationOverride !== undefined ? durationOverride : settingMs;
+    const duration = durationOverride ?? settingMs;
     this._toasts.update((t) => [...t, { id, type, message, duration }]);
     if (duration > 0) setTimeout(() => this.dismiss(id), duration);
   }

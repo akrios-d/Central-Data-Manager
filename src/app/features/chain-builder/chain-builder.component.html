@@ -23,6 +23,7 @@
     <button
       class="vtab-btn"
       [class.active]="activeTab() === 'editor'"
+      [disabled]="!selectedId()"
       (click)="activeTab.set('editor')"
     >
       {{ 'builder.tabEditor' | translate }}
@@ -31,7 +32,12 @@
       }
     </button>
 
-    <button class="vtab-btn" [class.active]="activeTab() === 'run'" (click)="activeTab.set('run')">
+    <button
+      class="vtab-btn"
+      [class.active]="activeTab() === 'run'"
+      [disabled]="!selectedId()"
+      (click)="activeTab.set('run')"
+    >
       {{ 'builder.tabRun' | translate }}
       @if (isActiveChain() && activeRun()?.status === 'running') {
         <span class="vtab-pulse"></span>

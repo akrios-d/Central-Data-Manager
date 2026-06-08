@@ -19,6 +19,7 @@
     <button
       class="vtab-btn"
       [class.active]="activeTab() === 'canvas'"
+      [disabled]="!selectedGraphId()"
       (click)="activeTab.set('canvas')"
     >
       {{ 'orch.tabCanvas' | translate }}
@@ -370,7 +371,8 @@
 </div>
 
 <!-- ── Node detail popup ───────────────────────────────────────────────────── -->
-@if (popupNode(); as node) {
+@if (popupNode()) {
+  @let node = popupNode()!;
   <div class="node-popup-backdrop" (click)="closeNodePopup()" (keydown.escape)="closeNodePopup()">
     <div class="node-popup" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <!-- Header -->

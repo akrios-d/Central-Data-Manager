@@ -77,7 +77,7 @@
               @for (type of availableTypes(); track type) {
                 <button
                   class="filter-chip"
-                  [class.active]="filterTypes().has(type)"
+                  [class.excluded]="excludedTypes().has(type)"
                   [style.--chip-color]="typeColor(type)"
                   (click)="toggleTypeFilter(type)"
                 >
@@ -95,7 +95,7 @@
               @for (state of availableStates(); track state) {
                 <button
                   class="filter-chip filter-chip-state"
-                  [class.active]="filterStates().has(state)"
+                  [class.excluded]="excludedStates().has(state)"
                   (click)="toggleStateFilter(state)"
                 >
                   {{ state }}
@@ -212,11 +212,15 @@
     } @else if (nodes().length) {
       <div
         class="blockers-canvas"
-        [style.width.px]="canvasWidth()"
-        [style.height.px]="canvasHeight()"
+        [style.width.px]="layoutedCanvasWidth()"
+        [style.height.px]="layoutedCanvasHeight()"
       >
         <!-- SVG edge layer -->
-        <svg class="blockers-svg" [attr.width]="canvasWidth()" [attr.height]="canvasHeight()">
+        <svg
+          class="blockers-svg"
+          [attr.width]="layoutedCanvasWidth()"
+          [attr.height]="layoutedCanvasHeight()"
+        >
           <defs>
             <marker
               id="block-arr"
@@ -258,7 +262,7 @@
         </svg>
 
         <!-- Nodes -->
-        @for (node of filteredNodes(); track node.id) {
+        @for (node of layoutedNodes(); track node.id) {
           <div
             class="block-node"
             [class.selected]="selectedNodeId() === node.id"

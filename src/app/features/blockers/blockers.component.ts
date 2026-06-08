@@ -57,8 +57,10 @@ export class BlockersComponent implements OnInit {
   canvasWidth = signal(800);
   canvasHeight = signal(500);
 
-  filterTypes = signal<Set<string>>(new Set());
-  filterStates = signal<Set<string>>(new Set());
+  /** Types the user has clicked to HIDE (empty = show all) */
+  excludedTypes = signal<Set<string>>(new Set());
+  /** States the user has clicked to HIDE (empty = show all) */
+  excludedStates = signal<Set<string>>(new Set());
   filterOnlyBlockers = signal(false);
 
   availableTypes = computed(() =>
@@ -69,12 +71,12 @@ export class BlockersComponent implements OnInit {
   );
 
   filteredNodes = computed(() => {
-    const types = this.filterTypes();
-    const states = this.filterStates();
+    const excTypes = this.excludedTypes();
+    const excStates = this.excludedStates();
     const onlyBlockers = this.filterOnlyBlockers();
     return this.nodes().filter((n) => {
-      if (types.size > 0 && !types.has(n.item.type)) return false;
-      if (states.size > 0 && !states.has(n.item.state)) return false;
+      if (excTypes.has(n.item.type)) return false;
+      if (excStates.has(n.item.state)) return false;
       if (onlyBlockers && n.blocks.length === 0) return false;
       return true;
     });
@@ -88,10 +90,57 @@ export class BlockersComponent implements OnInit {
   });
 
   hasActiveFilters = computed(
-    () => this.filterTypes().size > 0 || this.filterStates().size > 0 || this.filterOnlyBlockers(),
+    () =>
+      this.excludedTypes().size > 0 || this.excludedStates().size > 0 || this.filterOnlyBlockers(),
   );
 
   nodeById = computed(() => new Map(this.nodes().map((n) => [n.id, n])));
+
+  /** Re-lays-out filteredNodes reactively so gaps from hidden nodes are filled */
+  readonly layoutedNodes = computed((): BNode[] => {
+    const filtered = this.filteredNodes();
+    if (!filtered.length) return [];
+
+    // Re-group by existing level value
+    const levelGroups = new Map<number, BNode[]>();
+    for (const node of filtered) {
+      const grp = levelGroups.get(node.level) ?? [];
+      grp.push(node);
+      levelGroups.set(node.level, grp);
+    }
+
+    // Sort within each level by impactScore desc (mirrors initial layout order)
+    for (const grp of levelGroups.values()) {
+      grp.sort((a, b) => b.impactScore - a.impactScore);
+    }
+
+    // Recompute x/y positions using the same constants as load()
+    const result: BNode[] = [];
+    for (const [lvl, grp] of levelGroups) {
+      grp.forEach((node, i) => {
+        result.push({
+          ...node,
+          x: CANVAS_PAD + lvl * (NODE_W + H_GAP),
+          y: CANVAS_PAD + i * (NODE_H + V_GAP),
+        });
+      });
+    }
+    return result;
+  });
+
+  readonly layoutedNodeMap = computed(() => new Map(this.layoutedNodes().map((n) => [n.id, n])));
+
+  readonly layoutedCanvasWidth = computed(() => {
+    const nodes = this.layoutedNodes();
+    if (!nodes.length) return 800;
+    return Math.max(...nodes.map((n) => n.x)) + NODE_W + CANVAS_PAD;
+  });
+
+  readonly layoutedCanvasHeight = computed(() => {
+    const nodes = this.layoutedNodes();
+    if (!nodes.length) return 500;
+    return Math.max(...nodes.map((n) => n.y)) + NODE_H + CANVAS_PAD;
+  });
 
   selectedNode = computed(() => {
     const sid = this.selectedNodeId();
@@ -284,7 +333,7 @@ export class BlockersComponent implements OnInit {
   }
 
   getEdgePath(edge: BEdge): string {
-    const map = this.nodeById();
+    const map = this.layoutedNodeMap();
     const from = map.get(edge.fromId);
     const to = map.get(edge.toId);
     if (!from || !to) return '';
@@ -297,7 +346,7 @@ export class BlockersComponent implements OnInit {
   }
 
   toggleTypeFilter(type: string): void {
-    this.filterTypes.update((s) => {
+    this.excludedTypes.update((s) => {
       const n = new Set(s);
       n.has(type) ? n.delete(type) : n.add(type);
       return n;
@@ -305,7 +354,7 @@ export class BlockersComponent implements OnInit {
   }
 
   toggleStateFilter(state: string): void {
-    this.filterStates.update((s) => {
+    this.excludedStates.update((s) => {
       const n = new Set(s);
       n.has(state) ? n.delete(state) : n.add(state);
       return n;
@@ -313,8 +362,8 @@ export class BlockersComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.filterTypes.set(new Set());
-    this.filterStates.set(new Set());
+    this.excludedTypes.set(new Set());
+    this.excludedStates.set(new Set());
     this.filterOnlyBlockers.set(false);
   }
 

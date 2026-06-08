@@ -41,6 +41,11 @@
     border-bottom-color: var(--accent, #58a6ff);
     font-weight: 500;
   }
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
   &:hover:not(.active) {
     color: var(--text);
     background: var(--surface-2);
