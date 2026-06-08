@@ -421,7 +421,22 @@
     "comments": "commentaires",
     "noBody": "Aucune description.",
     "pinRepo": "Épingler le dépôt",
-    "unpinRepo": "Désépingler le dépôt"
+    "unpinRepo": "Désépingler le dépôt",
+    "createPr": "+ Nouvelle PR",
+    "newPrTitle": "Titre",
+    "newPrHead": "Branche source",
+    "newPrBase": "Branche cible",
+    "newPrBody": "Description",
+    "newPrDraft": "Créer en brouillon",
+    "submitPr": "Créer",
+    "cancelPr": "Annuler",
+    "approve": "Approuver",
+    "requestChanges": "Demander des modifications",
+    "merge": "Fusionner",
+    "mergeMerge": "Commit de merge",
+    "mergeSquash": "Squash",
+    "mergeRebase": "Rebase",
+    "total": "total"
   },
   "lang": {
     "en": "EN",

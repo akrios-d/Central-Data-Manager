@@ -421,7 +421,22 @@
     "comments": "评论",
     "noBody": "暂无描述。",
     "pinRepo": "固定仓库",
-    "unpinRepo": "取消固定仓库"
+    "unpinRepo": "取消固定仓库",
+    "createPr": "+ 新建 PR",
+    "newPrTitle": "标题",
+    "newPrHead": "来源分支",
+    "newPrBase": "目标分支",
+    "newPrBody": "描述",
+    "newPrDraft": "创建为草稿",
+    "submitPr": "创建",
+    "cancelPr": "取消",
+    "approve": "批准",
+    "requestChanges": "请求更改",
+    "merge": "合并",
+    "mergeMerge": "合并提交",
+    "mergeSquash": "Squash",
+    "mergeRebase": "Rebase",
+    "total": "总计"
   },
   "lang": {
     "en": "EN",

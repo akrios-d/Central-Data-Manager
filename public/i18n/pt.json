@@ -421,7 +421,22 @@
     "comments": "comentários",
     "noBody": "Sem descrição.",
     "pinRepo": "Fixar repositório",
-    "unpinRepo": "Desafixar repositório"
+    "unpinRepo": "Desafixar repositório",
+    "createPr": "+ Novo PR",
+    "newPrTitle": "Título",
+    "newPrHead": "Branch de origem",
+    "newPrBase": "Branch de destino",
+    "newPrBody": "Descrição",
+    "newPrDraft": "Criar como rascunho",
+    "submitPr": "Criar",
+    "cancelPr": "Cancelar",
+    "approve": "Aprovar",
+    "requestChanges": "Solicitar alterações",
+    "merge": "Merge",
+    "mergeMerge": "Merge commit",
+    "mergeSquash": "Squash",
+    "mergeRebase": "Rebase",
+    "total": "total"
   },
   "lang": {
     "en": "EN",

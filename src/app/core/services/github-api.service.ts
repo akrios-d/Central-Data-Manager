@@ -167,7 +167,7 @@ export class GitHubApiService {
     state: 'open' | 'closed' | 'all' = 'open',
   ): Observable<GhPullRequest[]> {
     return this.http.get<GhPullRequest[]>(
-      `https://api.github.com/repos/${fullName}/pulls?state=${state}&per_page=50&sort=updated`,
+      `https://api.github.com/repos/${fullName}/pulls?state=${state}&per_page=50&sort=created&direction=desc`,
       { headers: this.headers },
     );
   }
@@ -175,6 +175,46 @@ export class GitHubApiService {
   getPullRequest(fullName: string, number: number): Observable<GhPullRequestDetail> {
     return this.http.get<GhPullRequestDetail>(
       `https://api.github.com/repos/${fullName}/pulls/${number}`,
+      { headers: this.headers },
+    );
+  }
+
+  createPullRequest(
+    fullName: string,
+    title: string,
+    head: string,
+    base: string,
+    body?: string,
+    draft = false,
+  ): Observable<GhPullRequest> {
+    return this.http.post<GhPullRequest>(
+      `https://api.github.com/repos/${fullName}/pulls`,
+      { title, head, base, body: body ?? '', draft },
+      { headers: this.headers },
+    );
+  }
+
+  mergePullRequest(
+    fullName: string,
+    number: number,
+    mergeMethod: 'merge' | 'squash' | 'rebase' = 'merge',
+  ): Observable<void> {
+    return this.http.put<void>(
+      `https://api.github.com/repos/${fullName}/pulls/${number}/merge`,
+      { merge_method: mergeMethod },
+      { headers: this.headers },
+    );
+  }
+
+  createPrReview(
+    fullName: string,
+    number: number,
+    event: 'APPROVE' | 'REQUEST_CHANGES',
+    body?: string,
+  ): Observable<void> {
+    return this.http.post<void>(
+      `https://api.github.com/repos/${fullName}/pulls/${number}/reviews`,
+      { event, body: body ?? '' },
       { headers: this.headers },
     );
   }

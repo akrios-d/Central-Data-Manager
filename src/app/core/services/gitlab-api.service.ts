@@ -212,7 +212,7 @@ export class GitLabApiService {
     state: 'opened' | 'closed' | 'merged' | 'all' = 'opened',
   ): Observable<GlMergeRequest[]> {
     return this.http.get<GlMergeRequest[]>(
-      `${this.base}/projects/${this.enc(fullPath)}/merge_requests?state=${state}&per_page=50&order_by=updated_at&sort=desc`,
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests?state=${state}&per_page=50&order_by=created_at&sort=desc`,
       { headers: this.headers },
     );
   }
@@ -269,6 +269,48 @@ export class GitLabApiService {
       default:
         return 'queued';
     }
+  }
+
+  createMergeRequest(
+    fullPath: string,
+    title: string,
+    sourceBranch: string,
+    targetBranch: string,
+    description?: string,
+  ): Observable<GlMergeRequest> {
+    return this.http.post<GlMergeRequest>(
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests`,
+      {
+        title,
+        source_branch: sourceBranch,
+        target_branch: targetBranch,
+        description: description ?? '',
+      },
+      { headers: this.headers },
+    );
+  }
+
+  acceptMergeRequest(fullPath: string, iid: number): Observable<void> {
+    return this.http.put<void>(
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests/${iid}/merge`,
+      {},
+      { headers: this.headers },
+    );
+  }
+
+  approveMergeRequest(fullPath: string, iid: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests/${iid}/approve`,
+      {},
+      { headers: this.headers },
+    );
+  }
+
+  unapproveMergeRequest(fullPath: string, iid: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/projects/${this.enc(fullPath)}/merge_requests/${iid}/approve`,
+      { headers: this.headers },
+    );
   }
 
   private normalizeConclusion(status: string): CiRun['conclusion'] {

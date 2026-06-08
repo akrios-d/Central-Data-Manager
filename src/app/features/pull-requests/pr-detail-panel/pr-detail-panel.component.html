@@ -67,6 +67,39 @@
       }
     }
 
+    <!-- ── Actions (only for open, non-draft PRs) ──────────────────────────── -->
+    @if (pr().state === 'open' && !pr().draft) {
+      <div class="pdp-actions">
+        <button class="btn btn-sm btn-outline" [disabled]="actionLoading()" (click)="approve()">
+          ✓ {{ 'prs.approve' | translate }}
+        </button>
+        <button
+          class="btn btn-sm btn-outline"
+          [disabled]="actionLoading()"
+          (click)="requestChanges()"
+        >
+          ↩ {{ 'prs.requestChanges' | translate }}
+        </button>
+
+        <div class="merge-group">
+          @if (isGitHub()) {
+            <select
+              class="form-control merge-method-select"
+              [ngModel]="mergeMethod()"
+              (ngModelChange)="mergeMethod.set($event)"
+            >
+              @for (opt of mergeOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.labelKey | translate }}</option>
+              }
+            </select>
+          }
+          <button class="btn btn-sm btn-success" [disabled]="actionLoading()" (click)="merge()">
+            {{ actionLoading() ? '…' : ('prs.merge' | translate) }}
+          </button>
+        </div>
+      </div>
+    }
+
     @if (pr().reviewers.length) {
       <div class="pdp-section">
         <div class="pdp-label">{{ 'panel.assignedTo' | translate }}</div>

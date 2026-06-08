@@ -9,6 +9,7 @@ import { CiRepo } from '../../core/interfaces/ci-provider.interface';
 import { CiProviderService } from '../../core/services/ci-provider.service';
 import { PinnedReposService } from '../../core/services/pinned-repos.service';
 import { PrDetailPanelComponent } from './pr-detail-panel/pr-detail-panel.component';
+import { ToastService } from '../../shared/services/toast.service';
 import { catchError, of } from 'rxjs';
 
 export interface PullRequest {
@@ -41,6 +42,8 @@ const GL_MR_STATE: Record<string, PullRequest['state']> = {
   opened: 'open',
 };
 
+const PAGE_SIZE = 10;
+
 @Component({
   selector: 'app-pull-requests',
   imports: [FormsModule, TranslateModule, DatePipe, PrDetailPanelComponent],
@@ -52,6 +55,7 @@ export class PullRequestsComponent implements OnInit {
   private readonly gh = inject(GitHubApiService);
   private readonly gl = inject(GitLabApiService);
   private readonly ci = inject(CiProviderService);
+  private readonly toasts = inject(ToastService);
   readonly pinned = inject(PinnedReposService);
 
   readonly provider = this.tokens.activeCiProvider;
@@ -71,6 +75,21 @@ export class PullRequestsComponent implements OnInit {
   labelFilter = signal('');
   selectedPr = signal<PullRequest | null>(null);
 
+  // ── Pagination ─────────────────────────────────────────────────────────────
+  page = signal(1);
+  readonly pageSize = PAGE_SIZE;
+
+  // ── Create PR form ─────────────────────────────────────────────────────────
+  showCreatePr = signal(false);
+  createPrTitle = signal('');
+  createPrHead = signal('');
+  createPrBase = signal('');
+  createPrBody = signal('');
+  createPrDraft = signal(false);
+  createPrLoading = signal(false);
+  branches = signal<string[]>([]);
+  branchesLoading = signal(false);
+
   readonly filteredRepos = computed(() => {
     const q = this.repoSearch().toLowerCase();
     const all = q
@@ -88,11 +107,21 @@ export class PullRequestsComponent implements OnInit {
     const author = this.authorFilter().toLowerCase().trim();
     const label = this.labelFilter().toLowerCase().trim();
 
-    let prs = f === 'all' ? this.prs() : this.prs().filter((pr) => pr.state === f);
-    if (author) prs = prs.filter((pr) => pr.author.toLowerCase().includes(author));
+    let list = f === 'all' ? this.prs() : this.prs().filter((pr) => pr.state === f);
+    if (author) list = list.filter((pr) => pr.author.toLowerCase().includes(author));
     if (label)
-      prs = prs.filter((pr) => pr.labels.some((l) => l.name.toLowerCase().includes(label)));
-    return prs;
+      list = list.filter((pr) => pr.labels.some((l) => l.name.toLowerCase().includes(label)));
+    // Always sort newest first
+    return [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  });
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.filteredPrs().length / PAGE_SIZE)),
+  );
+
+  readonly paginatedPrs = computed(() => {
+    const p = this.page();
+    return this.filteredPrs().slice((p - 1) * PAGE_SIZE, p * PAGE_SIZE);
   });
 
   ngOnInit(): void {
@@ -117,7 +146,22 @@ export class PullRequestsComponent implements OnInit {
     this.authorFilter.set('');
     this.labelFilter.set('');
     this.selectedPr.set(null);
+    this.page.set(1);
     this.loadPrs(repo);
+    this.loadBranches(repo);
+  }
+
+  private loadBranches(repo: CiRepo): void {
+    this.branchesLoading.set(true);
+    this.ci.listBranches(repo.full_name, repo.provider).subscribe({
+      next: (bs) => {
+        this.branches.set(bs.map((b) => b.name));
+        this.branchesLoading.set(false);
+        // Pre-fill base with default branch
+        if (repo.default_branch) this.createPrBase.set(repo.default_branch);
+      },
+      error: () => this.branchesLoading.set(false),
+    });
   }
 
   openPr(pr: PullRequest): void {
@@ -131,13 +175,102 @@ export class PullRequestsComponent implements OnInit {
 
   setStateFilter(state: PrStateFilter): void {
     this.stateFilter.set(state);
+    this.page.set(1);
     const repo = this.selectedRepo();
     if (repo) this.loadPrs(repo);
+  }
+
+  setAuthorFilter(val: string): void {
+    this.authorFilter.set(val);
+    this.page.set(1);
+  }
+
+  setLabelFilter(val: string): void {
+    this.labelFilter.set(val);
+    this.page.set(1);
+  }
+
+  nextPage(): void {
+    if (this.page() < this.totalPages()) this.page.update((p) => p + 1);
+  }
+
+  prevPage(): void {
+    if (this.page() > 1) this.page.update((p) => p - 1);
   }
 
   reload(): void {
     const repo = this.selectedRepo();
     if (repo) this.loadPrs(repo);
+  }
+
+  onPrUpdated(): void {
+    this.selectedPr.set(null);
+    this.reload();
+  }
+
+  // ── Create PR ─────────────────────────────────────────────────────────────
+  openCreatePr(): void {
+    this.showCreatePr.set(true);
+    this.createPrTitle.set('');
+    this.createPrBody.set('');
+    this.createPrHead.set('');
+    this.createPrDraft.set(false);
+  }
+
+  cancelCreatePr(): void {
+    this.showCreatePr.set(false);
+  }
+
+  submitCreatePr(): void {
+    const repo = this.selectedRepo();
+    const title = this.createPrTitle().trim();
+    const head = this.createPrHead().trim();
+    const base = this.createPrBase().trim();
+    if (!repo || !title || !head || !base) {
+      this.toasts.show('Title, head and base branch are required', 'danger');
+      return;
+    }
+    this.createPrLoading.set(true);
+    if (this.isGitHub()) {
+      this.gh
+        .createPullRequest(
+          repo.full_name,
+          title,
+          head,
+          base,
+          this.createPrBody(),
+          this.createPrDraft(),
+        )
+        .subscribe({
+          next: () => {
+            this.toasts.show('Pull request created', 'success');
+            this.showCreatePr.set(false);
+            this.createPrLoading.set(false);
+            this.reload();
+          },
+          error: (e: unknown) => {
+            const msg =
+              (e as { error?: { message?: string } })?.error?.message ?? 'Failed to create PR';
+            this.toasts.show(msg, 'danger');
+            this.createPrLoading.set(false);
+          },
+        });
+    } else {
+      this.gl.createMergeRequest(repo.full_name, title, head, base, this.createPrBody()).subscribe({
+        next: () => {
+          this.toasts.show('Merge request created', 'success');
+          this.showCreatePr.set(false);
+          this.createPrLoading.set(false);
+          this.reload();
+        },
+        error: (e: unknown) => {
+          const msg =
+            (e as { error?: { message?: string } })?.error?.message ?? 'Failed to create MR';
+          this.toasts.show(msg, 'danger');
+          this.createPrLoading.set(false);
+        },
+      });
+    }
   }
 
   private loadPrs(repo: CiRepo): void {

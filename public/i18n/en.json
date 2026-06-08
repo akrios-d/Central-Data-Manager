@@ -421,7 +421,22 @@
     "comments": "comments",
     "noBody": "No description.",
     "pinRepo": "Pin repository",
-    "unpinRepo": "Unpin repository"
+    "unpinRepo": "Unpin repository",
+    "createPr": "+ New PR",
+    "newPrTitle": "Title",
+    "newPrHead": "Head branch",
+    "newPrBase": "Base branch",
+    "newPrBody": "Description",
+    "newPrDraft": "Create as draft",
+    "submitPr": "Create",
+    "cancelPr": "Cancel",
+    "approve": "Approve",
+    "requestChanges": "Request Changes",
+    "merge": "Merge",
+    "mergeMerge": "Merge commit",
+    "mergeSquash": "Squash",
+    "mergeRebase": "Rebase",
+    "total": "total"
   },
   "lang": {
     "en": "EN",

@@ -77,23 +77,28 @@
       <div class="card">
         <div class="pr-panel-header">
           <h2 class="section-title">{{ selectedRepo()!.full_name }}</h2>
-          <div class="state-filter">
-            @for (
-              s of [
-                ['open', 'prs.open'],
-                ['closed', 'prs.closed'],
-                ['all', 'prs.all'],
-              ];
-              track s[0]
-            ) {
-              <button
-                class="state-btn"
-                [class.active]="stateFilter() === s[0]"
-                (click)="setStateFilter($any(s[0]))"
-              >
-                {{ s[1] | translate }}
-              </button>
-            }
+          <div class="pr-panel-header-right">
+            <div class="state-filter">
+              @for (
+                s of [
+                  ['open', 'prs.open'],
+                  ['closed', 'prs.closed'],
+                  ['all', 'prs.all'],
+                ];
+                track s[0]
+              ) {
+                <button
+                  class="state-btn"
+                  [class.active]="stateFilter() === s[0]"
+                  (click)="setStateFilter($any(s[0]))"
+                >
+                  {{ s[1] | translate }}
+                </button>
+              }
+            </div>
+            <button class="btn btn-sm btn-primary" (click)="openCreatePr()">
+              {{ 'prs.createPr' | translate }}
+            </button>
           </div>
         </div>
 
@@ -103,14 +108,14 @@
             type="text"
             [placeholder]="'prs.filterAuthor' | translate"
             [ngModel]="authorFilter()"
-            (ngModelChange)="authorFilter.set($event)"
+            (ngModelChange)="setAuthorFilter($event)"
           />
           <input
             class="form-control pr-filter-input"
             type="text"
             [placeholder]="'prs.filterLabel' | translate"
             [ngModel]="labelFilter()"
-            (ngModelChange)="labelFilter.set($event)"
+            (ngModelChange)="setLabelFilter($event)"
           />
         </div>
 
@@ -120,7 +125,7 @@
           <p class="text-muted text-sm mt-3">{{ 'prs.noPrs' | translate }}</p>
         } @else {
           <div class="pr-list mt-2">
-            @for (pr of filteredPrs(); track pr.id) {
+            @for (pr of paginatedPrs(); track pr.id) {
               <div class="pr-card" (click)="openPr(pr)" (keydown.enter)="openPr(pr)">
                 <div class="pr-card-top">
                   <span class="pr-badge" [class]="prStateClass(pr.state, pr.draft)">
@@ -141,7 +146,7 @@
                 <div class="pr-meta">
                   <span class="pr-branch">{{ pr.headBranch }} → {{ pr.baseBranch }}</span>
                   <span class="text-muted text-sm">{{ pr.author }}</span>
-                  <span class="text-muted text-sm">{{ pr.updatedAt | date: 'dd/MM/yy' }}</span>
+                  <span class="text-muted text-sm">{{ pr.createdAt | date: 'dd/MM/yy' }}</span>
                   @if (pr.reviewers.length) {
                     <span class="pr-reviewers text-muted text-sm">
                       👤 {{ pr.reviewers.join(', ') }}
@@ -163,11 +168,126 @@
               </div>
             }
           </div>
+
+          <!-- Pagination -->
+          @if (totalPages() > 1) {
+            <div class="pr-pagination">
+              <button class="btn btn-sm btn-outline" [disabled]="page() <= 1" (click)="prevPage()">
+                ‹
+              </button>
+              <span class="text-muted text-sm"> {{ page() }} / {{ totalPages() }} </span>
+              <button
+                class="btn btn-sm btn-outline"
+                [disabled]="page() >= totalPages()"
+                (click)="nextPage()"
+              >
+                ›
+              </button>
+              <span class="text-muted text-sm">
+                {{ filteredPrs().length }} {{ 'prs.total' | translate }}
+              </span>
+            </div>
+          }
         }
       </div>
     }
   </section>
 </div>
+
+<!-- ── Create PR modal ────────────────────────────────────────────────────────── -->
+@if (showCreatePr()) {
+  <div class="create-pr-backdrop" (click)="cancelCreatePr()" (keydown.escape)="cancelCreatePr()">
+    <div class="create-pr-modal" (click)="$event.stopPropagation()">
+      <div class="create-pr-header">
+        <h3>{{ 'prs.createPr' | translate }}</h3>
+        <button class="icon-btn" (click)="cancelCreatePr()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="pr-title">{{ 'prs.newPrTitle' | translate }}</label>
+        <input
+          id="pr-title"
+          class="form-control"
+          [ngModel]="createPrTitle()"
+          (ngModelChange)="createPrTitle.set($event)"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="pr-head">{{ 'prs.newPrHead' | translate }}</label>
+          @if (branchesLoading()) {
+            <div class="spinner-sm"></div>
+          } @else {
+            <select
+              id="pr-head"
+              class="form-control"
+              [ngModel]="createPrHead()"
+              (ngModelChange)="createPrHead.set($event)"
+            >
+              <option value="">—</option>
+              @for (b of branches(); track b) {
+                <option [value]="b">{{ b }}</option>
+              }
+            </select>
+          }
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pr-base">{{ 'prs.newPrBase' | translate }}</label>
+          <select
+            id="pr-base"
+            class="form-control"
+            [ngModel]="createPrBase()"
+            (ngModelChange)="createPrBase.set($event)"
+          >
+            <option value="">—</option>
+            @for (b of branches(); track b) {
+              <option [value]="b">{{ b }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="pr-body">
+          {{ 'prs.newPrBody' | translate }}
+          <span class="text-muted">{{ 'integrations.optional' | translate }}</span>
+        </label>
+        <textarea
+          id="pr-body"
+          class="form-control pr-body-textarea"
+          rows="4"
+          [ngModel]="createPrBody()"
+          (ngModelChange)="createPrBody.set($event)"
+        ></textarea>
+      </div>
+
+      @if (isGitHub()) {
+        <label class="form-label override-label">
+          <input
+            type="checkbox"
+            [ngModel]="createPrDraft()"
+            (ngModelChange)="createPrDraft.set($event)"
+          />
+          {{ 'prs.newPrDraft' | translate }}
+        </label>
+      }
+
+      <div class="create-pr-actions">
+        <button class="btn btn-sm btn-outline" (click)="cancelCreatePr()">
+          {{ 'prs.cancelPr' | translate }}
+        </button>
+        <button
+          class="btn btn-sm btn-primary"
+          [disabled]="createPrLoading()"
+          (click)="submitCreatePr()"
+        >
+          {{ createPrLoading() ? '…' : ('prs.submitPr' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 @if (selectedPr() && selectedRepo()) {
   <app-pr-detail-panel
@@ -175,5 +295,6 @@
     [repoFullName]="selectedRepo()!.full_name"
     [isGitHub]="isGitHub()"
     (closed)="selectedPr.set(null)"
+    (prUpdated)="onPrUpdated()"
   />
 }
