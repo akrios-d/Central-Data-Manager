@@ -710,6 +710,26 @@
   } @else if (notifPermission() === 'granted') {
     <p class="text-muted text-sm mt-2">{{ 'settings.notifGranted' | translate }}</p>
   }
+
+  <!-- Toast auto-dismiss -->
+  <div class="settings-row mt-3">
+    <div>
+      <p class="form-label">{{ 'settings.toastDuration' | translate }}</p>
+      <p class="text-muted text-sm">{{ 'settings.toastDurationHint' | translate }}</p>
+    </div>
+    <select
+      class="form-control toast-duration-select"
+      [ngModel]="editToastDuration()"
+      (ngModelChange)="saveToastDuration($event)"
+    >
+      <option [value]="0">{{ 'settings.toastDurationManual' | translate }}</option>
+      <option [value]="3">3s</option>
+      <option [value]="4">4s</option>
+      <option [value]="6">6s</option>
+      <option [value]="10">10s</option>
+      <option [value]="15">15s</option>
+    </select>
+  </div>
 </div>
 
 <!-- ── Audit webhook ──────────────────────────────────────────────────────── -->

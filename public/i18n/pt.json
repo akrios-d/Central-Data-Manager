@@ -155,7 +155,11 @@
     "stepFail": "Step falhou.",
     "chainOk": "Todos os steps concluídos com sucesso.",
     "chainFail": "Um ou mais steps falharam — verifica os logs.",
-    "stepTitle": "Step {{n}}/{{total}}: {{name}}"
+    "stepTitle": "Step {{n}}/{{total}}: {{name}}",
+    "graphOk": "Graph concluído com sucesso",
+    "graphFail": "Graph falhou",
+    "nodeOk": "Nó concluído",
+    "nodeFail": "Nó falhou"
   },
   "settings": {
     "title": "Definições",
@@ -239,7 +243,10 @@
     "notifGranted": "Notificações permitidas.",
     "dangerZone": "Zona de perigo",
     "dangerWarning": "Isto irá remover todos os tokens do teu browser e redireccionar para o Onboarding.",
-    "clearAll": "Limpar todos os tokens"
+    "clearAll": "Limpar todos os tokens",
+    "toastDuration": "Banner de notificação",
+    "toastDurationHint": "Quanto tempo as notificações ficam visíveis",
+    "toastDurationManual": "Manual (fechar manualmente)"
   },
   "orch": {
     "title": "Chain Orchestrator",

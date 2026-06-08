@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 import { Chain } from '../models/chain.model';
 import {
   OrchGraph,
@@ -14,6 +15,7 @@ import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { AppSettingsService } from './app-settings.service';
 import { AuditLogService } from './audit-log.service';
 import { OrchestratorService } from './orchestrator.service';
+import { NotificationService } from './notification.service';
 import { GenericSourceService } from './generic-source.service';
 import { GenericSource } from '../models/generic-source.model';
 
@@ -25,6 +27,8 @@ export class OrchestratorExecutorService {
   private readonly settings = inject(AppSettingsService);
   private readonly audit = inject(AuditLogService);
   private readonly orchSvc = inject(OrchestratorService);
+  private readonly notif = inject(NotificationService);
+  private readonly translate = inject(TranslateService);
   private readonly genericSvc = inject(GenericSourceService);
 
   readonly activeRun = signal<OrchRun | null>(null);
@@ -73,6 +77,18 @@ export class OrchestratorExecutorService {
     this.push(run);
     this.audit.log(`Graph run ${run.status}`, graph.name);
     this.orchSvc.saveRun({ ...run, nodes: run.nodes.map((n) => ({ ...n })) });
+
+    // Browser notification for graph completion
+    const t = this.translate;
+    if (run.status === 'success') {
+      this.notif.show(`✓ ${graph.name}`, t.instant('notif.graphOk'));
+    } else {
+      const failedNode = run.nodes.find((n) => n.status === 'failure');
+      const failLabel = failedNode
+        ? (graph.nodes.find((n) => n.id === failedNode.nodeId)?.label ?? '')
+        : '';
+      this.notif.show(`✕ ${graph.name}`, failLabel || t.instant('notif.graphFail'));
+    }
   }
 
   private buildNodePromise(
@@ -127,10 +143,16 @@ export class OrchestratorExecutorService {
       this.audit.log(`Graph step 1/1 started`, `${source.name} (${source.url})`);
       const intResult = await this.pollIntegration(source);
       if (!intResult.ok && intResult.error) nr.error = intResult.error;
-      this.setStatus(run, nr, intResult.ok ? 'success' : 'failure');
+      const intStatus = intResult.ok ? 'success' : 'failure';
+      this.setStatus(run, nr, intStatus);
       this.audit.log(
-        `Graph step 1/1 ${intResult.ok ? 'success' : 'failure'}`,
+        `Graph step 1/1 ${intStatus}`,
         intResult.ok ? source.name : `${source.name} — ${intResult.error ?? 'failed'}`,
+      );
+      const t = this.translate;
+      this.notif.show(
+        `${intResult.ok ? '✓' : '✕'} ${node.label}`,
+        intResult.ok ? t.instant('notif.nodeOk') : (intResult.error ?? t.instant('notif.nodeFail')),
       );
       return intResult.ok;
     }
@@ -149,7 +171,13 @@ export class OrchestratorExecutorService {
     this.setStatus(run, nr, 'running');
     const result = await this.runChain(effectiveChain, nr, run);
     if (!result.ok && result.error) nr.error = result.error;
-    this.setStatus(run, nr, result.ok ? 'success' : 'failure');
+    const nodeStatus = result.ok ? 'success' : 'failure';
+    this.setStatus(run, nr, nodeStatus);
+    const t = this.translate;
+    this.notif.show(
+      `${result.ok ? '✓' : '✕'} ${node.label}`,
+      result.ok ? t.instant('notif.nodeOk') : (result.error ?? t.instant('notif.nodeFail')),
+    );
     return result.ok;
   }
 

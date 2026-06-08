@@ -155,7 +155,11 @@
     "stepFail": "L'étape a échoué.",
     "chainOk": "Toutes les étapes ont réussi.",
     "chainFail": "Une ou plusieurs étapes ont échoué — consultez les logs.",
-    "stepTitle": "Étape {{n}}/{{total}} : {{name}}"
+    "stepTitle": "Étape {{n}}/{{total}} : {{name}}",
+    "graphOk": "Exécution du graphe réussie",
+    "graphFail": "Échec de l'exécution du graphe",
+    "nodeOk": "Nœud terminé",
+    "nodeFail": "Nœud échoué"
   },
   "settings": {
     "title": "Paramètres",
@@ -239,7 +243,10 @@
     "notifGranted": "Notifications autorisées.",
     "dangerZone": "Zone dangereuse",
     "dangerWarning": "Cela supprimera tous les tokens de votre navigateur et vous redirigera vers l'onboarding.",
-    "clearAll": "Effacer tous les tokens"
+    "clearAll": "Effacer tous les tokens",
+    "toastDuration": "Bannière de notification",
+    "toastDurationHint": "Durée d'affichage des notifications",
+    "toastDurationManual": "Manuel (fermer manuellement)"
   },
   "orch": {
     "title": "Chain Orchestrator",

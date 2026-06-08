@@ -155,7 +155,11 @@
     "stepFail": "步骤失败。",
     "chainOk": "所有步骤均已成功完成。",
     "chainFail": "一个或多个步骤失败，请查看日志。",
-    "stepTitle": "步骤 {{n}}/{{total}}：{{name}}"
+    "stepTitle": "步骤 {{n}}/{{total}}：{{name}}",
+    "graphOk": "图谱运行成功",
+    "graphFail": "图谱运行失败",
+    "nodeOk": "节点完成",
+    "nodeFail": "节点失败"
   },
   "settings": {
     "title": "设置",
@@ -239,7 +243,10 @@
     "notifGranted": "已允许通知。",
     "dangerZone": "危险区域",
     "dangerWarning": "将清除浏览器中所有 Token 并跳转至引导页。",
-    "clearAll": "清除所有 Token"
+    "clearAll": "清除所有 Token",
+    "toastDuration": "通知横幅",
+    "toastDurationHint": "通知显示时长",
+    "toastDurationManual": "手动（手动关闭）"
   },
   "orch": {
     "title": "Chain Orchestrator",

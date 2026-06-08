@@ -82,6 +82,8 @@ export class SettingsComponent implements OnInit {
   private readonly notifSvc = inject(NotificationService);
 
   readonly notificationsEnabled = this.appSettings.notificationsEnabled;
+  readonly toastDurationSec = this.appSettings.toastDurationSec;
+  editToastDuration = signal(this.appSettings.toastDurationSec());
   readonly notifPermission = signal<NotificationPermission>(
     'Notification' in globalThis ? Notification.permission : 'denied',
   );
@@ -428,6 +430,11 @@ export class SettingsComponent implements OnInit {
         this.notifPermission.set(Notification.permission);
       });
     }
+  }
+
+  saveToastDuration(sec: number): void {
+    this.appSettings.saveToastDuration(sec);
+    this.editToastDuration.set(sec);
   }
 
   async requestNotifPermission(): Promise<void> {

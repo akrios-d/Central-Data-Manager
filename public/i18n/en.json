@@ -155,7 +155,11 @@
     "stepFail": "Step failed.",
     "chainOk": "All steps completed successfully.",
     "chainFail": "One or more steps failed — check the logs.",
-    "stepTitle": "Step {{n}}/{{total}}: {{name}}"
+    "stepTitle": "Step {{n}}/{{total}}: {{name}}",
+    "graphOk": "Graph run completed successfully",
+    "graphFail": "Graph run failed",
+    "nodeOk": "Node completed",
+    "nodeFail": "Node failed"
   },
   "settings": {
     "title": "Settings",
@@ -239,7 +243,10 @@
     "notifGranted": "Notifications are allowed.",
     "dangerZone": "Danger zone",
     "dangerWarning": "This will remove all tokens from your browser and redirect you to Onboarding.",
-    "clearAll": "Clear all tokens"
+    "clearAll": "Clear all tokens",
+    "toastDuration": "Notification banner",
+    "toastDurationHint": "How long toast notifications stay visible",
+    "toastDurationManual": "Manual (close manually)"
   },
   "orch": {
     "title": "Chain Orchestrator",

@@ -4,6 +4,7 @@ const POLL_KEY = 'cdm:poll_interval_s';
 const MAX_KEY = 'cdm:max_polls';
 const TIMEOUT_KEY = 'cdm:session_timeout_h';
 const NOTIF_KEY = 'cdm:notifications';
+const TOAST_DURATION_KEY = 'cdm:toast_duration_s';
 const WEBHOOK_URL_KEY = 'cdm:webhook_url';
 const WEBHOOK_ENABLED_KEY = 'cdm:webhook_enabled';
 
@@ -13,6 +14,12 @@ export class AppSettingsService {
   readonly maxPolls = signal(Number(localStorage.getItem(MAX_KEY)) || 120);
   readonly sessionTimeoutHours = signal(Number(localStorage.getItem(TIMEOUT_KEY)) || 8);
   readonly notificationsEnabled = signal(localStorage.getItem(NOTIF_KEY) !== 'false');
+  /** Toast auto-dismiss delay in seconds. 0 = never auto-dismiss (manual close). */
+  readonly toastDurationSec = signal(
+    localStorage.getItem(TOAST_DURATION_KEY) !== null
+      ? Number(localStorage.getItem(TOAST_DURATION_KEY))
+      : 4,
+  );
   readonly webhookUrl = signal(localStorage.getItem(WEBHOOK_URL_KEY) ?? '');
   readonly webhookEnabled = signal(localStorage.getItem(WEBHOOK_ENABLED_KEY) === 'true');
 
@@ -34,6 +41,12 @@ export class AppSettingsService {
   saveNotifications(enabled: boolean): void {
     localStorage.setItem(NOTIF_KEY, String(enabled));
     this.notificationsEnabled.set(enabled);
+  }
+
+  saveToastDuration(sec: number): void {
+    const s = Math.max(0, Math.min(60, sec));
+    localStorage.setItem(TOAST_DURATION_KEY, String(s));
+    this.toastDurationSec.set(s);
   }
 
   saveWebhook(url: string, enabled: boolean): void {
