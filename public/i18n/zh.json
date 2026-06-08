@@ -11,7 +11,8 @@
     "chainOrchestrator": "编排器",
     "pullRequests": "Pull Requests",
     "auditLog": "审计日志",
-    "settings": "设置"
+    "settings": "设置",
+    "integrations": "集成"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -428,5 +429,39 @@
   "common": {
     "updatedAt": "更新于",
     "refresh": "刷新"
+  },
+  "integrations": {
+    "title": "集成",
+    "subtitle": "轮询任意 HTTP 端点并将其状态映射到 CDM。",
+    "tabSources": "来源",
+    "tabEditor": "编辑器",
+    "new": "+ 新建",
+    "noSources": "暂无集成配置。",
+    "emptyState": "选择一个来源或新建一个。",
+    "name": "名称",
+    "url": "端点 URL",
+    "urlHint": "例如: http://jenkins/job/my-job/api/json",
+    "authType": "认证方式",
+    "authNone": "无",
+    "authBearer": "Bearer token",
+    "authBasic": "Basic auth",
+    "token": "Token",
+    "username": "用户名",
+    "password": "密码",
+    "pollInterval": "轮询间隔 (秒)",
+    "enabled": "启用",
+    "statusPath": "状态字段路径",
+    "statusPathHint": "点号路径，例如 lastBuild.result",
+    "statusMap": "状态映射",
+    "rawValue": "原始值",
+    "mapsTo": "映射到",
+    "addMapping": "+ 映射",
+    "namePath": "名称字段路径",
+    "urlPath": "运行 URL 字段路径",
+    "optional": "（可选）",
+    "save": "保存",
+    "delete": "删除",
+    "test": "测试",
+    "corsNote": "端点必须允许来自此浏览器源的 CORS 请求。"
   }
 }

@@ -11,7 +11,8 @@
     "chainOrchestrator": "Orchestrateur",
     "pullRequests": "Pull Requests",
     "auditLog": "Journal d'audit",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "integrations": "Intégrations"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -428,5 +429,39 @@
   "common": {
     "updatedAt": "Mis à jour à",
     "refresh": "Actualiser"
+  },
+  "integrations": {
+    "title": "Intégrations",
+    "subtitle": "Interrogez n'importe quel endpoint HTTP et mappez son statut.",
+    "tabSources": "Sources",
+    "tabEditor": "Éditeur",
+    "new": "+ Nouveau",
+    "noSources": "Aucune intégration configurée.",
+    "emptyState": "Sélectionnez une source ou créez-en une.",
+    "name": "Nom",
+    "url": "URL de l'endpoint",
+    "urlHint": "ex: http://jenkins/job/mon-job/api/json",
+    "authType": "Authentification",
+    "authNone": "Aucune",
+    "authBearer": "Bearer token",
+    "authBasic": "Basic auth",
+    "token": "Token",
+    "username": "Utilisateur",
+    "password": "Mot de passe",
+    "pollInterval": "Intervalle (s)",
+    "enabled": "Activé",
+    "statusPath": "Chemin du champ de statut",
+    "statusPathHint": "Notation point, ex: lastBuild.result",
+    "statusMap": "Correspondance de statut",
+    "rawValue": "Valeur brute",
+    "mapsTo": "Correspond à",
+    "addMapping": "+ Correspondance",
+    "namePath": "Chemin du champ de nom",
+    "urlPath": "Chemin du champ URL",
+    "optional": "(optionnel)",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "test": "Tester",
+    "corsNote": "L'endpoint doit autoriser les requêtes CORS depuis cette origine."
   }
 }

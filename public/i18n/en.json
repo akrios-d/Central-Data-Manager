@@ -11,7 +11,8 @@
     "chainOrchestrator": "Orchestrator",
     "pullRequests": "Pull Requests",
     "auditLog": "Audit Log",
-    "settings": "Settings"
+    "settings": "Settings",
+    "integrations": "Integrations"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -428,5 +429,39 @@
   "common": {
     "updatedAt": "Updated at",
     "refresh": "Refresh"
+  },
+  "integrations": {
+    "title": "Integrations",
+    "subtitle": "Poll any HTTP endpoint and map its status into CDM.",
+    "tabSources": "Sources",
+    "tabEditor": "Editor",
+    "new": "+ New",
+    "noSources": "No integrations yet.",
+    "emptyState": "Select a source or create a new one.",
+    "name": "Name",
+    "url": "Endpoint URL",
+    "urlHint": "e.g. http://jenkins/job/my-job/api/json",
+    "authType": "Authentication",
+    "authNone": "None",
+    "authBearer": "Bearer token",
+    "authBasic": "Basic auth",
+    "token": "Token",
+    "username": "Username",
+    "password": "Password",
+    "pollInterval": "Poll interval (s)",
+    "enabled": "Enabled",
+    "statusPath": "Status field path",
+    "statusPathHint": "Dot-notation path, e.g. lastBuild.result",
+    "statusMap": "Status mapping",
+    "rawValue": "Raw value",
+    "mapsTo": "Maps to",
+    "addMapping": "+ Mapping",
+    "namePath": "Name field path",
+    "urlPath": "Run URL field path",
+    "optional": "(optional)",
+    "save": "Save",
+    "delete": "Delete",
+    "test": "Test",
+    "corsNote": "The endpoint must allow CORS requests from this browser origin."
   }
 }

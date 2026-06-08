@@ -79,5 +79,11 @@ export const routes: Routes = [
         (m) => m.PullRequestsComponent,
       ),
   },
+  {
+    path: 'integrations',
+    canActivate: [requireTokensGuard],
+    loadComponent: () =>
+      import('./features/integrations/integrations.component').then((m) => m.IntegrationsComponent),
+  },
   { path: '**', redirectTo: 'onboarding' },
 ];

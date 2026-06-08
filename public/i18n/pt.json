@@ -11,7 +11,8 @@
     "chainOrchestrator": "Orquestrador",
     "pullRequests": "Pull Requests",
     "auditLog": "Auditoria",
-    "settings": "Definições"
+    "settings": "Definições",
+    "integrations": "Integrações"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -428,5 +429,39 @@
   "common": {
     "updatedAt": "Atualizado às",
     "refresh": "Atualizar"
+  },
+  "integrations": {
+    "title": "Integrações",
+    "subtitle": "Consulte qualquer endpoint HTTP e mapeie o status para o CDM.",
+    "tabSources": "Fontes",
+    "tabEditor": "Editor",
+    "new": "+ Nova",
+    "noSources": "Nenhuma integração configurada.",
+    "emptyState": "Selecione uma fonte ou crie uma nova.",
+    "name": "Nome",
+    "url": "URL do Endpoint",
+    "urlHint": "ex: http://jenkins/job/meu-job/api/json",
+    "authType": "Autenticação",
+    "authNone": "Nenhuma",
+    "authBearer": "Bearer token",
+    "authBasic": "Basic auth",
+    "token": "Token",
+    "username": "Usuário",
+    "password": "Senha",
+    "pollInterval": "Intervalo de polling (s)",
+    "enabled": "Ativo",
+    "statusPath": "Caminho do campo de status",
+    "statusPathHint": "Notação ponto, ex: lastBuild.result",
+    "statusMap": "Mapeamento de status",
+    "rawValue": "Valor bruto",
+    "mapsTo": "Mapeia para",
+    "addMapping": "+ Mapeamento",
+    "namePath": "Caminho do campo de nome",
+    "urlPath": "Caminho do campo de URL",
+    "optional": "(opcional)",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "test": "Testar",
+    "corsNote": "O endpoint deve permitir requisições CORS desta origem."
   }
 }

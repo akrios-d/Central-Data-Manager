@@ -1,0 +1,260 @@
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import {
+  GenericSource,
+  GenericSourceMapping,
+  GenericSourceResult,
+  SourceStatus,
+} from '../../core/models/generic-source.model';
+import { GenericSourceService } from '../../core/services/generic-source.service';
+import { ToastService } from '../../shared/services/toast.service';
+
+interface MappingRow {
+  raw: string;
+  mapped: SourceStatus | '';
+}
+
+const DEFAULT_MAPPINGS: MappingRow[] = [
+  { raw: 'SUCCESS', mapped: 'success' },
+  { raw: 'FAILURE', mapped: 'failure' },
+  { raw: 'UNSTABLE', mapped: 'failure' },
+  { raw: 'BUILDING', mapped: 'running' },
+  { raw: 'ABORTED', mapped: 'failure' },
+];
+
+@Component({
+  selector: 'app-integrations',
+  standalone: true,
+  imports: [FormsModule, DatePipe, TranslateModule],
+  templateUrl: './integrations.component.html',
+  styleUrl: './integrations.component.scss',
+})
+export class IntegrationsComponent implements OnInit, OnDestroy {
+  private readonly svc = inject(GenericSourceService);
+  private readonly toasts = inject(ToastService);
+
+  readonly sources = this.svc.sources;
+  readonly results = this.svc.results;
+
+  activeTab = signal<'sources' | 'editor'>('sources');
+
+  // ── Editor form state ──────────────────────────────────────────────────────
+  selectedId = signal<string | null>(null);
+  formName = signal('');
+  formUrl = signal('');
+  formAuthType = signal<'none' | 'bearer' | 'basic'>('none');
+  formToken = signal('');
+  formUser = signal('');
+  formPass = signal('');
+  formInterval = signal(30);
+  formEnabled = signal(true);
+  formStatusPath = signal('');
+  formMappings = signal<MappingRow[]>(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
+  formNamePath = signal('');
+  formUrlPath = signal('');
+
+  // ── Test state ─────────────────────────────────────────────────────────────
+  testLoading = signal(false);
+  testResult = signal<{ ok: boolean; rawStatus?: string; status?: string; error?: string } | null>(
+    null,
+  );
+
+  // ── Options ────────────────────────────────────────────────────────────────
+  readonly authOptions: { value: 'none' | 'bearer' | 'basic'; label: string }[] = [
+    { value: 'none', label: 'integrations.authNone' },
+    { value: 'bearer', label: 'integrations.authBearer' },
+    { value: 'basic', label: 'integrations.authBasic' },
+  ];
+  readonly statusOptions: { value: SourceStatus; label: string }[] = [
+    { value: 'success', label: 'success' },
+    { value: 'failure', label: 'failure' },
+    { value: 'running', label: 'running' },
+    { value: 'unknown', label: 'unknown' },
+  ];
+
+  readonly selectedSource = computed(() => {
+    const id = this.selectedId();
+    return id && id !== 'new' ? (this.sources().find((s) => s.id === id) ?? null) : null;
+  });
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    this.svc.startPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.svc.stopPolling();
+  }
+
+  // ── Source list ────────────────────────────────────────────────────────────
+  selectSource(source: GenericSource): void {
+    this.selectedId.set(source.id);
+    this.formName.set(source.name);
+    this.formUrl.set(source.url);
+    this.formAuthType.set(source.authType);
+    this.formToken.set(source.authToken ?? '');
+    this.formUser.set(source.authUser ?? '');
+    this.formPass.set(source.authPass ?? '');
+    this.formInterval.set(source.pollIntervalSec);
+    this.formEnabled.set(source.enabled);
+    this.formStatusPath.set(source.statusPath);
+    this.formMappings.set(source.mappings.map((m) => ({ ...m })));
+    this.formNamePath.set(source.namePath ?? '');
+    this.formUrlPath.set(source.urlPath ?? '');
+    this.testResult.set(null);
+    this.activeTab.set('editor');
+  }
+
+  newSource(): void {
+    this.selectedId.set('new');
+    this.formName.set('');
+    this.formUrl.set('');
+    this.formAuthType.set('none');
+    this.formToken.set('');
+    this.formUser.set('');
+    this.formPass.set('');
+    this.formInterval.set(30);
+    this.formEnabled.set(true);
+    this.formStatusPath.set('');
+    this.formMappings.set(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
+    this.formNamePath.set('');
+    this.formUrlPath.set('');
+    this.testResult.set(null);
+    this.activeTab.set('editor');
+  }
+
+  // ── Editor actions ─────────────────────────────────────────────────────────
+  saveSource(): void {
+    const name = this.formName().trim();
+    const url = this.formUrl().trim();
+    if (!name) {
+      this.toasts.show('Name is required', 'danger');
+      return;
+    }
+    if (!url) {
+      this.toasts.show('URL is required', 'danger');
+      return;
+    }
+    const currentId = this.selectedId();
+    const id = currentId === 'new' || !currentId ? crypto.randomUUID() : currentId;
+    const source: GenericSource = {
+      id,
+      name,
+      url,
+      authType: this.formAuthType(),
+      authToken: this.formToken().trim() || undefined,
+      authUser: this.formUser().trim() || undefined,
+      authPass: this.formPass() || undefined,
+      pollIntervalSec: Math.max(5, this.formInterval()),
+      enabled: this.formEnabled(),
+      statusPath: this.formStatusPath().trim(),
+      mappings: this.formMappings().filter(
+        (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
+      ),
+      namePath: this.formNamePath().trim() || undefined,
+      urlPath: this.formUrlPath().trim() || undefined,
+      createdAt: this.selectedSource()?.createdAt ?? new Date().toISOString(),
+    };
+    this.svc.saveSource(source);
+    this.selectedId.set(id);
+    this.svc.startPolling();
+    this.toasts.show(`"${name}" saved`, 'success');
+  }
+
+  deleteSource(): void {
+    const id = this.selectedId();
+    if (!id || id === 'new') return;
+    const name = this.formName();
+    this.toasts.confirm(`Delete "${name}"?`, 'Delete', () => {
+      this.svc.deleteSource(id);
+      this.selectedId.set(null);
+      this.activeTab.set('sources');
+      this.toasts.show('Deleted', 'success');
+    });
+  }
+
+  testSource(): void {
+    const url = this.formUrl().trim();
+    if (!url) {
+      this.toasts.show('Enter a URL first', 'danger');
+      return;
+    }
+    const tempSource: GenericSource = {
+      id: '__test__',
+      name: 'test',
+      url,
+      authType: this.formAuthType(),
+      authToken: this.formToken().trim() || undefined,
+      authUser: this.formUser().trim() || undefined,
+      authPass: this.formPass() || undefined,
+      pollIntervalSec: 30,
+      enabled: true,
+      statusPath: this.formStatusPath().trim(),
+      mappings: this.formMappings().filter(
+        (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
+      ),
+      namePath: this.formNamePath().trim() || undefined,
+      urlPath: this.formUrlPath().trim() || undefined,
+      createdAt: '',
+    };
+    this.testLoading.set(true);
+    this.testResult.set(null);
+    this.svc.testFetch(tempSource).subscribe({
+      next: (result) => {
+        this.testResult.set({ ok: true, rawStatus: result.rawStatus, status: result.status });
+        this.testLoading.set(false);
+      },
+      error: (err: unknown) => {
+        const e = err as { message?: string; status?: number };
+        this.testResult.set({
+          ok: false,
+          error: e?.message ?? (e?.status ? `HTTP ${e.status}` : 'Connection failed'),
+        });
+        this.testLoading.set(false);
+      },
+    });
+  }
+
+  // ── Mapping rows ───────────────────────────────────────────────────────────
+  addMapping(): void {
+    this.formMappings.update((m) => [...m, { raw: '', mapped: '' as SourceStatus }]);
+  }
+
+  removeMapping(index: number): void {
+    this.formMappings.update((m) => m.filter((_, i) => i !== index));
+  }
+
+  // ── Template helpers ───────────────────────────────────────────────────────
+  getResult(sourceId: string): GenericSourceResult | null {
+    return this.results()[sourceId] ?? null;
+  }
+
+  statusIcon(status: string): string {
+    return (
+      (
+        {
+          success: '✓',
+          failure: '✕',
+          running: '◌',
+          unknown: '○',
+          error: '!',
+        } as Record<string, string>
+      )[status] ?? '○'
+    );
+  }
+
+  statusColor(status: string): string {
+    return (
+      (
+        {
+          success: 'success',
+          failure: 'danger',
+          running: 'info',
+          error: 'danger',
+        } as Record<string, string>
+      )[status] ?? 'muted'
+    );
+  }
+}
