@@ -273,7 +273,8 @@
     "popupSteps": "Steps",
     "addIntegration": "+ Integration",
     "searchIntegrations": "Search integrations…",
-    "noIntegrations": "No integrations configured."
+    "noIntegrations": "No integrations configured.",
+    "nodeNotStarted": "Not started yet"
   },
   "releases": {
     "title": "Releases",

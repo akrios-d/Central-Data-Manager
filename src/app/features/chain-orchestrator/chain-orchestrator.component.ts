@@ -11,7 +11,13 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Chain } from '../../core/models/chain.model';
-import { OrchEdge, OrchGraph, OrchNode, NodeRunStatus } from '../../core/models/orchestrator.model';
+import {
+  OrchEdge,
+  OrchGraph,
+  OrchNode,
+  OrchNodeRun,
+  NodeRunStatus,
+} from '../../core/models/orchestrator.model';
 import { OrchestratorService } from '../../core/services/orchestrator.service';
 import { OrchestratorExecutorService } from '../../core/services/orchestrator-executor.service';
 import { ChainService } from '../../core/services/chain.service';
@@ -87,6 +93,19 @@ export class ChainOrchestratorComponent {
     if (!node?.chainId) return [];
     return this.allChains().find((c) => c.id === node.chainId)?.steps ?? [];
   });
+
+  /** OrchNodeRun for the popup node from the current active run (null if none) */
+  readonly popupNodeRun = computed((): OrchNodeRun | null => {
+    const id = this.selectedNodePopupId();
+    const run = this.activeRun();
+    if (!id || !run) return null;
+    return run.nodes.find((n) => n.nodeId === id) ?? null;
+  });
+
+  /** True when the graph has an active run (running or just finished) */
+  readonly showRunView = computed(
+    () => this.isActiveGraph() && this.activeRun()?.status !== undefined,
+  );
 
   // ── Graph search ──────────────────────────────────────────────────────────────
   graphSearch = signal('');

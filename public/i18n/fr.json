@@ -273,7 +273,8 @@
     "popupSteps": "Étapes",
     "addIntegration": "+ Intégration",
     "searchIntegrations": "Rechercher…",
-    "noIntegrations": "Aucune intégration configurée."
+    "noIntegrations": "Aucune intégration configurée.",
+    "nodeNotStarted": "Pas encore démarré"
   },
   "releases": {
     "title": "Releases",

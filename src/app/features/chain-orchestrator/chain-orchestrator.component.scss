@@ -907,3 +907,119 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+// ── Run-view popup styles ───────────────────────────────────────────────────
+
+.node-popup-run-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.node-popup-run-status-label {
+  &.run-status-running {
+    color: var(--accent, #58a6ff);
+  }
+  &.run-status-success {
+    color: var(--success, #3fb950);
+  }
+  &.run-status-failure {
+    color: var(--danger, #f85149);
+  }
+  &.run-status-skipped {
+    color: var(--text-muted);
+  }
+  &.run-status-idle {
+    color: var(--text-muted);
+  }
+}
+
+.popup-run-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent, #58a6ff);
+  border-radius: 50%;
+  animation: orchSpinnerSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes orchSpinnerSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.node-popup-step-run {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.83rem;
+  transition: background 0.12s;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  .step-run-icon {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    margin-top: 1px;
+  }
+
+  &.step-run-pending .step-run-icon {
+    opacity: 0.4;
+  }
+  &.step-run-running .step-run-icon {
+    color: var(--accent, #58a6ff);
+  }
+  &.step-run-success .step-run-icon {
+    color: var(--success, #3fb950);
+  }
+  &.step-run-failure .step-run-icon {
+    color: var(--danger, #f85149);
+  }
+  &.step-run-skipped {
+    opacity: 0.45;
+  }
+
+  &.step-run-running .node-popup-step-name {
+    color: var(--accent, #58a6ff);
+  }
+  &.step-run-success .node-popup-step-name {
+    color: var(--success, #3fb950);
+  }
+  &.step-run-failure .node-popup-step-name {
+    color: var(--danger, #f85149);
+  }
+}
+
+.step-run-error {
+  font-size: 0.75rem;
+  color: var(--danger, #f85149);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-popup-run-error {
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  color: var(--danger, #f85149);
+  margin: 0;
+}
+
+.node-popup-idle-hint {
+  padding: 0.6rem 1rem;
+  margin: 0;
+  font-style: italic;
+}

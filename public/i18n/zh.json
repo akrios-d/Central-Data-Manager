@@ -273,7 +273,8 @@
     "popupSteps": "步骤",
     "addIntegration": "+ 集成",
     "searchIntegrations": "搜索集成…",
-    "noIntegrations": "尚未配置集成。"
+    "noIntegrations": "尚未配置集成。",
+    "nodeNotStarted": "尚未开始"
   },
   "releases": {
     "title": "Releases",

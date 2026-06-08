@@ -384,37 +384,89 @@
         </button>
       </div>
 
-      <!-- Node-level toggle -->
-      <label class="node-popup-row node-popup-toggle">
-        <input type="checkbox" [checked]="!node.disabled" (change)="toggleNodeDisabled(node.id)" />
-        <span>{{ 'orch.enableChain' | translate }}</span>
-      </label>
-
-      <!-- Steps -->
-      @if (popupSteps().length > 0) {
-        <p class="node-popup-steps-header text-muted text-sm">
-          {{ 'orch.popupSteps' | translate }}
-        </p>
-        <ul class="node-popup-steps">
-          @for (step of popupSteps(); track step.id) {
-            <li
-              class="node-popup-step"
-              [class.step-row-disabled]="isStepDisabled(node.id, step.id)"
-            >
-              <label class="node-popup-row">
-                <input
-                  type="checkbox"
-                  [checked]="!isStepDisabled(node.id, step.id)"
-                  (change)="toggleStepDisabled(node.id, step.id)"
-                />
-                <div class="node-popup-step-info">
-                  <span class="node-popup-step-name">{{ step.workflowName }}</span>
-                  <span class="text-muted text-sm">{{ step.repoName }}</span>
-                </div>
-              </label>
-            </li>
+      <!-- ── Run view (graph has an active run) ──────────────────────────────── -->
+      @if (showRunView()) {
+        @let nr = popupNodeRun();
+        <div class="node-popup-run-header">
+          <span
+            class="node-popup-run-status-label"
+            [class]="'run-status-' + getNodeRunStatus(node.id)"
+          >
+            {{ nodeStatusIcon(getNodeRunStatus(node.id)) }}
+            {{ getNodeRunStatus(node.id) }}
+          </span>
+          @if (nr?.startedAt) {
+            <span class="text-muted text-sm">{{ nr!.startedAt | date: 'HH:mm:ss' }}</span>
           }
-        </ul>
+          @if (nr?.status === 'running') {
+            <span class="popup-run-spinner"></span>
+          }
+        </div>
+
+        @if (nr?.steps?.length) {
+          <p class="node-popup-steps-header text-muted text-sm">
+            {{ 'orch.popupSteps' | translate }}
+          </p>
+          <ul class="node-popup-steps">
+            @for (s of nr!.steps!; track s.stepName) {
+              <li class="node-popup-step-run" [class]="'step-run-' + s.status">
+                <span class="step-run-icon">{{ stepStatusIcon(s.status) }}</span>
+                <div class="node-popup-step-info">
+                  <span class="node-popup-step-name">{{ s.stepName }}</span>
+                  <span class="text-muted text-sm">{{ s.repoFullName }}</span>
+                  @if (s.error) {
+                    <span class="step-run-error">{{ s.error }}</span>
+                  }
+                </div>
+                @if (s.status === 'running') {
+                  <span class="popup-run-spinner"></span>
+                }
+              </li>
+            }
+          </ul>
+        } @else if (nr?.error) {
+          <p class="node-popup-run-error">{{ nr!.error }}</p>
+        } @else {
+          <p class="text-muted text-sm node-popup-idle-hint">
+            {{ 'orch.nodeNotStarted' | translate }}
+          </p>
+        }
+      } @else {
+        <!-- ── Edit view (no active run) ──────────────────────────────────────── -->
+        <label class="node-popup-row node-popup-toggle">
+          <input
+            type="checkbox"
+            [checked]="!node.disabled"
+            (change)="toggleNodeDisabled(node.id)"
+          />
+          <span>{{ 'orch.enableChain' | translate }}</span>
+        </label>
+
+        @if (popupSteps().length > 0) {
+          <p class="node-popup-steps-header text-muted text-sm">
+            {{ 'orch.popupSteps' | translate }}
+          </p>
+          <ul class="node-popup-steps">
+            @for (step of popupSteps(); track step.id) {
+              <li
+                class="node-popup-step"
+                [class.step-row-disabled]="isStepDisabled(node.id, step.id)"
+              >
+                <label class="node-popup-row">
+                  <input
+                    type="checkbox"
+                    [checked]="!isStepDisabled(node.id, step.id)"
+                    (change)="toggleStepDisabled(node.id, step.id)"
+                  />
+                  <div class="node-popup-step-info">
+                    <span class="node-popup-step-name">{{ step.workflowName }}</span>
+                    <span class="text-muted text-sm">{{ step.repoName }}</span>
+                  </div>
+                </label>
+              </li>
+            }
+          </ul>
+        }
       }
     </div>
   </div>
