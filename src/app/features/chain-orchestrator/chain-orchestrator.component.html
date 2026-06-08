@@ -142,6 +142,38 @@
               }
             </div>
 
+            <div
+              class="orch-add-wrap"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
+            >
+              <button class="btn btn-sm btn-outline" (click)="toggleAddIntegration()">
+                {{ 'orch.addIntegration' | translate }}
+              </button>
+              @if (showAddIntegration()) {
+                <div class="orch-add-dropdown">
+                  <input
+                    class="form-control form-control-sm orch-add-search"
+                    [placeholder]="'orch.searchIntegrations' | translate"
+                    [ngModel]="integrationSearch()"
+                    (ngModelChange)="integrationSearch.set($event)"
+                  />
+                  @if (filteredSources().length === 0) {
+                    <p class="text-muted text-sm orch-add-empty">
+                      {{ 'orch.noIntegrations' | translate }}
+                    </p>
+                  } @else {
+                    @for (s of filteredSources(); track s.id) {
+                      <button class="orch-add-item" (click)="addIntegrationNode(s)">
+                        <span class="orch-add-name">{{ s.name }}</span>
+                        <span class="text-muted text-sm">⊕</span>
+                      </button>
+                    }
+                  }
+                </div>
+              }
+            </div>
+
             <div class="orch-sep"></div>
 
             @if (isRunning()) {
@@ -217,6 +249,7 @@
               <div
                 class="orch-node"
                 [class.orch-node-start]="node.type === 'start'"
+                [class.orch-node-integration]="node.type === 'integration'"
                 [class.orch-node-selected]="selectedNodeId() === node.id"
                 [class.orch-node-disabled]="node.disabled"
                 [class.orch-node-idle]="getNodeRunStatus(node.id) === 'idle'"

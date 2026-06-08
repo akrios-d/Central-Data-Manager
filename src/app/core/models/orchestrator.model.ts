@@ -2,11 +2,12 @@ export type NodeRunStatus = 'idle' | 'running' | 'success' | 'failure' | 'skippe
 
 export interface OrchNode {
   id: string;
-  type: 'start' | 'chain';
+  type: 'start' | 'chain' | 'integration';
   chainId?: string;
   label?: string;
   x: number;
   y: number;
+  sourceId?: string;
   disabled?: boolean;
   disabledSteps?: string[];
 }

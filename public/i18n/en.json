@@ -270,7 +270,10 @@
     "noRuns": "No runs yet — hit Run to start.",
     "close": "Close",
     "enableChain": "Enable chain",
-    "popupSteps": "Steps"
+    "popupSteps": "Steps",
+    "addIntegration": "+ Integration",
+    "searchIntegrations": "Search integrations…",
+    "noIntegrations": "No integrations configured."
   },
   "releases": {
     "title": "Releases",

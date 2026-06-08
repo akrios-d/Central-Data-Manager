@@ -270,7 +270,10 @@
     "noRuns": "暂无运行记录，点击运行开始。",
     "close": "关闭",
     "enableChain": "启用 chain",
-    "popupSteps": "步骤"
+    "popupSteps": "步骤",
+    "addIntegration": "+ 集成",
+    "searchIntegrations": "搜索集成…",
+    "noIntegrations": "尚未配置集成。"
   },
   "releases": {
     "title": "Releases",

@@ -354,6 +354,12 @@
   &.orch-node-skipped {
     opacity: 0.38;
   }
+
+  &.orch-node-integration {
+    border-color: var(--accent, #58a6ff);
+    border-style: dashed;
+    background: color-mix(in srgb, var(--accent, #58a6ff) 6%, var(--surface-1));
+  }
 }
 
 .orch-start-label {

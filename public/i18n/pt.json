@@ -270,7 +270,10 @@
     "noRuns": "Sem execuções — clica em Executar para começar.",
     "close": "Fechar",
     "enableChain": "Activar chain",
-    "popupSteps": "Steps"
+    "popupSteps": "Steps",
+    "addIntegration": "+ Integração",
+    "searchIntegrations": "Buscar integrações…",
+    "noIntegrations": "Nenhuma integração configurada."
   },
   "releases": {
     "title": "Releases",

@@ -16,6 +16,8 @@ import { OrchestratorService } from '../../core/services/orchestrator.service';
 import { OrchestratorExecutorService } from '../../core/services/orchestrator-executor.service';
 import { ChainService } from '../../core/services/chain.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { GenericSourceService } from '../../core/services/generic-source.service';
+import { GenericSource } from '../../core/models/generic-source.model';
 
 // Node visual dimensions (must match SCSS)
 const NODE_W = 200;
@@ -46,6 +48,7 @@ export class ChainOrchestratorComponent {
   private readonly executor = inject(OrchestratorExecutorService);
   private readonly chainSvc = inject(ChainService);
   private readonly toasts = inject(ToastService);
+  private readonly genericSvc = inject(GenericSourceService);
 
   @ViewChild('canvasWrapper') canvasWrapperRef!: ElementRef<HTMLDivElement>;
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLDivElement>;
@@ -91,6 +94,8 @@ export class ChainOrchestratorComponent {
   // ── Add-chain panel ───────────────────────────────────────────────────────────
   showAddChain = signal(false);
   chainSearch = signal('');
+  showAddIntegration = signal(false);
+  integrationSearch = signal('');
 
   // ── Run state ─────────────────────────────────────────────────────────────────
   running = signal(false);
@@ -110,6 +115,12 @@ export class ChainOrchestratorComponent {
   readonly filteredChains = computed(() => {
     const q = this.chainSearch().toLowerCase().trim();
     return q ? this.allChains().filter((c) => c.name.toLowerCase().includes(q)) : this.allChains();
+  });
+
+  readonly filteredSources = computed(() => {
+    const q = this.integrationSearch().toLowerCase().trim();
+    const list = this.genericSvc.sources();
+    return q ? list.filter((s) => s.name.toLowerCase().includes(q)) : list;
   });
 
   readonly isActiveGraph = computed(() => {
@@ -203,6 +214,7 @@ export class ChainOrchestratorComponent {
   // ── Add chain node ────────────────────────────────────────────────────────────
   toggleAddChain(): void {
     this.showAddChain.update((v) => !v);
+    this.showAddIntegration.set(false);
     this.chainSearch.set('');
   }
 
@@ -227,6 +239,33 @@ export class ChainOrchestratorComponent {
     this.showAddChain.set(false);
   }
 
+  toggleAddIntegration(): void {
+    this.showAddIntegration.update((v) => !v);
+    this.showAddChain.set(false);
+    this.integrationSearch.set('');
+  }
+
+  addIntegrationNode(source: GenericSource): void {
+    const wrapper = this.canvasWrapperRef?.nativeElement;
+    const stagger = this.graphNodes().filter((n) => n.type === 'integration').length;
+    const x = wrapper
+      ? Math.round(wrapper.scrollLeft + wrapper.clientWidth / 2 - NODE_W / 2 + stagger * 12)
+      : 400;
+    const y = wrapper ? Math.round(wrapper.scrollTop + 140 + stagger * 24) : 200 + stagger * 24;
+    this.graphNodes.update((ns) => [
+      ...ns,
+      {
+        id: crypto.randomUUID(),
+        type: 'integration' as const,
+        sourceId: source.id,
+        label: source.name,
+        x,
+        y,
+      },
+    ]);
+    this.showAddIntegration.set(false);
+  }
+
   removeNode(nodeId: string, e?: MouseEvent): void {
     e?.stopPropagation();
     const startId = this.graphNodes().find((n) => n.type === 'start')?.id;
@@ -248,6 +287,7 @@ export class ChainOrchestratorComponent {
     this.selectedNodeId.set(null);
     this.selectedEdgeId.set(null);
     this.showAddChain.set(false);
+    this.showAddIntegration.set(false);
     this.selectedNodePopupId.set(null);
   }
 
@@ -300,6 +340,7 @@ export class ChainOrchestratorComponent {
     this.selectedNodeId.set(null);
     this.selectedEdgeId.set(null);
     this.showAddChain.set(false);
+    this.showAddIntegration.set(false);
     this.selectedNodePopupId.set(null);
   }
 
@@ -629,6 +670,7 @@ export class ChainOrchestratorComponent {
   }
 
   getChainStepCount(node: OrchNode): string {
+    if (node.type === 'integration') return 'HTTP polling';
     if (!node.chainId) return '';
     const chain = this.allChains().find((c) => c.id === node.chainId);
     if (!chain) return '';

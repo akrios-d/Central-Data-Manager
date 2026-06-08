@@ -270,7 +270,10 @@
     "noRuns": "Aucune exécution — cliquez sur Exécuter pour commencer.",
     "close": "Fermer",
     "enableChain": "Activer la chain",
-    "popupSteps": "Étapes"
+    "popupSteps": "Étapes",
+    "addIntegration": "+ Intégration",
+    "searchIntegrations": "Rechercher…",
+    "noIntegrations": "Aucune intégration configurée."
   },
   "releases": {
     "title": "Releases",

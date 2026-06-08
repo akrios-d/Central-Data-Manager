@@ -14,6 +14,8 @@ import { CiProviderType } from '../interfaces/ci-provider.interface';
 import { AppSettingsService } from './app-settings.service';
 import { AuditLogService } from './audit-log.service';
 import { OrchestratorService } from './orchestrator.service';
+import { GenericSourceService } from './generic-source.service';
+import { GenericSource } from '../models/generic-source.model';
 
 const TERMINAL_STATUSES = new Set<NodeRunStatus>(['success', 'failure', 'skipped']);
 
@@ -23,6 +25,7 @@ export class OrchestratorExecutorService {
   private readonly settings = inject(AppSettingsService);
   private readonly audit = inject(AuditLogService);
   private readonly orchSvc = inject(OrchestratorService);
+  private readonly genericSvc = inject(GenericSourceService);
 
   readonly activeRun = signal<OrchRun | null>(null);
   private stopRequested = false;
@@ -111,6 +114,25 @@ export class OrchestratorExecutorService {
     if (node.disabled) {
       this.setStatus(run, nr, 'skipped');
       return true; // pass-through so downstream nodes still run
+    }
+
+    if (node.type === 'integration') {
+      const source = this.genericSvc.sources().find((s) => s.id === node.sourceId);
+      if (!source) {
+        nr.error = 'Integration source not found';
+        this.setStatus(run, nr, 'failure');
+        return false;
+      }
+      this.setStatus(run, nr, 'running');
+      this.audit.log(`Graph step 1/1 started`, `${source.name} (${source.url})`);
+      const intResult = await this.pollIntegration(source);
+      if (!intResult.ok && intResult.error) nr.error = intResult.error;
+      this.setStatus(run, nr, intResult.ok ? 'success' : 'failure');
+      this.audit.log(
+        `Graph step 1/1 ${intResult.ok ? 'success' : 'failure'}`,
+        intResult.ok ? source.name : `${source.name} — ${intResult.error ?? 'failed'}`,
+      );
+      return intResult.ok;
     }
 
     const chain = chainMap.get(node.chainId ?? '');
@@ -246,6 +268,30 @@ export class OrchestratorExecutorService {
     }
 
     return { ok: true };
+  }
+
+  // ── Integration polling ─────────────────────────────────────────────────────
+
+  private async pollIntegration(source: GenericSource): Promise<{ ok: boolean; error?: string }> {
+    const maxPolls = this.settings.maxPolls();
+    const interval = this.settings.pollIntervalSec() * 1000;
+    await new Promise<void>((r) => setTimeout(r, 2000));
+
+    for (let polls = 0; polls <= maxPolls; polls++) {
+      if (this.stopRequested) return { ok: false, error: 'Stopped' };
+      try {
+        const result = await firstValueFrom(this.genericSvc.testFetch(source));
+        if (result.status === 'success') return { ok: true };
+        if (result.status === 'failure' || result.status === 'error') {
+          return { ok: false, error: result.rawStatus ?? 'failed' };
+        }
+        // 'running' | 'unknown' → keep polling
+      } catch {
+        /* transient network error — retry */
+      }
+      await new Promise<void>((r) => setTimeout(r, interval));
+    }
+    return { ok: false, error: 'Timed out' };
   }
 
   private fetchLatestTag(fullName: string, provider: CiProviderType): Promise<string | null> {
