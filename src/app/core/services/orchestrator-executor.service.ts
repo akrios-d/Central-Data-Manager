@@ -188,7 +188,7 @@ export class OrchestratorExecutorService {
       stepRun.status = 'running';
       this.push(run);
       this.audit.log(
-        `Step ${i + 1}/${total} started`,
+        `Graph step ${i + 1}/${total} started`,
         `${step.workflowName} (${step.repoFullName})`,
       );
 
@@ -216,7 +216,7 @@ export class OrchestratorExecutorService {
         stepRun.error = err;
         for (let j = i + 1; j < total; j++) nr.steps[j].status = 'skipped';
         this.push(run);
-        this.audit.log(`Step ${i + 1}/${total} failure`, `${step.workflowName}: ${err}`);
+        this.audit.log(`Graph step ${i + 1}/${total} failure`, `${step.workflowName}: ${err}`);
         return { ok: false, error: `${step.workflowName}: ${err}` };
       }
 
@@ -234,7 +234,7 @@ export class OrchestratorExecutorService {
 
       const label = `${step.workflowName} (${step.repoFullName})`;
       this.audit.log(
-        `Step ${i + 1}/${total} ${stepRun.status}`,
+        `Graph step ${i + 1}/${total} ${stepRun.status}`,
         stepResult.ok ? label : `${label} — ${stepResult.reason ?? 'failed'}`,
       );
 

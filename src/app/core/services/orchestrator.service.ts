@@ -49,6 +49,11 @@ export class OrchestratorService {
     });
   }
 
+  reorderGraphs(graphs: OrchGraph[]): void {
+    localStorage.setItem(GRAPHS_KEY, JSON.stringify(graphs));
+    this._graphs.set(graphs);
+  }
+
   restoreAll(graphs: OrchGraph[]): void {
     localStorage.setItem(GRAPHS_KEY, JSON.stringify(graphs));
     this._graphs.set(graphs);

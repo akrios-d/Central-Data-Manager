@@ -65,7 +65,10 @@ export class ChainExecutorService {
     run.steps[i].status = 'running';
     run.steps[i].startedAt = new Date().toISOString();
     this.push(run);
-    this.audit.log(`Step ${i + 1}/${total} started`, `${step.workflowName} (${step.repoFullName})`);
+    this.audit.log(
+      `Chain step ${i + 1}/${total} started`,
+      `${step.workflowName} (${step.repoFullName})`,
+    );
 
     // Clear cache before resolving ref and triggering
     if (step.clearCache && provider === 'github') {
@@ -84,7 +87,7 @@ export class ChainExecutorService {
         run.status = 'failure';
         this.push(run);
         this.audit.log(
-          `Step ${i + 1}/${total} failure`,
+          `Chain step ${i + 1}/${total} failure`,
           `${step.workflowName} (${step.repoFullName}) — ${cacheError}`,
         );
         this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', cacheError);
@@ -113,7 +116,7 @@ export class ChainExecutorService {
       run.status = 'failure';
       this.push(run);
       this.audit.log(
-        `Step ${i + 1}/${total} failure`,
+        `Chain step ${i + 1}/${total} failure`,
         `${step.workflowName} (${step.repoFullName}) — ${error}`,
       );
       this.notifyStep(step.workflowName, i, chain.steps.length, 'failure', error);
@@ -134,7 +137,7 @@ export class ChainExecutorService {
     const stepStatus = pollResult === 'success' ? 'success' : 'failure';
     const stepLabel = `${step.workflowName} (${step.repoFullName})`;
     this.audit.log(
-      `Step ${i + 1}/${total} ${stepStatus}`,
+      `Chain step ${i + 1}/${total} ${stepStatus}`,
       stepStatus === 'success' ? stepLabel : `${stepLabel} — ${run.steps[i].error ?? 'failed'}`,
     );
     this.notifyStep(step.workflowName, i, chain.steps.length, stepStatus, run.steps[i].error);

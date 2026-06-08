@@ -23,13 +23,6 @@
     >
       {{ 'orch.tabCanvas' | translate }}
     </button>
-    <button
-      class="vtab-btn"
-      [class.active]="activeTab() === 'history'"
-      (click)="activeTab.set('history')"
-    >
-      {{ 'orch.tabHistory' | translate }}
-    </button>
   </nav>
 
   <!-- ── Tab body ─────────────────────────────────────────────────────────────── -->
@@ -59,17 +52,26 @@
           <p class="text-muted text-sm">{{ 'orch.noGraphsMatch' | translate }}</p>
         } @else {
           <ul class="chain-list">
-            @for (g of filteredGraphs(); track g.id) {
+            @for (g of filteredGraphs(); track g.id; let i = $index) {
               <li
                 class="chain-item"
                 [class.selected]="selectedGraphId() === g.id"
+                [class.chain-dragging]="dragGraphIndex() === i"
+                draggable="true"
                 (click)="selectGraph(g)"
                 (keydown.enter)="selectGraph(g)"
+                (dragstart)="onGraphDragStart(i)"
+                (dragenter)="onGraphDragEnter(i); $event.preventDefault()"
+                (dragover)="$event.preventDefault()"
+                (dragend)="onGraphDragEnd()"
               >
-                <span class="chain-item-name">{{ g.name }}</span>
-                <span class="chain-item-meta text-muted text-sm">
-                  {{ g.nodes.length - 1 }} {{ 'orch.chainsCount' | translate }}
-                </span>
+                <span class="chain-drag-handle" (click)="$event.stopPropagation()">⠿</span>
+                <div class="chain-item-body">
+                  <span class="chain-item-name">{{ g.name }}</span>
+                  <span class="chain-item-meta text-muted text-sm">
+                    {{ g.nodes.length - 1 }} {{ 'orch.chainsCount' | translate }}
+                  </span>
+                </div>
               </li>
             }
           </ul>
@@ -329,30 +331,6 @@
             </div>
           </div>
         }
-      }
-    }
-
-    <!-- Tab 3: History -->
-    @if (activeTab() === 'history') {
-      @if (!selectedGraphId() || selectedGraphId() === 'new') {
-        <p class="text-muted text-sm">{{ 'orch.emptyState' | translate }}</p>
-      } @else if (graphRuns().length === 0) {
-        <p class="text-muted text-sm">{{ 'orch.noRuns' | translate }}</p>
-      } @else {
-        <ul class="history-list">
-          @for (r of graphRuns(); track r.id) {
-            <li class="history-item">
-              <span class="history-dot" [class]="'dot-' + r.status"></span>
-              <span class="text-sm">{{ r.startedAt | date: 'dd MMM HH:mm' }}</span>
-              <span class="badge" [class]="'badge-' + runStatusColor(r.status)">{{
-                r.status
-              }}</span>
-              <span class="text-muted text-sm"
-                >{{ r.nodes.length }} {{ 'orch.chainsCount' | translate }}</span
-              >
-            </li>
-          }
-        </ul>
       }
     }
   </div>

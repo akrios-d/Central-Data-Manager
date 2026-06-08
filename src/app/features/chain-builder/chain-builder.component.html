@@ -92,13 +92,29 @@
                   }}
                 </span>
               </div>
-              <button
-                class="icon-btn chain-duplicate-btn"
-                [title]="'builder.duplicate' | translate"
-                (click)="duplicateChain(c, $event)"
-              >
-                ⧉
-              </button>
+              <div class="chain-item-actions">
+                <button
+                  class="icon-btn"
+                  [title]="'builder.export' | translate"
+                  (click)="exportChainFromList(c, $event)"
+                >
+                  ↓
+                </button>
+                <button
+                  class="icon-btn"
+                  [title]="'builder.duplicate' | translate"
+                  (click)="duplicateChain(c, $event)"
+                >
+                  ⧉
+                </button>
+                <button
+                  class="icon-btn icon-btn-danger"
+                  [title]="'builder.delete' | translate"
+                  (click)="deleteChainFromList(c, $event)"
+                >
+                  ✕
+                </button>
+              </div>
             </li>
           }
         </ul>
@@ -143,6 +159,9 @@
                 {{ 'builder.save' | translate }}
               </button>
               @if (selectedId() !== 'new') {
+                <button class="btn btn-sm btn-outline" (click)="duplicateCurrentChain()">
+                  {{ 'builder.duplicate' | translate }}
+                </button>
                 <button class="btn btn-sm btn-danger" (click)="deleteChain()">
                   {{ 'builder.delete' | translate }}
                 </button>
@@ -480,22 +499,6 @@
           </ol>
         } @else {
           <p class="text-muted text-sm empty-steps">{{ 'builder.noSteps' | translate }}</p>
-        }
-
-        @if (chainRuns().length > 0) {
-          <h3 class="run-history-title">{{ 'builder.runHistory' | translate }}</h3>
-          <ul class="history-list">
-            @for (r of chainRuns(); track r.id) {
-              <li class="history-item">
-                <span class="history-dot" [class]="'dot-' + r.status"></span>
-                <span class="text-sm">{{ r.startedAt | date: 'dd MMM HH:mm' }}</span>
-                <span class="badge" [class]="'badge-' + runStatusColor(r.status)">{{
-                  r.status
-                }}</span>
-                <span class="text-muted text-sm">{{ r.steps.length }} steps</span>
-              </li>
-            }
-          </ul>
         }
       }
     }

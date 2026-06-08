@@ -56,7 +56,7 @@ export class ChainOrchestratorComponent {
   readonly activeRun = this.executor.activeRun;
 
   // ── Navigation ────────────────────────────────────────────────────────────────
-  activeTab = signal<'graphs' | 'canvas' | 'history'>('graphs');
+  activeTab = signal<'graphs' | 'canvas'>('graphs');
 
   // ── Graph editor state ────────────────────────────────────────────────────────
   selectedGraphId = signal<string | null>(null);
@@ -94,16 +94,12 @@ export class ChainOrchestratorComponent {
 
   // ── Run state ─────────────────────────────────────────────────────────────────
   running = signal(false);
+  dragGraphIndex = signal<number | null>(null);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
   readonly selectedGraph = computed(() => {
     const id = this.selectedGraphId();
     return id && id !== 'new' ? (this.allGraphs().find((g) => g.id === id) ?? null) : null;
-  });
-
-  readonly graphRuns = computed(() => {
-    const id = this.selectedGraphId();
-    return id && id !== 'new' ? this.orchSvc.runs().filter((r) => r.graphId === id) : [];
   });
 
   readonly filteredGraphs = computed(() => {
@@ -134,6 +130,26 @@ export class ChainOrchestratorComponent {
   );
 
   // ── Graph list ────────────────────────────────────────────────────────────────
+  onGraphDragStart(index: number): void {
+    this.dragGraphIndex.set(index);
+  }
+
+  onGraphDragEnter(index: number): void {
+    const from = this.dragGraphIndex();
+    if (from === null || from === index) return;
+    const reordered = [...this.filteredGraphs()];
+    const [item] = reordered.splice(from, 1);
+    reordered.splice(index, 0, item);
+    const filtered = new Set(reordered.map((g) => g.id));
+    const rest = this.allGraphs().filter((g) => !filtered.has(g.id));
+    this.orchSvc.reorderGraphs([...reordered, ...rest]);
+    this.dragGraphIndex.set(index);
+  }
+
+  onGraphDragEnd(): void {
+    this.dragGraphIndex.set(null);
+  }
+
   newGraph(): void {
     const startNode: OrchNode = { id: crypto.randomUUID(), type: 'start', x: 60, y: 200 };
     this.selectedGraphId.set('new');
@@ -637,5 +653,19 @@ export class ChainOrchestratorComponent {
 
   getNodeLabel(nodeId: string): string {
     return this.graphNodes().find((n) => n.id === nodeId)?.label ?? nodeId.slice(0, 6);
+  }
+
+  stepStatusIcon(status: string): string {
+    return (
+      (
+        {
+          pending: '○',
+          running: '◌',
+          success: '✓',
+          failure: '✕',
+          skipped: '–',
+        } as Record<string, string>
+      )[status] ?? '○'
+    );
   }
 }

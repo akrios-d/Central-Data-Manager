@@ -99,11 +99,6 @@ export class ChainBuilderComponent {
     return id && id !== 'new' ? (this.chains().find((c) => c.id === id) ?? null) : null;
   });
 
-  readonly chainRuns = computed(() => {
-    const id = this.selectedId();
-    return id && id !== 'new' ? this.runs().filter((r) => r.chainId === id) : [];
-  });
-
   readonly canRun = computed(
     () => this.selectedStepIds().length > 0 && this.activeRun()?.status !== 'running',
   );
@@ -145,6 +140,16 @@ export class ChainBuilderComponent {
 
   duplicateChain(chain: Chain, event: MouseEvent): void {
     event.stopPropagation();
+    this.doDuplicate(chain);
+  }
+
+  duplicateCurrentChain(): void {
+    const chain = this.selectedChain();
+    if (!chain) return;
+    this.doDuplicate(chain);
+  }
+
+  private doDuplicate(chain: Chain): void {
     const copy: Chain = {
       ...chain,
       id: crypto.randomUUID(),
@@ -155,6 +160,26 @@ export class ChainBuilderComponent {
     this.chainSvc.saveChain(copy);
     this.selectChain(copy);
     this.toasts.show(`Chain "${copy.name}" created`, 'success');
+  }
+
+  exportChainFromList(chain: Chain, event: MouseEvent): void {
+    event.stopPropagation();
+    const blob = new Blob([JSON.stringify(chain, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chain-${chain.name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  deleteChainFromList(chain: Chain, event: MouseEvent): void {
+    event.stopPropagation();
+    this.toasts.confirm(`Delete chain "${chain.name}"?`, 'Delete', () => {
+      this.chainSvc.deleteChain(chain.id);
+      if (this.selectedId() === chain.id) this.selectedId.set(null);
+      this.toasts.show('Chain deleted', 'success');
+    });
   }
 
   onChainDragStart(index: number): void {
