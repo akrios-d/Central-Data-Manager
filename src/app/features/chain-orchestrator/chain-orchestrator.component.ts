@@ -102,9 +102,9 @@ export class ChainOrchestratorComponent {
     return run.nodes.find((n) => n.nodeId === id) ?? null;
   });
 
-  /** True when the graph has an active run (running or just finished) */
+  /** True only while the graph is actively running — reverts to edit mode once done */
   readonly showRunView = computed(
-    () => this.isActiveGraph() && this.activeRun()?.status !== undefined,
+    () => this.isActiveGraph() && this.activeRun()?.status === 'running',
   );
 
   // ── Graph search ──────────────────────────────────────────────────────────────
