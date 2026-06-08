@@ -146,7 +146,8 @@
     "emptyState": "Sélectionnez une chain à gauche ou créez-en une nouvelle.",
     "noRunsYet": "Aucune exécution — cliquez sur Exécuter pour commencer.",
     "searchChains": "Chercher des chains…",
-    "noChainMatch": "Aucune chain trouvée."
+    "noChainMatch": "Aucune chain trouvée.",
+    "duplicate": "Dupliquer la chain"
   },
   "notif": {
     "stepOk": "Terminé avec succès.",

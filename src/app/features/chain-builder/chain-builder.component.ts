@@ -77,6 +77,7 @@ export class ChainBuilderComponent {
       ] ?? null,
   );
   dragStepIndex = signal<number | null>(null);
+  dragChainIndex = signal<number | null>(null);
   selectedStepIds = signal<string[]>([]);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
@@ -140,6 +141,41 @@ export class ChainBuilderComponent {
     this.showAddStep.set(false);
     this.activeTab.set('editor');
     this.resetStepForm();
+  }
+
+  duplicateChain(chain: Chain, event: MouseEvent): void {
+    event.stopPropagation();
+    const copy: Chain = {
+      ...chain,
+      id: crypto.randomUUID(),
+      name: `${chain.name} (copy)`,
+      steps: chain.steps.map((s) => ({ ...s, id: crypto.randomUUID() })),
+      createdAt: new Date().toISOString(),
+    };
+    this.chainSvc.saveChain(copy);
+    this.selectChain(copy);
+    this.toasts.show(`Chain "${copy.name}" created`, 'success');
+  }
+
+  onChainDragStart(index: number): void {
+    this.dragChainIndex.set(index);
+  }
+
+  onChainDragEnter(index: number): void {
+    const from = this.dragChainIndex();
+    if (from === null || from === index) return;
+    const reordered = [...this.filteredChains()];
+    const [item] = reordered.splice(from, 1);
+    reordered.splice(index, 0, item);
+    // Merge back: filtered list may be a subset; rebuild full list preserving non-filtered order
+    const filtered = new Set(reordered.map((c) => c.id));
+    const rest = this.chains().filter((c) => !filtered.has(c.id));
+    this.chainSvc.reorderChains([...reordered, ...rest]);
+    this.dragChainIndex.set(index);
+  }
+
+  onChainDragEnd(): void {
+    this.dragChainIndex.set(null);
   }
 
   // ── Editor ────────────────────────────────────────────────────────────────────

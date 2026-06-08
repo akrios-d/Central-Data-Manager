@@ -36,6 +36,11 @@ export class ChainService {
     return this._chains().find((c) => c.id === id);
   }
 
+  reorderChains(chains: Chain[]): void {
+    localStorage.setItem(CHAINS_KEY, JSON.stringify(chains));
+    this._chains.set(chains);
+  }
+
   restoreAll(chains: Chain[]): void {
     localStorage.setItem(CHAINS_KEY, JSON.stringify(chains));
     this._chains.set(chains);

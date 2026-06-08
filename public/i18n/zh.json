@@ -146,7 +146,8 @@
     "emptyState": "从左侧选择 chain，或新建一个。",
     "noRunsYet": "暂无运行记录，点击运行开始。",
     "searchChains": "搜索 chains…",
-    "noChainMatch": "未找到 chain。"
+    "noChainMatch": "未找到 chain。",
+    "duplicate": "复制 Chain"
   },
   "notif": {
     "stepOk": "成功完成。",

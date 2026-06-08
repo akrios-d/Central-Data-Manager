@@ -146,7 +146,8 @@
     "emptyState": "Select a chain from the left, or create a new one.",
     "noRunsYet": "No runs yet — hit Run to start.",
     "searchChains": "Search chains…",
-    "noChainMatch": "No chains match."
+    "noChainMatch": "No chains match.",
+    "duplicate": "Duplicate chain"
   },
   "notif": {
     "stepOk": "Completed successfully.",

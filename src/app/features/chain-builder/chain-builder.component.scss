@@ -107,16 +107,47 @@
   border-radius: 6px;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
   transition: background 0.15s;
 
   &:hover {
     background: var(--surface-2);
+
+    .chain-duplicate-btn {
+      opacity: 1;
+    }
   }
+
   &.selected {
     background: var(--accent-muted, rgba(88, 166, 255, 0.12));
   }
+
+  &.chain-dragging {
+    opacity: 0.4;
+  }
+}
+
+.chain-drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.5;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.chain-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .chain-item-name {
@@ -129,6 +160,13 @@
 
 .chain-item-meta {
   font-size: 0.72rem;
+}
+
+.chain-duplicate-btn {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 1rem;
 }
 
 .running-notice {

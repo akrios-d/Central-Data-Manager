@@ -67,22 +67,38 @@
         <p class="text-muted text-sm">{{ 'builder.noChainMatch' | translate }}</p>
       } @else {
         <ul class="chain-list">
-          @for (c of filteredChains(); track c.id) {
+          @for (c of filteredChains(); track c.id; let i = $index) {
             <li
               class="chain-item"
               [class.selected]="selectedId() === c.id"
+              [class.chain-dragging]="dragChainIndex() === i"
+              draggable="true"
               (click)="selectChain(c)"
               (keydown.enter)="selectChain(c)"
+              (dragstart)="onChainDragStart(i)"
+              (dragenter)="onChainDragEnter(i); $event.preventDefault()"
+              (dragover)="$event.preventDefault()"
+              (dragend)="onChainDragEnd()"
             >
-              <span class="chain-item-name">{{ c.name }}</span>
-              <span class="chain-item-meta text-muted text-sm">
-                {{ c.steps.length }}
-                {{
-                  c.steps.length === 1
-                    ? ('builder.stepOne' | translate)
-                    : ('builder.stepMany' | translate)
-                }}
-              </span>
+              <span class="chain-drag-handle" (click)="$event.stopPropagation()">⠿</span>
+              <div class="chain-item-body">
+                <span class="chain-item-name">{{ c.name }}</span>
+                <span class="chain-item-meta text-muted text-sm">
+                  {{ c.steps.length }}
+                  {{
+                    c.steps.length === 1
+                      ? ('builder.stepOne' | translate)
+                      : ('builder.stepMany' | translate)
+                  }}
+                </span>
+              </div>
+              <button
+                class="icon-btn chain-duplicate-btn"
+                [title]="'builder.duplicate' | translate"
+                (click)="duplicateChain(c, $event)"
+              >
+                ⧉
+              </button>
             </li>
           }
         </ul>
