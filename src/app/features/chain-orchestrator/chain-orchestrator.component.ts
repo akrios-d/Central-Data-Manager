@@ -628,12 +628,15 @@ export class ChainOrchestratorComponent {
     );
   }
 
-  getChainStepCount(chainId?: string): string {
-    if (!chainId) return '';
-    const chain = this.allChains().find((c) => c.id === chainId);
+  getChainStepCount(node: OrchNode): string {
+    if (!node.chainId) return '';
+    const chain = this.allChains().find((c) => c.id === node.chainId);
     if (!chain) return '';
-    const count = chain.steps.length;
-    return `${count} step${count === 1 ? '' : 's'}`;
+    const total = chain.steps.length;
+    const disabled = node.disabledSteps?.length ?? 0;
+    const active = total - disabled;
+    if (disabled === 0) return `${total} step${total === 1 ? '' : 's'}`;
+    return `${active}/${total} steps`;
   }
 
   runStatusColor(status: string): string {
