@@ -3,6 +3,7 @@ import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/rou
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from './core/services/token.service';
 import { SessionTimeoutService } from './core/services/session-timeout.service';
+import { UpdateService } from './core/services/update.service';
 import { ThemeService } from './core/services/theme.service';
 import { ToastComponent } from './shared/components/toast/toast.component';
 
@@ -19,6 +20,7 @@ export class App {
   private readonly router = inject(Router);
   private readonly sessionTimeout = inject(SessionTimeoutService);
   private readonly themeService = inject(ThemeService);
+  private readonly updateService = inject(UpdateService);
 
   readonly showNav = computed(() => this.tokens.hasAnyToken());
   readonly currentLang = signal(localStorage.getItem('cdm_lang') ?? 'en');
@@ -31,6 +33,7 @@ export class App {
     this.translate.addLangs(['en', 'pt', 'fr', 'zh']);
     this.translate.use(saved);
     this.sessionTimeout.init();
+    this.updateService.init();
   }
 
   goToSettings(): void {
