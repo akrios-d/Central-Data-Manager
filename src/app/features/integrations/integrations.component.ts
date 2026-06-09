@@ -73,12 +73,18 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   formUrlPath = signal('');
   formMethod = signal<'GET' | 'POST'>('GET');
   formBody = signal('');
+  formCustomHeaders = signal<{ key: string; value: string }[]>([]);
 
   // ── Test state ─────────────────────────────────────────────────────────────
   testLoading = signal(false);
-  testResult = signal<{ ok: boolean; rawStatus?: string; status?: string; error?: string } | null>(
-    null,
-  );
+  testResult = signal<{
+    ok: boolean;
+    status?: string;
+    rawStatus?: string;
+    checkResults?: { fieldPath: string; raw: string; mapped: string }[];
+    responsePreview?: string;
+    error?: string;
+  } | null>(null);
 
   // ── Options ────────────────────────────────────────────────────────────────
   readonly authOptions: { value: 'none' | 'bearer' | 'basic'; label: string }[] = [
@@ -136,6 +142,9 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
             },
           ];
     this.formChecks.set(checks);
+    this.formCustomHeaders.set(
+      (source.customHeaders ?? []).map((h) => ({ key: h.key, value: h.value })),
+    );
     this.formNamePath.set(source.namePath ?? '');
     this.formUrlPath.set(source.urlPath ?? '');
     this.testResult.set(null);
@@ -158,6 +167,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formOrchInterval.set(30);
     this.formOrchMaxPolls.set(20);
     this.formChecks.set([defaultCheck()]);
+    this.formCustomHeaders.set([]);
     this.formNamePath.set('');
     this.formUrlPath.set('');
     this.testResult.set(null);
@@ -208,6 +218,14 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
             ),
           }),
         ),
+      customHeaders:
+        this.formCustomHeaders()
+          .filter((h) => h.key.trim())
+          .map((h) => ({ key: h.key.trim(), value: h.value })).length > 0
+          ? this.formCustomHeaders()
+              .filter((h) => h.key.trim())
+              .map((h) => ({ key: h.key.trim(), value: h.value }))
+          : undefined,
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
       orchMode: this.formOrchMode(),
@@ -269,6 +287,9 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
             ),
           }),
         ),
+      customHeaders: this.formCustomHeaders()
+        .filter((h) => h.key.trim())
+        .map((h) => ({ key: h.key.trim(), value: h.value })),
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
       orchMode: 'once',
@@ -278,15 +299,26 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.testResult.set(null);
     this.svc.testFetch(tempSource).subscribe({
       next: (result) => {
-        this.testResult.set({ ok: true, rawStatus: result.rawStatus, status: result.status });
+        this.testResult.set({
+          ok: true,
+          status: result.status,
+          rawStatus: result.rawStatus,
+          checkResults: result.checkResults,
+          responsePreview: result.responsePreview,
+        });
         this.testLoading.set(false);
       },
       error: (err: unknown) => {
-        const e = err as { message?: string; status?: number };
-        this.testResult.set({
-          ok: false,
-          error: e?.message ?? (e?.status ? `HTTP ${e.status}` : 'Connection failed'),
-        });
+        const e = err as { message?: string; status?: number; statusText?: string };
+        let error: string;
+        if (e?.status === 0) {
+          error = 'Network / CORS error — endpoint must allow cross-origin requests';
+        } else if (e?.status) {
+          error = `HTTP ${e.status}${e.statusText ? ' ' + e.statusText : ''}`;
+        } else {
+          error = e?.message ?? 'Connection failed';
+        }
+        this.testResult.set({ ok: false, error });
         this.testLoading.set(false);
       },
     });
@@ -403,6 +435,23 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
           : c,
       ),
     );
+  }
+
+  // ── Custom header management ──────────────────────────────────────────────
+  addCustomHeader(): void {
+    this.formCustomHeaders.update((hs) => [...hs, { key: '', value: '' }]);
+  }
+
+  removeCustomHeader(idx: number): void {
+    this.formCustomHeaders.update((hs) => hs.filter((_, i) => i !== idx));
+  }
+
+  setCustomHeaderKey(idx: number, val: string): void {
+    this.formCustomHeaders.update((hs) => hs.map((h, i) => (i === idx ? { ...h, key: val } : h)));
+  }
+
+  setCustomHeaderValue(idx: number, val: string): void {
+    this.formCustomHeaders.update((hs) => hs.map((h, i) => (i === idx ? { ...h, value: val } : h)));
   }
 
   // ── Template helpers ───────────────────────────────────────────────────────

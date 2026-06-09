@@ -528,6 +528,12 @@
     "checkNoPath": "（未设置字段）",
     "checkMappingCount": "个映射",
     "checkEdit": "编辑检查",
-    "checkBackToList": "返回检查列表"
+    "checkBackToList": "返回检查列表",
+    "customHeaders": "自定义请求头",
+    "customHeadersHint": "每次请求都会发送的额外请求头。适用于 X-API-Key、X-Auth-Token 或其他自定义头。",
+    "addHeader": "添加请求头",
+    "testOk": "连接成功",
+    "testNoChecks": "未配置字段路径 — 请前往配置 → 状态检查来映射状态。",
+    "testPreview": "响应预览"
   }
 }

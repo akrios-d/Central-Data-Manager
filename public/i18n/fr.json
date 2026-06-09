@@ -528,6 +528,12 @@
     "checkNoPath": "(aucun champ)",
     "checkMappingCount": "mappings",
     "checkEdit": "Modifier le contrôle",
-    "checkBackToList": "Retour aux contrôles"
+    "checkBackToList": "Retour aux contrôles",
+    "customHeaders": "En-têtes personnalisés",
+    "customHeadersHint": "En-têtes envoyés à chaque requête. Utile pour X-API-Key, X-Auth-Token ou tout autre en-tête propriétaire.",
+    "addHeader": "Ajouter un en-tête",
+    "testOk": "Connexion réussie",
+    "testNoChecks": "Aucun champ configuré — allez dans Config → Contrôles pour mapper le statut.",
+    "testPreview": "Aperçu de la réponse"
   }
 }

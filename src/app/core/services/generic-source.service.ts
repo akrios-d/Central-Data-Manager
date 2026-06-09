@@ -87,16 +87,21 @@ export class GenericSourceService {
   testFetch(source: GenericSource): Observable<{
     status: SourceStatus;
     rawStatus: string;
+    checkResults: { fieldPath: string; raw: string; mapped: SourceStatus }[];
+    responsePreview: string;
     displayName?: string;
     runUrl?: string;
   }> {
     const headers = this.buildHeaders(source);
     return this.buildRequest(source, headers).pipe(
       map((data) => {
-        const { status, rawStatus } = this.resolveChecks(source, data);
+        const { status, rawStatus, checkResults } = this.resolveChecks(source, data);
+        const preview = data != null ? JSON.stringify(data, null, 2).slice(0, 400) : '';
         return {
           status,
           rawStatus,
+          checkResults,
+          responsePreview: preview,
           displayName: source.namePath ? this.resolveStr(data, source.namePath) : undefined,
           runUrl: source.urlPath ? this.resolveStr(data, source.urlPath) : undefined,
         };
@@ -160,6 +165,9 @@ export class GenericSourceService {
       const creds = btoa(`${source.authUser}:${source.authPass ?? ''}`);
       headers['Authorization'] = `Basic ${creds}`;
     }
+    for (const h of source.customHeaders ?? []) {
+      if (h.key.trim()) headers[h.key.trim()] = h.value;
+    }
     return headers;
   }
 
@@ -174,24 +182,36 @@ export class GenericSourceService {
   private resolveChecks(
     source: GenericSource,
     data: unknown,
-  ): { status: SourceStatus; rawStatus: string } {
+  ): {
+    status: SourceStatus;
+    rawStatus: string;
+    checkResults: { fieldPath: string; raw: string; mapped: SourceStatus }[];
+  } {
     const checks: GenericSourceCheck[] =
       source.checks && source.checks.length > 0
         ? source.checks
-        : [{ fieldPath: source.statusPath, mappings: source.mappings }];
+        : source.statusPath
+          ? [{ fieldPath: source.statusPath, mappings: source.mappings }]
+          : [];
+
+    if (checks.length === 0) {
+      return { status: 'unknown', rawStatus: '', checkResults: [] };
+    }
 
     let worstStatus: SourceStatus = 'success';
     let firstRaw = '';
+    const checkResults: { fieldPath: string; raw: string; mapped: SourceStatus }[] = [];
 
     for (const check of checks) {
       const raw = this.resolveStr(data, check.fieldPath) ?? '';
       if (!firstRaw) firstRaw = raw;
       const mapped: SourceStatus = check.mappings.find((m) => m.raw === raw)?.mapped ?? 'unknown';
+      checkResults.push({ fieldPath: check.fieldPath, raw, mapped });
       if (GenericSourceService.STATUS_SEV[mapped] > GenericSourceService.STATUS_SEV[worstStatus]) {
         worstStatus = mapped;
       }
     }
-    return { status: worstStatus, rawStatus: firstRaw };
+    return { status: worstStatus, rawStatus: firstRaw, checkResults };
   }
 
   private resolvePath(obj: unknown, path: string): unknown {

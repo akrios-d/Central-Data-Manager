@@ -528,6 +528,12 @@
     "checkNoPath": "(no field path)",
     "checkMappingCount": "mappings",
     "checkEdit": "Edit check",
-    "checkBackToList": "Back to checks"
+    "checkBackToList": "Back to checks",
+    "customHeaders": "Custom headers",
+    "customHeadersHint": "Extra headers sent on every request. Useful for X-API-Key, X-Auth-Token, or any proprietary header.",
+    "addHeader": "Add header",
+    "testOk": "Connection successful",
+    "testNoChecks": "No field paths configured — go to Config → Checks to map the status.",
+    "testPreview": "Response preview"
   }
 }

@@ -528,6 +528,12 @@
     "checkNoPath": "(sem campo definido)",
     "checkMappingCount": "mapeamentos",
     "checkEdit": "Editar verificação",
-    "checkBackToList": "Voltar às verificações"
+    "checkBackToList": "Voltar às verificações",
+    "customHeaders": "Headers personalizados",
+    "customHeadersHint": "Headers enviados em todos os pedidos. Útil para X-API-Key, X-Auth-Token ou outros headers proprietários.",
+    "addHeader": "Adicionar header",
+    "testOk": "Ligação bem-sucedida",
+    "testNoChecks": "Nenhum campo configurado — vai a Config → Verificações para mapear o status.",
+    "testPreview": "Pré-visualização da resposta"
   }
 }

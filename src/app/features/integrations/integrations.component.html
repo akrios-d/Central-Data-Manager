@@ -114,17 +114,6 @@
             }
           </div>
 
-          @if (testResult(); as tr) {
-            <div class="test-result" [class.test-ok]="tr.ok" [class.test-fail]="!tr.ok">
-              @if (tr.ok) {
-                ✓ raw: <strong>{{ tr.rawStatus }}</strong> → mapped:
-                <strong>{{ tr.status }}</strong>
-              } @else {
-                ✕ {{ tr.error }}
-              }
-            </div>
-          }
-
           <!-- Inner tabs -->
           <nav class="editor-tab-strip">
             <button
@@ -147,6 +136,39 @@
               }
             </button>
           </nav>
+
+          <!-- Persistent test result — visible across both tabs -->
+          @if (testResult(); as tr) {
+            <div class="test-panel" [class.test-panel-ok]="tr.ok" [class.test-panel-fail]="!tr.ok">
+              <div class="test-panel-header">
+                <span class="test-panel-status">
+                  {{ tr.ok ? '✓' : '✕' }}
+                  {{ tr.ok ? ('integrations.testOk' | translate) : tr.error }}
+                </span>
+                <button class="icon-btn" type="button" (click)="testResult.set(null)">✕</button>
+              </div>
+              @if (tr.ok) {
+                @if (tr.checkResults && tr.checkResults.length > 0) {
+                  <div class="check-results">
+                    @for (cr of tr.checkResults; track cr.fieldPath) {
+                      <div class="check-result-row">
+                        <code class="cr-path">{{ cr.fieldPath }}</code>
+                        <span class="cr-arrow">→</span>
+                        <code class="cr-raw">"{{ cr.raw }}"</code>
+                        <span class="cr-arrow">→</span>
+                        <span class="cr-mapped cr-mapped-{{ cr.mapped }}">{{ cr.mapped }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="form-hint mt-1">{{ 'integrations.testNoChecks' | translate }}</p>
+                }
+                @if (tr.responsePreview) {
+                  <pre class="resp-preview-body mt-1">{{ tr.responsePreview }}</pre>
+                }
+              }
+            </div>
+          }
 
           <!-- ── Connection tab ──────────────────────────────────────── -->
           @if (editorTab() === 'connection') {
@@ -256,6 +278,40 @@
                 </div>
               </div>
             }
+
+            <hr class="editor-divider" />
+
+            <div class="form-group">
+              <p class="form-label">{{ 'integrations.customHeaders' | translate }}</p>
+              <p class="form-hint">{{ 'integrations.customHeadersHint' | translate }}</p>
+              @for (h of formCustomHeaders(); track $index; let hi = $index) {
+                <div class="header-row">
+                  <input
+                    class="form-control header-key"
+                    placeholder="X-API-Key"
+                    [ngModel]="h.key"
+                    (ngModelChange)="setCustomHeaderKey(hi, $event)"
+                  />
+                  <span class="mapping-arrow">:</span>
+                  <input
+                    class="form-control header-val"
+                    placeholder="value…"
+                    [ngModel]="h.value"
+                    (ngModelChange)="setCustomHeaderValue(hi, $event)"
+                  />
+                  <button
+                    class="icon-btn icon-btn-danger"
+                    type="button"
+                    (click)="removeCustomHeader(hi)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              }
+              <button class="btn btn-xs btn-outline mt-1" type="button" (click)="addCustomHeader()">
+                + {{ 'integrations.addHeader' | translate }}
+              </button>
+            </div>
 
             <details class="advanced-section">
               <summary class="advanced-toggle">▸ {{ 'integrations.advanced' | translate }}</summary>

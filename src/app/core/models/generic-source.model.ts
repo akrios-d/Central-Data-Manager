@@ -35,6 +35,8 @@ export interface GenericSource {
    * When present, supersedes legacy statusPath + mappings.
    */
   checks?: GenericSourceCheck[];
+  /** Extra request headers sent on every poll/test. Applied after auth headers. */
+  customHeaders?: { key: string; value: string }[];
   /** Dot-notation path to a display name field (optional) */
   namePath?: string;
   /** Dot-notation path to a run URL field (optional) */
