@@ -95,7 +95,7 @@
         <p class="text-muted text-sm">{{ 'integrations.emptyState' | translate }}</p>
       } @else {
         <div class="editor-section">
-          <!-- Actions -->
+          <!-- Actions bar -->
           <div class="editor-actions">
             <button
               class="btn btn-sm btn-outline"
@@ -114,7 +114,6 @@
             }
           </div>
 
-          <!-- Test result -->
           @if (testResult(); as tr) {
             <div class="test-result" [class.test-ok]="tr.ok" [class.test-fail]="!tr.ok">
               @if (tr.ok) {
@@ -126,251 +125,350 @@
             </div>
           }
 
-          <!-- Basic -->
-          <div class="form-group">
-            <label class="form-label" for="int-name">{{ 'integrations.name' | translate }}</label>
-            <input
-              id="int-name"
-              class="form-control"
-              placeholder="e.g. Jenkins Build"
-              [ngModel]="formName()"
-              (ngModelChange)="formName.set($event)"
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="int-url">{{ 'integrations.url' | translate }}</label>
-            <div class="int-url-row">
-              <select
-                id="int-method"
-                class="form-control int-method-select"
-                [ngModel]="formMethod()"
-                (ngModelChange)="formMethod.set($event)"
-              >
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-              </select>
-              <input
-                id="int-url"
-                class="form-control"
-                [placeholder]="'integrations.urlHint' | translate"
-                [ngModel]="formUrl()"
-                (ngModelChange)="formUrl.set($event)"
-              />
-            </div>
-          </div>
-
-          @if (formMethod() === 'POST') {
-            <div class="form-group">
-              <label class="form-label" for="int-body">{{ 'integrations.body' | translate }}</label>
-              <textarea
-                id="int-body"
-                class="form-control int-body-textarea"
-                [placeholder]="'integrations.bodyHint' | translate"
-                [ngModel]="formBody()"
-                (ngModelChange)="formBody.set($event)"
-              ></textarea>
-            </div>
-          }
-
-          <!-- Auth -->
-          <div class="form-group">
-            <label class="form-label" for="int-auth">{{
-              'integrations.authType' | translate
-            }}</label>
-            <select
-              id="int-auth"
-              class="form-control"
-              [ngModel]="formAuthType()"
-              (ngModelChange)="formAuthType.set($event)"
+          <!-- Inner tabs -->
+          <nav class="editor-tab-strip">
+            <button
+              class="editor-tab-btn"
+              [class.active]="editorTab() === 'connection'"
+              (click)="editorTab.set('connection')"
+              type="button"
             >
-              @for (opt of authOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label | translate }}</option>
+              {{ 'integrations.tabConnection' | translate }}
+            </button>
+            <button
+              class="editor-tab-btn"
+              [class.active]="editorTab() === 'config'"
+              (click)="editorTab.set('config')"
+              type="button"
+            >
+              {{ 'integrations.tabConfig' | translate }}
+              @if (formChecks().length > 0) {
+                <span class="editor-tab-badge">{{ formChecks().length }}</span>
               }
-            </select>
-          </div>
+            </button>
+          </nav>
 
-          @if (formAuthType() === 'bearer') {
+          <!-- ── Connection tab ──────────────────────────────────────── -->
+          @if (editorTab() === 'connection') {
             <div class="form-group">
-              <label class="form-label" for="int-token">{{
-                'integrations.token' | translate
-              }}</label>
+              <label class="form-label" for="int-name">{{ 'integrations.name' | translate }}</label>
               <input
-                id="int-token"
+                id="int-name"
                 class="form-control"
-                type="password"
-                [ngModel]="formToken()"
-                (ngModelChange)="formToken.set($event)"
+                placeholder="e.g. Jenkins Build"
+                [ngModel]="formName()"
+                (ngModelChange)="formName.set($event)"
               />
             </div>
-          }
 
-          @if (formAuthType() === 'basic') {
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="int-user">{{
-                  'integrations.username' | translate
-                }}</label>
+            <div class="form-group">
+              <label class="form-label" for="int-url">{{ 'integrations.url' | translate }}</label>
+              <div class="int-url-row">
+                <select
+                  id="int-method"
+                  class="form-control int-method-select"
+                  [ngModel]="formMethod()"
+                  (ngModelChange)="formMethod.set($event)"
+                >
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                </select>
                 <input
-                  id="int-user"
+                  id="int-url"
                   class="form-control"
-                  [ngModel]="formUser()"
-                  (ngModelChange)="formUser.set($event)"
+                  [placeholder]="'integrations.urlHint' | translate"
+                  [ngModel]="formUrl()"
+                  (ngModelChange)="formUrl.set($event)"
                 />
               </div>
+            </div>
+
+            @if (formMethod() === 'POST') {
               <div class="form-group">
-                <label class="form-label" for="int-pass">{{
-                  'integrations.password' | translate
+                <label class="form-label" for="int-body">{{
+                  'integrations.body' | translate
+                }}</label>
+                <textarea
+                  id="int-body"
+                  class="form-control int-body-textarea"
+                  [placeholder]="'integrations.bodyHint' | translate"
+                  [ngModel]="formBody()"
+                  (ngModelChange)="formBody.set($event)"
+                ></textarea>
+              </div>
+            }
+
+            <div class="form-group">
+              <label class="form-label" for="int-auth">{{
+                'integrations.authType' | translate
+              }}</label>
+              <select
+                id="int-auth"
+                class="form-control"
+                [ngModel]="formAuthType()"
+                (ngModelChange)="formAuthType.set($event)"
+              >
+                @for (opt of authOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label | translate }}</option>
+                }
+              </select>
+            </div>
+
+            @if (formAuthType() === 'bearer') {
+              <div class="form-group">
+                <label class="form-label" for="int-token">{{
+                  'integrations.token' | translate
                 }}</label>
                 <input
-                  id="int-pass"
+                  id="int-token"
                   class="form-control"
                   type="password"
-                  [ngModel]="formPass()"
-                  (ngModelChange)="formPass.set($event)"
+                  [ngModel]="formToken()"
+                  (ngModelChange)="formToken.set($event)"
                 />
               </div>
-            </div>
+            }
+
+            @if (formAuthType() === 'basic') {
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="int-user">{{
+                    'integrations.username' | translate
+                  }}</label>
+                  <input
+                    id="int-user"
+                    class="form-control"
+                    [ngModel]="formUser()"
+                    (ngModelChange)="formUser.set($event)"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="int-pass">{{
+                    'integrations.password' | translate
+                  }}</label>
+                  <input
+                    id="int-pass"
+                    class="form-control"
+                    type="password"
+                    [ngModel]="formPass()"
+                    (ngModelChange)="formPass.set($event)"
+                  />
+                </div>
+              </div>
+            }
+
+            <details class="advanced-section">
+              <summary class="advanced-toggle">▸ {{ 'integrations.advanced' | translate }}</summary>
+              <div class="advanced-body">
+                <div class="form-group">
+                  <label class="form-label" for="int-name-path">{{
+                    'integrations.namePath' | translate
+                  }}</label>
+                  <input
+                    id="int-name-path"
+                    class="form-control"
+                    placeholder="e.g. displayName"
+                    [ngModel]="formNamePath()"
+                    (ngModelChange)="formNamePath.set($event)"
+                  />
+                  <p class="form-hint">{{ 'integrations.namePathHint2' | translate }}</p>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="int-url-path">{{
+                    'integrations.urlPath' | translate
+                  }}</label>
+                  <input
+                    id="int-url-path"
+                    class="form-control"
+                    placeholder="e.g. lastBuild.url"
+                    [ngModel]="formUrlPath()"
+                    (ngModelChange)="formUrlPath.set($event)"
+                  />
+                  <p class="form-hint">{{ 'integrations.urlPathHint2' | translate }}</p>
+                </div>
+
+                <p class="cors-note text-muted text-sm">
+                  ℹ {{ 'integrations.corsNote' | translate }}
+                </p>
+              </div>
+            </details>
           }
 
-          <hr class="editor-divider" />
+          <!-- ── Config tab (execution + checks) ──────────────────── -->
+          @if (editorTab() === 'config') {
+            <p class="config-section-label">{{ 'integrations.configExecSection' | translate }}</p>
 
-          <!-- Orchestrator execution mode -->
-          <div class="form-group">
-            <p class="form-label">{{ 'integrations.orchMode' | translate }}</p>
-            <p class="form-hint">{{ 'integrations.orchModeHint' | translate }}</p>
-            <div class="orch-mode-toggle">
-              <button
-                class="orch-mode-btn"
-                [class.active]="formOrchMode() === 'once'"
-                (click)="formOrchMode.set('once')"
-                type="button"
-              >
-                {{ 'integrations.orchModeOnce' | translate }}
-              </button>
-              <button
-                class="orch-mode-btn"
-                [class.active]="formOrchMode() === 'poll'"
-                (click)="formOrchMode.set('poll')"
-                type="button"
-              >
-                {{ 'integrations.orchModePoll' | translate }}
-              </button>
+            <div class="form-group">
+              <p class="form-hint">{{ 'integrations.orchModeHint' | translate }}</p>
+              <div class="orch-mode-toggle">
+                <button
+                  class="orch-mode-btn"
+                  [class.active]="formOrchMode() === 'once'"
+                  (click)="formOrchMode.set('once')"
+                  type="button"
+                >
+                  {{ 'integrations.orchModeOnce' | translate }}
+                </button>
+                <button
+                  class="orch-mode-btn"
+                  [class.active]="formOrchMode() === 'poll'"
+                  (click)="formOrchMode.set('poll')"
+                  type="button"
+                >
+                  {{ 'integrations.orchModePoll' | translate }}
+                </button>
+              </div>
+              @if (formOrchMode() === 'poll') {
+                <div class="exec-params mt-2">
+                  <div class="form-group">
+                    <label class="form-label" for="int-orch-interval">{{
+                      'integrations.orchInterval' | translate
+                    }}</label>
+                    <div class="inline-row mt-1">
+                      <input
+                        id="int-orch-interval"
+                        class="form-control exec-input"
+                        type="number"
+                        min="5"
+                        placeholder="30"
+                        [ngModel]="formOrchInterval()"
+                        (ngModelChange)="formOrchInterval.set(+$event)"
+                      />
+                      <span class="text-muted text-sm">s</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="int-orch-max">{{
+                      'integrations.orchMaxPolls' | translate
+                    }}</label>
+                    <div class="inline-row mt-1">
+                      <input
+                        id="int-orch-max"
+                        class="form-control exec-input"
+                        type="number"
+                        min="1"
+                        placeholder="20"
+                        [ngModel]="formOrchMaxPolls()"
+                        (ngModelChange)="formOrchMaxPolls.set(+$event)"
+                      />
+                      <span class="text-muted text-sm">≈ {{ orchPollMinutes() }} min</span>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
-            @if (formOrchMode() === 'poll') {
-              <div class="exec-params mt-2">
-                <div class="form-group">
-                  <label class="form-label" for="int-orch-interval">
-                    {{ 'integrations.orchInterval' | translate }}
-                  </label>
-                  <div class="inline-row mt-1">
-                    <input
-                      id="int-orch-interval"
-                      class="form-control exec-input"
-                      type="number"
-                      min="5"
-                      placeholder="30"
-                      [ngModel]="formOrchInterval()"
-                      (ngModelChange)="formOrchInterval.set(+$event)"
-                    />
-                    <span class="text-muted text-sm">s</span>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="int-orch-max">
-                    {{ 'integrations.orchMaxPolls' | translate }}
-                  </label>
-                  <div class="inline-row mt-1">
-                    <input
-                      id="int-orch-max"
-                      class="form-control exec-input"
-                      type="number"
-                      min="1"
-                      placeholder="20"
-                      [ngModel]="formOrchMaxPolls()"
-                      (ngModelChange)="formOrchMaxPolls.set(+$event)"
-                    />
-                    <span class="text-muted text-sm">≈ {{ orchPollMinutes() }} min</span>
-                  </div>
-                </div>
+
+            <hr class="editor-divider" />
+
+            <!-- Check list or check edit panel -->
+            @if (editingCheckIdx() === null) {
+              <div class="checks-list-header">
+                <p class="config-section-label">
+                  {{ 'integrations.configChecksSection' | translate }}
+                </p>
+                <button class="btn btn-xs btn-outline" type="button" (click)="addCheck()">
+                  + {{ 'integrations.addCheck' | translate }}
+                </button>
               </div>
-            }
-          </div>
+              <p class="form-hint mb-2">{{ 'integrations.checksHint' | translate }}</p>
 
-          <hr class="editor-divider" />
+              @for (check of formChecks(); track $index; let ci = $index) {
+                <div class="check-card">
+                  <div class="check-card-info" (click)="openCheckPanel(ci)">
+                    <span class="check-card-path">
+                      {{ check.fieldPath || ('integrations.checkNoPath' | translate) }}
+                    </span>
+                    <span class="check-card-meta">
+                      {{ check.mappings.length }}
+                      {{ 'integrations.checkMappingCount' | translate }}
+                    </span>
+                  </div>
+                  <div class="check-card-actions">
+                    <button
+                      class="icon-btn"
+                      type="button"
+                      [title]="'integrations.checkEdit' | translate"
+                      (click)="openCheckPanel(ci)"
+                    >
+                      ✎
+                    </button>
+                    @if (formChecks().length > 1) {
+                      <button
+                        class="icon-btn icon-btn-danger"
+                        type="button"
+                        (click)="removeCheck(ci)"
+                      >
+                        ✕
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            } @else {
+              @let ci = editingCheckIdx()!;
+              @let check = formChecks()[ci];
+              <div class="check-panel-header">
+                <button class="btn-back" type="button" (click)="closeCheckPanel()">
+                  ← {{ 'integrations.checkBackToList' | translate }}
+                </button>
+                <span class="check-panel-title">
+                  {{ 'integrations.checkLabel' | translate }} {{ ci + 1 }}
+                </span>
+              </div>
 
-          <!-- Mapping config -->
-          <div class="form-group">
-            <label class="form-label" for="int-status-path">
-              {{ 'integrations.statusPath' | translate }}
-            </label>
-            <input
-              id="int-status-path"
-              class="form-control"
-              placeholder="e.g. result  or  lastBuild.result"
-              [ngModel]="formStatusPath()"
-              (ngModelChange)="formStatusPath.set($event)"
-            />
-            <p class="form-hint">{{ 'integrations.statusPathHint2' | translate }}</p>
-          </div>
-
-          <div class="form-group">
-            <p class="form-label">{{ 'integrations.statusMap' | translate }}</p>
-            <p class="form-hint">{{ 'integrations.statusMapHint' | translate }}</p>
-            @for (row of formMappings(); track $index; let i = $index) {
-              <div class="mapping-row">
+              <div class="form-group">
+                <label class="form-label">{{ 'integrations.checkFieldPath' | translate }}</label>
                 <input
-                  class="form-control mapping-raw"
-                  [placeholder]="'integrations.rawValue' | translate"
-                  [(ngModel)]="row.raw"
+                  class="form-control"
+                  placeholder="e.g. result  or  lastBuild.result"
+                  [ngModel]="check.fieldPath"
+                  (ngModelChange)="setCheckFieldPath(ci, $event)"
                 />
-                <span class="mapping-arrow">→</span>
-                <select class="form-control mapping-mapped" [(ngModel)]="row.mapped">
-                  <option value="">—</option>
-                  @for (opt of statusOptions; track opt.value) {
-                    <option [value]="opt.value">{{ opt.value }}</option>
-                  }
-                </select>
-                <button class="icon-btn icon-btn-danger" (click)="removeMapping(i)">✕</button>
+                <p class="form-hint">{{ 'integrations.statusPathHint2' | translate }}</p>
+              </div>
+
+              <div class="form-group">
+                <p class="form-label">{{ 'integrations.statusMap' | translate }}</p>
+                <p class="form-hint">{{ 'integrations.statusMapHint' | translate }}</p>
+                @for (row of check.mappings; track $index; let mi = $index) {
+                  <div class="mapping-row">
+                    <input
+                      class="form-control mapping-raw"
+                      [placeholder]="'integrations.rawValue' | translate"
+                      [ngModel]="row.raw"
+                      (ngModelChange)="setCheckMappingRaw(ci, mi, $event)"
+                    />
+                    <span class="mapping-arrow">→</span>
+                    <select
+                      class="form-control mapping-mapped"
+                      [ngModel]="row.mapped"
+                      (ngModelChange)="setCheckMappingMapped(ci, mi, $event)"
+                    >
+                      <option value="">—</option>
+                      @for (opt of statusOptions; track opt.value) {
+                        <option [value]="opt.value">{{ opt.value }}</option>
+                      }
+                    </select>
+                    <button
+                      class="icon-btn icon-btn-danger"
+                      type="button"
+                      (click)="removeCheckMapping(ci, mi)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                }
+                <button
+                  class="btn btn-xs btn-outline mt-1"
+                  type="button"
+                  (click)="addCheckMapping(ci)"
+                >
+                  {{ 'integrations.addMapping' | translate }}
+                </button>
               </div>
             }
-            <button class="btn btn-xs btn-outline" (click)="addMapping()">
-              {{ 'integrations.addMapping' | translate }}
-            </button>
-          </div>
-
-          <hr class="editor-divider" />
-
-          <!-- Optional paths -->
-          <div class="form-group">
-            <label class="form-label" for="int-name-path">
-              {{ 'integrations.namePath' | translate }}
-            </label>
-            <input
-              id="int-name-path"
-              class="form-control"
-              placeholder="e.g. displayName"
-              [ngModel]="formNamePath()"
-              (ngModelChange)="formNamePath.set($event)"
-            />
-            <p class="form-hint">{{ 'integrations.namePathHint2' | translate }}</p>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="int-url-path">
-              {{ 'integrations.urlPath' | translate }}
-            </label>
-            <input
-              id="int-url-path"
-              class="form-control"
-              placeholder="e.g. lastBuild.url"
-              [ngModel]="formUrlPath()"
-              (ngModelChange)="formUrlPath.set($event)"
-            />
-            <p class="form-hint">{{ 'integrations.urlPathHint2' | translate }}</p>
-          </div>
-
-          <p class="cors-note text-muted text-sm">ℹ {{ 'integrations.corsNote' | translate }}</p>
+          }
         </div>
       }
     }

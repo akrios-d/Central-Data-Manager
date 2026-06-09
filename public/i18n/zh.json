@@ -515,6 +515,19 @@
     "orchMaxPolls": "最大尝试次数",
     "duplicate": "复制",
     "exportSrc": "导出",
-    "orchPollGlobalHint": "使用设置 → Chain 执行中配置的全局轮询间隔和最大尝试次数。"
+    "orchPollGlobalHint": "使用设置 → Chain 执行中配置的全局轮询间隔和最大尝试次数。",
+    "tabConnection": "连接",
+    "checkLabel": "检查",
+    "addCheck": "添加检查",
+    "checkFieldPath": "状态字段路径",
+    "checksHint": "定义一个或多个要检查的字段。总体状态为所有检查中最差的结果。",
+    "tabConfig": "配置",
+    "configExecSection": "编排器执行",
+    "configChecksSection": "状态检查",
+    "advanced": "高级",
+    "checkNoPath": "（未设置字段）",
+    "checkMappingCount": "个映射",
+    "checkEdit": "编辑检查",
+    "checkBackToList": "返回检查列表"
   }
 }

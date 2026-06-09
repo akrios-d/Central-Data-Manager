@@ -5,6 +5,12 @@ export interface GenericSourceMapping {
   mapped: SourceStatus;
 }
 
+export interface GenericSourceCheck {
+  /** Dot-notation path to the status field in the JSON response. */
+  fieldPath: string;
+  mappings: GenericSourceMapping[];
+}
+
 export interface GenericSource {
   id: string;
   name: string;
@@ -19,9 +25,16 @@ export interface GenericSource {
   authPass?: string;
   pollIntervalSec: number;
   enabled: boolean;
-  /** Dot-notation path to the status field, e.g. "lastBuild.result" */
+  /** @deprecated Use checks instead. Kept for backward-compat storage migration. */
   statusPath: string;
+  /** @deprecated Use checks instead. Kept for backward-compat storage migration. */
   mappings: GenericSourceMapping[];
+  /**
+   * One or more status checks to evaluate.
+   * Overall status = worst among all checks (failure > running > unknown > success).
+   * When present, supersedes legacy statusPath + mappings.
+   */
+  checks?: GenericSourceCheck[];
   /** Dot-notation path to a display name field (optional) */
   namePath?: string;
   /** Dot-notation path to a run URL field (optional) */

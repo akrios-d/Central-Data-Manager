@@ -515,6 +515,19 @@
     "orchMaxPolls": "Tentatives max",
     "duplicate": "Dupliquer",
     "exportSrc": "Exporter",
-    "orchPollGlobalHint": "Utilise l'intervalle et le nombre de tentatives globaux définis dans Paramètres → Exécution."
+    "orchPollGlobalHint": "Utilise l'intervalle et le nombre de tentatives globaux définis dans Paramètres → Exécution.",
+    "tabConnection": "Connexion",
+    "checkLabel": "Vérification",
+    "addCheck": "Ajouter une vérification",
+    "checkFieldPath": "Champ de statut",
+    "checksHint": "Définissez un ou plusieurs champs à vérifier. Le statut global est le pire résultat parmi toutes les vérifications.",
+    "tabConfig": "Config",
+    "configExecSection": "Exécution orchestrateur",
+    "configChecksSection": "Contrôles de statut",
+    "advanced": "Avancé",
+    "checkNoPath": "(aucun champ)",
+    "checkMappingCount": "mappings",
+    "checkEdit": "Modifier le contrôle",
+    "checkBackToList": "Retour aux contrôles"
   }
 }

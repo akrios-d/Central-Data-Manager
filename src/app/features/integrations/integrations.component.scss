@@ -231,6 +231,55 @@
   margin: 0;
 }
 
+// ── Inner editor tabs ─────────────────────────────────────────────────────────
+
+.editor-tab-strip {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.editor-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition:
+    color 0.15s,
+    border-bottom-color 0.15s;
+
+  &.active {
+    color: var(--text);
+    border-bottom-color: var(--accent, #58a6ff);
+    font-weight: 500;
+  }
+
+  &:hover:not(.active) {
+    color: var(--text);
+  }
+}
+
+.editor-tab-badge {
+  font-size: 0.68rem;
+  background: color-mix(in srgb, var(--accent, #58a6ff) 18%, transparent);
+  color: var(--accent, #58a6ff);
+  border-radius: 999px;
+  padding: 0 5px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
 // ── Mapping rows ──────────────────────────────────────────────────────────────
 
 .mapping-row {
@@ -297,71 +346,61 @@
   border-color: var(--danger);
 }
 
-// ── CORS note ─────────────────────────────────────────────────────────────────
+// ── CORS note ────────────────────────────────────────────────────────────────
 
 .cors-note {
-  font-size: 0.75rem;
-  margin: 0;
-  padding: 0.45rem 0.6rem;
-  border-left: 2px solid var(--border);
+  font-size: 0.78rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent, #58a6ff) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent, #58a6ff) 25%, transparent);
 }
 
-// ── Method + URL row ──────────────────────────────────────────────────────────
+// ── URL row (method select + url input) ───────────────────────────────────────
 
 .int-url-row {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  align-items: stretch;
 }
 
 .int-method-select {
-  width: 80px;
-  flex-shrink: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.35rem 0.4rem;
-
-  @media (max-width: 480px) {
-    width: 100%;
-  }
+  flex: 0 0 90px;
+  min-width: 0;
 }
 
+// ── Body textarea ─────────────────────────────────────────────────────────────
+
 .int-body-textarea {
-  min-height: 100px;
   font-family: monospace;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
+  min-height: 90px;
   resize: vertical;
 }
 
-// ── Hint text ─────────────────────────────────────────────────────────────────
+// ── Form hint ─────────────────────────────────────────────────────────────────
 
 .form-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin: 0.25rem 0 0;
-  line-height: 1.45;
+  margin: 0.2rem 0 0;
+  line-height: 1.4;
 }
 
-// ── Orchestrator execution mode toggle ────────────────────────────────────────
+// ── Orch-mode toggle (Execution tab) ─────────────────────────────────────────
 
 .orch-mode-toggle {
   display: inline-flex;
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
-  margin-top: 0.35rem;
+  margin-top: 0.5rem;
 }
 
 .orch-mode-btn {
   background: none;
   border: none;
-  border-right: 1px solid var(--border);
-  padding: 0.35rem 0.85rem;
+  padding: 0.4rem 1rem;
   font-size: 0.82rem;
   cursor: pointer;
   color: var(--text-muted);
@@ -369,13 +408,13 @@
     background 0.15s,
     color 0.15s;
 
-  &:last-child {
-    border-right: none;
+  & + & {
+    border-left: 1px solid var(--border);
   }
 
   &.active {
     background: var(--accent, #58a6ff);
-    color: var(--btn-primary-text, #fff);
+    color: #fff;
     font-weight: 500;
   }
 
@@ -385,20 +424,177 @@
   }
 }
 
-// ── Orch poll params (mirrors Settings layout) ────────────────────────────────
+// ── Execution params ─────────────────────────────────────────────────────────
 
 .exec-params {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   flex-wrap: wrap;
+
+  .form-group {
+    flex: 1;
+    min-width: 140px;
+  }
 }
 
 .exec-input {
   width: 90px;
+  display: inline-block;
 }
 
 .inline-row {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0.5rem;
+}
+
+// ── btn-xs ───────────────────────────────────────────────────────────────────
+
+.btn-xs {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  line-height: 1.4;
+}
+
+// ── Config section labels ─────────────────────────────────────────────────────
+
+.config-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+// ── Advanced collapsible (Connection tab) ────────────────────────────────────
+
+.advanced-section {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.advanced-toggle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  background: var(--surface-1);
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--surface-hover, var(--surface-2));
+    color: var(--text);
+  }
+
+  &::marker,
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.advanced-body {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-0);
+}
+
+// ── Check list (Config tab) ───────────────────────────────────────────────────
+
+.checks-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+
+  .config-section-label {
+    margin: 0;
+  }
+}
+
+.check-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-1);
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--surface-hover, var(--surface-2));
+  }
+}
+
+.check-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.check-card-path {
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.check-card-meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.check-card-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+// ── Check edit panel ──────────────────────────────────────────────────────────
+
+.check-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+}
+
+.check-panel-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--accent, #58a6ff);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }

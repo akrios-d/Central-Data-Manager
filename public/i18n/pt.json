@@ -515,6 +515,19 @@
     "orchMaxPolls": "Máx. tentativas",
     "duplicate": "Duplicar",
     "exportSrc": "Exportar",
-    "orchPollGlobalHint": "Usa o intervalo e máx. tentativas globais em Configurações → Execução de chains."
+    "orchPollGlobalHint": "Usa o intervalo e máx. tentativas globais em Configurações → Execução de chains.",
+    "tabConnection": "Conexão",
+    "checkLabel": "Verificação",
+    "addCheck": "Adicionar verificação",
+    "checkFieldPath": "Campo de status",
+    "checksHint": "Defina um ou mais campos para verificar. O status geral é o pior resultado entre todas as verificações.",
+    "tabConfig": "Config",
+    "configExecSection": "Execução no orchestrator",
+    "configChecksSection": "Verificações de status",
+    "advanced": "Avançado",
+    "checkNoPath": "(sem campo definido)",
+    "checkMappingCount": "mapeamentos",
+    "checkEdit": "Editar verificação",
+    "checkBackToList": "Voltar às verificações"
   }
 }

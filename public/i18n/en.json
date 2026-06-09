@@ -515,6 +515,19 @@
     "orchMaxPolls": "Max attempts",
     "duplicate": "Duplicate",
     "exportSrc": "Export",
-    "orchPollGlobalHint": "Uses global poll interval and max attempts from Settings → Chain Execution."
+    "orchPollGlobalHint": "Uses global poll interval and max attempts from Settings → Chain Execution.",
+    "tabConnection": "Connection",
+    "checkLabel": "Check",
+    "addCheck": "Add check",
+    "checkFieldPath": "Status field path",
+    "checksHint": "Define one or more fields to check. The overall status is the worst result across all checks.",
+    "tabConfig": "Config",
+    "configExecSection": "Orchestrator execution",
+    "configChecksSection": "Status checks",
+    "advanced": "Advanced",
+    "checkNoPath": "(no field path)",
+    "checkMappingCount": "mappings",
+    "checkEdit": "Edit check",
+    "checkBackToList": "Back to checks"
   }
 }

@@ -12,6 +12,7 @@ import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   GenericSource,
+  GenericSourceCheck,
   GenericSourceMapping,
   GenericSourceResult,
   SourceStatus,
@@ -24,7 +25,15 @@ interface MappingRow {
   mapped: SourceStatus | '';
 }
 
-const DEFAULT_MAPPINGS: MappingRow[] = [];
+interface CheckFormItem {
+  fieldPath: string;
+  mappings: MappingRow[];
+  expanded: boolean;
+}
+
+function defaultCheck(): CheckFormItem {
+  return { fieldPath: '', mappings: [], expanded: true };
+}
 
 @Component({
   selector: 'app-integrations',
@@ -42,6 +51,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   readonly results = this.svc.results;
 
   activeTab = signal<'sources' | 'editor'>('sources');
+  editorTab = signal<'connection' | 'config'>('connection');
 
   // ── Editor form state ──────────────────────────────────────────────────────
   selectedId = signal<string | null>(null);
@@ -57,8 +67,8 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   orchPollMinutes = computed(() =>
     Math.round((this.formOrchInterval() * this.formOrchMaxPolls()) / 60),
   );
-  formStatusPath = signal('');
-  formMappings = signal<MappingRow[]>(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
+  formChecks = signal<CheckFormItem[]>([defaultCheck()]);
+  editingCheckIdx = signal<number | null>(null);
   formNamePath = signal('');
   formUrlPath = signal('');
   formMethod = signal<'GET' | 'POST'>('GET');
@@ -111,12 +121,27 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formOrchMode.set(source.orchMode ?? 'poll');
     this.formOrchInterval.set(source.orchPollIntervalSec ?? 30);
     this.formOrchMaxPolls.set(source.orchMaxPolls ?? 20);
-    this.formStatusPath.set(source.statusPath);
-    this.formMappings.set(source.mappings.map((m) => ({ ...m })));
+    const checks: CheckFormItem[] =
+      source.checks && source.checks.length > 0
+        ? source.checks.map((c) => ({
+            fieldPath: c.fieldPath,
+            mappings: c.mappings.map((m) => ({ ...m })),
+            expanded: true,
+          }))
+        : [
+            {
+              fieldPath: source.statusPath,
+              mappings: source.mappings.map((m) => ({ ...m })),
+              expanded: true,
+            },
+          ];
+    this.formChecks.set(checks);
     this.formNamePath.set(source.namePath ?? '');
     this.formUrlPath.set(source.urlPath ?? '');
     this.testResult.set(null);
+    this.editingCheckIdx.set(null);
     this.activeTab.set('editor');
+    this.editorTab.set('connection');
   }
 
   newSource(): void {
@@ -132,12 +157,13 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formOrchMode.set('poll');
     this.formOrchInterval.set(30);
     this.formOrchMaxPolls.set(20);
-    this.formStatusPath.set('');
-    this.formMappings.set(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
+    this.formChecks.set([defaultCheck()]);
     this.formNamePath.set('');
     this.formUrlPath.set('');
     this.testResult.set(null);
+    this.editingCheckIdx.set(null);
     this.activeTab.set('editor');
+    this.editorTab.set('connection');
   }
 
   // ── Editor actions ─────────────────────────────────────────────────────────
@@ -167,10 +193,21 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       authPass: this.formPass() || undefined,
       pollIntervalSec: 0,
       enabled: true,
-      statusPath: this.formStatusPath().trim(),
-      mappings: this.formMappings().filter(
-        (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
-      ),
+      statusPath: this.formChecks()[0]?.fieldPath.trim() ?? '',
+      mappings:
+        this.formChecks()[0]?.mappings.filter(
+          (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
+        ) ?? [],
+      checks: this.formChecks()
+        .filter((c) => c.fieldPath.trim())
+        .map(
+          (c): GenericSourceCheck => ({
+            fieldPath: c.fieldPath.trim(),
+            mappings: c.mappings.filter(
+              (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
+            ),
+          }),
+        ),
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
       orchMode: this.formOrchMode(),
@@ -217,10 +254,21 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       authPass: this.formPass() || undefined,
       pollIntervalSec: 30,
       enabled: true,
-      statusPath: this.formStatusPath().trim(),
-      mappings: this.formMappings().filter(
-        (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
-      ),
+      statusPath: this.formChecks()[0]?.fieldPath.trim() ?? '',
+      mappings:
+        this.formChecks()[0]?.mappings.filter(
+          (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
+        ) ?? [],
+      checks: this.formChecks()
+        .filter((c) => c.fieldPath.trim())
+        .map(
+          (c): GenericSourceCheck => ({
+            fieldPath: c.fieldPath.trim(),
+            mappings: c.mappings.filter(
+              (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
+            ),
+          }),
+        ),
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
       orchMode: 'once',
@@ -282,13 +330,79 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Mapping rows ───────────────────────────────────────────────────────────
-  addMapping(): void {
-    this.formMappings.update((m) => [...m, { raw: '', mapped: 'unknown' }]);
+  // ── Check management ──────────────────────────────────────────────────────
+  addCheck(): void {
+    const newIdx = this.formChecks().length;
+    this.formChecks.update((cs) => [...cs, defaultCheck()]);
+    this.editingCheckIdx.set(newIdx);
   }
 
-  removeMapping(index: number): void {
-    this.formMappings.update((m) => m.filter((_, i) => i !== index));
+  openCheckPanel(idx: number): void {
+    this.editingCheckIdx.set(idx);
+  }
+
+  closeCheckPanel(): void {
+    this.editingCheckIdx.set(null);
+  }
+
+  removeCheck(checkIdx: number): void {
+    this.formChecks.update((cs) => cs.filter((_, i) => i !== checkIdx));
+  }
+
+  toggleCheckExpanded(checkIdx: number): void {
+    this.formChecks.update((cs) =>
+      cs.map((c, i) => (i === checkIdx ? { ...c, expanded: !c.expanded } : c)),
+    );
+  }
+
+  setCheckFieldPath(checkIdx: number, val: string): void {
+    this.formChecks.update((cs) =>
+      cs.map((c, i) => (i === checkIdx ? { ...c, fieldPath: val } : c)),
+    );
+  }
+
+  addCheckMapping(checkIdx: number): void {
+    this.formChecks.update((cs) =>
+      cs.map((c, i) =>
+        i === checkIdx
+          ? { ...c, mappings: [...c.mappings, { raw: '', mapped: 'unknown' as SourceStatus }] }
+          : c,
+      ),
+    );
+  }
+
+  removeCheckMapping(checkIdx: number, mapIdx: number): void {
+    this.formChecks.update((cs) =>
+      cs.map((c, i) =>
+        i === checkIdx ? { ...c, mappings: c.mappings.filter((_, mi) => mi !== mapIdx) } : c,
+      ),
+    );
+  }
+
+  setCheckMappingRaw(checkIdx: number, mapIdx: number, val: string): void {
+    this.formChecks.update((cs) =>
+      cs.map((c, i) =>
+        i === checkIdx
+          ? {
+              ...c,
+              mappings: c.mappings.map((m, mi) => (mi === mapIdx ? { ...m, raw: val } : m)),
+            }
+          : c,
+      ),
+    );
+  }
+
+  setCheckMappingMapped(checkIdx: number, mapIdx: number, val: SourceStatus): void {
+    this.formChecks.update((cs) =>
+      cs.map((c, i) =>
+        i === checkIdx
+          ? {
+              ...c,
+              mappings: c.mappings.map((m, mi) => (mi === mapIdx ? { ...m, mapped: val } : m)),
+            }
+          : c,
+      ),
+    );
   }
 
   // ── Template helpers ───────────────────────────────────────────────────────
@@ -302,11 +416,11 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
         {
           success: '✓',
           failure: '✕',
-          running: '◌',
-          unknown: '○',
+          running: '↻',
+          unknown: '?',
           error: '!',
         } as Record<string, string>
-      )[status] ?? '○'
+      )[status] ?? '?'
     );
   }
 

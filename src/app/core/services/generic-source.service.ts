@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import {
   GenericSource,
+  GenericSourceCheck,
   GenericSourceMapping,
   GenericSourceResult,
   SourceStatus,
@@ -93,12 +94,10 @@ export class GenericSourceService {
     const headers = this.buildHeaders(source);
     return this.buildRequest(source, headers).pipe(
       map((data) => {
-        const rawStr = this.resolveStr(data, source.statusPath) ?? '';
-        const mapped = source.mappings.find((m) => m.raw === rawStr)?.mapped;
-        const status: SourceStatus = mapped ?? 'unknown';
+        const { status, rawStatus } = this.resolveChecks(source, data);
         return {
           status,
-          rawStatus: rawStr,
+          rawStatus,
           displayName: source.namePath ? this.resolveStr(data, source.namePath) : undefined,
           runUrl: source.urlPath ? this.resolveStr(data, source.urlPath) : undefined,
         };
@@ -109,14 +108,12 @@ export class GenericSourceService {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   private applyResult(source: GenericSource, data: unknown): void {
-    const rawStr = this.resolveStr(data, source.statusPath) ?? '';
-    const mapped = source.mappings.find((m: GenericSourceMapping) => m.raw === rawStr)?.mapped;
-    const status: SourceStatus = mapped ?? 'unknown';
+    const { status, rawStatus } = this.resolveChecks(source, data);
     const result: GenericSourceResult = {
       sourceId: source.id,
       fetchedAt: new Date().toISOString(),
       status,
-      rawStatus: rawStr,
+      rawStatus,
       displayName: source.namePath ? this.resolveStr(data, source.namePath) : undefined,
       runUrl: source.urlPath ? this.resolveStr(data, source.urlPath) : undefined,
     };
@@ -165,6 +162,37 @@ export class GenericSourceService {
       headers['Authorization'] = `Basic ${creds}`;
     }
     return headers;
+  }
+
+  private static readonly STATUS_SEV: Record<SourceStatus, number> = {
+    success: 0,
+    running: 1,
+    unknown: 2,
+    error: 3,
+    failure: 4,
+  };
+
+  private resolveChecks(
+    source: GenericSource,
+    data: unknown,
+  ): { status: SourceStatus; rawStatus: string } {
+    const checks: GenericSourceCheck[] =
+      source.checks && source.checks.length > 0
+        ? source.checks
+        : [{ fieldPath: source.statusPath, mappings: source.mappings }];
+
+    let worstStatus: SourceStatus = 'success';
+    let firstRaw = '';
+
+    for (const check of checks) {
+      const raw = this.resolveStr(data, check.fieldPath) ?? '';
+      if (!firstRaw) firstRaw = raw;
+      const mapped: SourceStatus = check.mappings.find((m) => m.raw === raw)?.mapped ?? 'unknown';
+      if (GenericSourceService.STATUS_SEV[mapped] > GenericSourceService.STATUS_SEV[worstStatus]) {
+        worstStatus = mapped;
+      }
+    }
+    return { status: worstStatus, rawStatus: firstRaw };
   }
 
   private resolvePath(obj: unknown, path: string): unknown {
