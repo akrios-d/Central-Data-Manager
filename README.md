@@ -26,41 +26,61 @@ Modern development teams work across multiple providers: GitHub for one project,
 
 ## Supported integrations
 
-| Category           | Providers                              |
-| ------------------ | -------------------------------------- |
-| CI/CD & Pipelines  | GitHub Actions, GitLab CI              |
-| Work Boards        | Azure DevOps, Jira                     |
-| Releases           | GitHub Tags, GitLab Tags               |
-| Pull / Merge Reqs  | GitHub Pull Requests, GitLab MRs       |
-| Chain Builder      | GitHub Actions, GitLab CI              |
-| Chain Orchestrator | GitHub Actions, GitLab CI              |
+| Category             | Providers                        |
+| -------------------- | -------------------------------- |
+| CI/CD & Pipelines    | GitHub Actions, GitLab CI        |
+| Work Boards          | Azure DevOps, Jira               |
+| Releases             | GitHub Tags, GitLab Tags         |
+| Pull / Merge Reqs    | GitHub Pull Requests, GitLab MRs |
+| Chain Builder        | GitHub Actions, GitLab CI        |
+| Chain Orchestrator   | GitHub Actions, GitLab CI        |
+| Generic Integrations | Any HTTP endpoint (REST, JSON)   |
 
 ---
 
 ## Features
 
 ### 🔗 Chain Builder
+
 Define ordered sequences of pipelines across multiple repositories and trigger them with a single click. Per-step branch override, latest-tag resolution at runtime, Actions cache clearing, custom workflow inputs, and step enable/disable toggles. Full run history with step-level status and links to the provider run. Import/export chains as JSON.
 
 ### 🕸️ Chain Orchestrator
+
 Build pipelines of chains as a **visual drag-and-drop graph**. Parallel and sequential execution based on DAG topology. Click any chain node to open a live status popup — enable/disable the whole chain or individual steps without deleting them. Import/export graphs as JSON.
 
 ### 🚀 Pipelines
+
 Browse workflows and run history across all repositories. Re-run or cancel jobs directly from the UI. The **Pipeline Health** tab shows success rate, average duration, and a trend sparkline (last 10 runs) per workflow.
 
 ### 📦 Releases
-Track which tag or branch is deployed in each environment per repository. Compare any two refs and view the commit list or an auto-generated changelog. Copy the changelog as Markdown. Supports GitHub and GitLab.
+
+Track which tag or branch is deployed in each environment per repository. The **Compare** tab lets you diff any two refs and view the commit list or an auto-generated changelog (copy as Markdown). Branch search is server-side with debounce — types are matched against GitHub `matching-refs` or GitLab branch search, so large repositories are handled without loading all branches upfront. Supports GitHub and GitLab.
 
 ### 📋 Boards
+
 Kanban view with drag-and-drop state transitions. Configurable columns (show/hide, reorder), sprint/assignee/state filters, and a full work-item side panel. Supports Azure DevOps and Jira.
 
 ### 🚧 Blockers Map
+
 Visual dependency graph showing which work items are blocking others, with transitive impact scores and a top-blocker ranking. Filter by type, state, or "only blockers". Supports Azure DevOps and Jira.
 
 ### 📜 Audit Log
+
 In-browser audit trail (up to 500 entries, FIFO) covering token events, chain runs, session expiry, and settings changes. Filter by category, full-text search, export as CSV, and optionally forward every entry to an HTTP webhook (SIEM, Slack, n8n, Zapier…).
 
+### 🔌 Integrations
+
+Poll any HTTP or HTTPS endpoint and map its JSON response into a CDM status. Each integration supports:
+
+- **GET or POST** with an optional JSON body and Bearer / Basic auth
+- **Multiple status checks** per source — each check targets a different field path in the response, and the overall status is the worst result across all checks (failure > error > unknown > running > success)
+- **Orchestrator execution modes** — _One-time_ (fetch once, map immediately) or _Poll_ (keep fetching until success/failure, with a configurable interval and max-attempts limit)
+- **Display enrichment** — optional `namePath` and `urlPath` extract a label and a deep-link from the response to show in the Orchestrator node popup
+
+Integrations appear as nodes in the Chain Orchestrator and are polled continuously in the background while the page is open.
+
 ### 📊 Dashboard
+
 Overview of recent pipeline runs and current sprint items from the configured boards provider. Token health indicators show how long ago each PAT was saved, with a warning when approaching the rotation threshold.
 
 ---
@@ -69,7 +89,7 @@ Overview of recent pipeline runs and current sprint items from the configured bo
 
 ### Prerequisites
 
-- **Node.js 20 LTS** — [nodejs.org/en/download](https://nodejs.org/en/download) or [nvm](https://github.com/nvm-sh/nvm)
+- **Node.js 22 LTS** — [nodejs.org/en/download](https://nodejs.org/en/download) or [nvm](https://github.com/nvm-sh/nvm)
 - **Angular CLI 21** — `npm install -g @angular/cli`
 
 ### Quick start
@@ -89,12 +109,12 @@ Open **http://localhost:4200**. The Onboarding page will guide you through conne
 
 All tokens are stored in your browser only — nothing is sent to any server other than the provider APIs you target directly.
 
-| Provider         | Required credentials                                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| **GitHub**       | PAT with `repo` + `workflow` scopes · your username or org name                               |
-| **GitLab**       | PAT with `api` scope · base URL (default `https://gitlab.com`)                                |
-| **Azure DevOps** | PAT with full access · organisation name                                                      |
-| **Jira**         | Atlassian API token · account email · base URL (e.g. `https://your-org.atlassian.net`)        |
+| Provider         | Required credentials                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| **GitHub**       | PAT with `repo` + `workflow` scopes · your username or org name                        |
+| **GitLab**       | PAT with `api` scope · base URL (default `https://gitlab.com`)                         |
+| **Azure DevOps** | PAT with full access · organisation name                                               |
+| **Jira**         | Atlassian API token · account email · base URL (e.g. `https://your-org.atlassian.net`) |
 
 Go to **Settings → CI Provider** to switch between GitHub Actions and GitLab CI across Pipelines, Chain Builder, Orchestrator, and Releases.
 
@@ -133,11 +153,13 @@ cp -r dist/Central-Data-Manager/browser/* /var/www/cdm/
 Point the platform at `dist/Central-Data-Manager/browser/`. Add a SPA redirect rule:
 
 **Netlify** (`public/_redirects`):
+
 ```
 /* /index.html 200
 ```
 
 **Vercel** (`vercel.json`):
+
 ```json
 { "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }
 ```
@@ -157,10 +179,10 @@ Place a `config.json` at the root of the served directory to override runtime de
 }
 ```
 
-| Flag                     | Default | Description                                                           |
-| ------------------------ | ------- | --------------------------------------------------------------------- |
-| `allowPersistentStorage` | `true`  | Set to `false` to hide the persistent storage opt-in in Settings      |
-| `tokenMaxAgeDays`        | `90`    | Days before the PAT age indicator turns red on the Dashboard          |
+| Flag                     | Default | Description                                                      |
+| ------------------------ | ------- | ---------------------------------------------------------------- |
+| `allowPersistentStorage` | `true`  | Set to `false` to hide the persistent storage opt-in in Settings |
+| `tokenMaxAgeDays`        | `90`    | Days before the PAT age indicator turns red on the Dashboard     |
 
 The file is fetched at startup and falls back to defaults if absent or invalid.
 
@@ -168,14 +190,14 @@ The file is fetched at startup and falls back to defaults if absent or invalid.
 
 ## Security
 
-| Concern                   | Approach                                                                                      |
-| ------------------------- | --------------------------------------------------------------------------------------------- |
-| Token storage             | `sessionStorage` by default; `localStorage` opt-in with explicit user acknowledgement         |
-| Session timeout           | Inactivity timer clears all tokens after a configurable period (default 8 h, session mode)    |
-| PAT age warnings          | Dashboard shows time since last save; red indicator after `tokenMaxAgeDays`                   |
-| Audit trail               | Up to 500 entries in `localStorage`; optional HTTP webhook forward                            |
-| Content Security Policy   | `nginx.conf` restricts `connect-src` to provider API origins; `object-src 'none'`            |
-| Workspace export          | Chains, graphs, releases, and settings only — tokens are never exported                       |
+| Concern                 | Approach                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| Token storage           | `sessionStorage` by default; `localStorage` opt-in with explicit user acknowledgement      |
+| Session timeout         | Inactivity timer clears all tokens after a configurable period (default 8 h, session mode) |
+| PAT age warnings        | Dashboard shows time since last save; red indicator after `tokenMaxAgeDays`                |
+| Audit trail             | Up to 500 entries in `localStorage`; optional HTTP webhook forward                         |
+| Content Security Policy | `nginx.conf` restricts `connect-src` to provider API origins; `object-src 'none'`          |
+| Workspace export        | Chains, graphs, releases, and settings only — tokens are never exported                    |
 
 See [SECURITY.md](https://github.com/akrios-d/Central-Data-Manager/blob/main/SECURITY.md) for the full security model and vulnerability reporting process.
 
@@ -183,16 +205,16 @@ See [SECURITY.md](https://github.com/akrios-d/Central-Data-Manager/blob/main/SEC
 
 ## Tech stack
 
-| Layer       | Choice                                                              |
-| ----------- | ------------------------------------------------------------------- |
-| Framework   | Angular 21, standalone components, no NgModules                     |
-| State       | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state    |
-| HTTP        | `HttpClient` with `withFetch()`                                     |
-| i18n        | `@ngx-translate/core` — English, Portuguese, French, Chinese        |
-| Styling     | Global SCSS variables, per-component SCSS, light/dark theme         |
-| Build       | Angular CLI 21 / Vite                                               |
-| Container   | Docker multi-stage (Node 20 build → `nginx:alpine` serve)           |
-| Testing     | Vitest + Angular Testing Library                                    |
+| Layer     | Choice                                                           |
+| --------- | ---------------------------------------------------------------- |
+| Framework | Angular 21, standalone components, no NgModules                  |
+| State     | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state |
+| HTTP      | `HttpClient` with `withFetch()`                                  |
+| i18n      | `@ngx-translate/core` — English, Portuguese, French, Chinese     |
+| Styling   | Global SCSS variables, per-component SCSS, light/dark theme      |
+| Build     | Angular CLI 21 / Vite                                            |
+| Container | Docker multi-stage (Node 22 build → `nginx:alpine` serve)        |
+| Testing   | Vitest + Angular Testing Library                                 |
 
 ---
 
