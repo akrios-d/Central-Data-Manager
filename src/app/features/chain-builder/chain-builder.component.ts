@@ -371,6 +371,12 @@ export class ChainBuilderComponent {
   editStep(step: ChainStep): void {
     this.editingStepId.set(step.id);
     this.showAddStep.set(true);
+    // Scroll the form into view after Angular renders it (one tick)
+    setTimeout(() => {
+      document
+        .querySelector('.add-step-form')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
     if (!this.repos().length) this.loadRepos();
 
     const provider = step.provider ?? 'github';

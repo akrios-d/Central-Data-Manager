@@ -528,11 +528,19 @@ export class ChainOrchestratorComponent {
       );
     } else if (mode.type === 'drawing-edge') {
       this.interaction.set({ ...mode, curX: x, curY: y });
-      // Detect in-port under the finger via elementFromPoint
-      const el = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null;
+      // Use elementsFromPoint (plural) so the SVG preview-edge overlay doesn't block
+      // the in-port button sitting underneath it
+      const els = document.elementsFromPoint(touch.clientX, touch.clientY);
+      const portEl = els.find((e) => (e as HTMLElement).dataset?.['portInNodeId'] != null) as
+        | HTMLElement
+        | undefined;
       const portNodeId =
-        el?.dataset['portInNodeId'] ??
-        (el?.closest('[data-port-in-node-id]') as HTMLElement | null)?.dataset['portInNodeId'] ??
+        portEl?.dataset['portInNodeId'] ??
+        (
+          els
+            .map((e) => (e as HTMLElement).closest?.('[data-port-in-node-id]'))
+            .find(Boolean) as HTMLElement | null
+        )?.dataset['portInNodeId'] ??
         null;
       this.hoveredInPortNodeId.set(portNodeId);
     }
