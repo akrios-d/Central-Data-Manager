@@ -103,6 +103,16 @@ export class GitHubApiService {
     );
   }
 
+  searchBranches(fullName: string, query: string): Observable<{ name: string }[]> {
+    // GitHub matching-refs endpoint: returns refs starting with the given prefix.
+    const encoded = encodeURIComponent(query);
+    return this.http
+      .get<
+        { ref: string }[]
+      >(`https://api.github.com/repos/${fullName}/git/matching-refs/heads/${encoded}`, { headers: this.headers })
+      .pipe(map((refs) => refs.map((r) => ({ name: r.ref.replace('refs/heads/', '') }))));
+  }
+
   triggerWorkflow(
     fullName: string,
     workflowId: number,

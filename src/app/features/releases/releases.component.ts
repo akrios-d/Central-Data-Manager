@@ -6,7 +6,7 @@ import { RepoEntry } from '../../core/models/release.model';
 import { CiProviderService } from '../../core/services/ci-provider.service';
 import { CiRepo, CiComparison } from '../../core/interfaces/ci-provider.interface';
 import { ToastService } from '../../shared/services/toast.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject, debounceTime, switchMap, of } from 'rxjs';
 
 const CONV_TYPES: Record<string, { label: string; icon: string }> = {
   feat: { label: 'Features', icon: '🚀' },
@@ -69,6 +69,8 @@ export class ReleasesComponent {
   editTarget = signal<EditTarget | null>(null);
   currentRef = signal('');
   popupSearch = signal('');
+  branchSearchLoading = signal(false);
+  private readonly branchSearch$ = new Subject<string>();
   showRefPopup = signal(false);
   refMode = signal<'tags' | 'branches' | 'hash'>('tags');
   commitHash = signal('');
@@ -161,10 +163,6 @@ export class ReleasesComponent {
 
   // ── Manage environments ─────────────────────────────────────────────────────
   activeRelTab = signal<'control' | 'manage' | 'envs' | 'compare'>('control');
-  managingEnvs = signal(false);
-  newEnvName = signal('');
-  editingEnvId = signal<string | null>(null);
-  editingEnvName = signal('');
 
   constructor() {
     effect(() => {
@@ -178,7 +176,37 @@ export class ReleasesComponent {
         }, 0);
       }
     });
+
+    // Debounced server-side branch search when local results are empty
+    this.branchSearch$
+      .pipe(
+        debounceTime(300),
+        switchMap((query) => {
+          const repo = this.repos().find((r) => r.id === this.editTarget()?.repoId);
+          if (!repo?.repoName.includes('/') || !query.trim()) return of([]);
+          this.branchSearchLoading.set(true);
+          return this.ci.searchBranches(repo.repoName, query.trim(), repo.provider ?? 'github');
+        }),
+      )
+      .subscribe({
+        next: (branches) => {
+          const names = branches.map((b) => b.name);
+          if (names.length) {
+            this.branchesCache.set(
+              this.repos().find((r) => r.id === this.editTarget()?.repoId)?.repoName ?? '',
+              names,
+            );
+            this.cellBranches.set(names);
+          }
+          this.branchSearchLoading.set(false);
+        },
+        error: () => this.branchSearchLoading.set(false),
+      });
   }
+  managingEnvs = signal(false);
+  newEnvName = signal('');
+  editingEnvId = signal<string | null>(null);
+  editingEnvName = signal('');
 
   // ── Cell ref popup ───────────────────────────────────────────────────────────
 
@@ -239,6 +267,14 @@ export class ReleasesComponent {
           done();
         },
       });
+    }
+  }
+
+  onPopupSearchChange(val: string): void {
+    this.popupSearch.set(val);
+    // Trigger server-side branch search when on branches tab and local results are empty
+    if (this.refMode() === 'branches' && val.trim().length >= 2) {
+      this.branchSearch$.next(val.trim());
     }
   }
 

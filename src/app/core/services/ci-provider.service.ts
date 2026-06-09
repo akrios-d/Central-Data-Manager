@@ -95,6 +95,16 @@ export class CiProviderService {
     return provider === 'gitlab' ? this.gl.listBranches(fullName) : this.gh.listBranches(fullName);
   }
 
+  searchBranches(
+    fullName: string,
+    query: string,
+    provider: CiProviderType,
+  ): Observable<CiBranch[]> {
+    return provider === 'gitlab'
+      ? this.gl.searchBranches(fullName, query)
+      : this.gh.searchBranches(fullName, query);
+  }
+
   compareRefs(
     fullName: string,
     base: string,

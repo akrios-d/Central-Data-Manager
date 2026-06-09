@@ -1,12 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { ServiceWorkerModule } from '@angular/service-worker';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App, RouterModule.forRoot([]), TranslateModule.forRoot()],
+      imports: [
+        App,
+        RouterModule.forRoot([]),
+        TranslateModule.forRoot(),
+        ServiceWorkerModule.register('', { enabled: false }),
+      ],
     }).compileComponents();
   });
 

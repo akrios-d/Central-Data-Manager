@@ -511,6 +511,14 @@
       flex-shrink: 0;
     }
   }
+
+  &.ref-item-use {
+    color: var(--accent, #58a6ff);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+    margin-top: 0.15rem;
+    padding-top: 0.55rem;
+  }
 }
 
 .ref-icon {

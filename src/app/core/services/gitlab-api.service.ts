@@ -181,6 +181,15 @@ export class GitLabApiService {
       .pipe(map((bs) => bs.map((b) => ({ name: b.name }))));
   }
 
+  searchBranches(fullPath: string, query: string): Observable<CiBranch[]> {
+    const encoded = encodeURIComponent(query);
+    return this.http
+      .get<
+        GlBranch[]
+      >(`${this.base}/projects/${this.enc(fullPath)}/repository/branches?search=${encoded}&per_page=20`, { headers: this.headers })
+      .pipe(map((bs) => bs.map((b) => ({ name: b.name }))));
+  }
+
   compareRefs(fullPath: string, from: string, to: string): Observable<CiComparison> {
     return this.http
       .get<GlComparison>(

@@ -372,7 +372,7 @@
           class="form-control form-control-sm ref-popup-input"
           [placeholder]="'releases.refPlaceholder' | translate"
           [ngModel]="popupSearch()"
-          (ngModelChange)="popupSearch.set($event)"
+          (ngModelChange)="onPopupSearchChange($event)"
           (keydown.enter)="commitManual()"
           (keydown.escape)="closePopup()"
         />
@@ -432,10 +432,18 @@
               {{ 'releases.apply' | translate }}
             </button>
           </div>
-        } @else if (refsLoading()) {
+        } @else if (refsLoading() || branchSearchLoading()) {
           <div class="ref-loading-row"><div class="ref-spinner"></div></div>
         } @else if (refMode() === 'tags') {
-          @if (!filteredCellTags().length) {
+          @if (popupSearch().trim() && !filteredCellTags().length) {
+            <button
+              type="button"
+              class="ref-item ref-item-use"
+              (click)="selectRef(popupSearch().trim())"
+            >
+              <span class="ref-icon">↵</span> {{ popupSearch().trim() }}
+            </button>
+          } @else if (!filteredCellTags().length) {
             <div class="ref-empty-msg">—</div>
           } @else {
             @for (tag of displayedTags(); track tag) {
@@ -450,7 +458,15 @@
             }
           }
         } @else {
-          @if (!filteredCellBranches().length) {
+          @if (popupSearch().trim() && !filteredCellBranches().length) {
+            <button
+              type="button"
+              class="ref-item ref-item-use"
+              (click)="selectRef(popupSearch().trim())"
+            >
+              <span class="ref-icon">↵</span> {{ popupSearch().trim() }}
+            </button>
+          } @else if (!filteredCellBranches().length) {
             <div class="ref-empty-msg">—</div>
           } @else {
             @for (branch of displayedBranches(); track branch) {
