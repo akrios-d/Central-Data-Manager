@@ -322,7 +322,9 @@
     "reposHeading": "Repositórios",
     "envsHeading": "Ambientes",
     "tabEnvs": "Gerenciar Ambientes",
-    "searchRepos": "Buscar por repo ou versão…"
+    "searchRepos": "Buscar por repo ou versão…",
+    "tabCompare": "Comparar",
+    "closeCompare": "Fechar comparação"
   },
   "health": {
     "title": "Saúde de Pipelines",

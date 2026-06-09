@@ -160,7 +160,7 @@ export class ReleasesComponent {
   });
 
   // ── Manage environments ─────────────────────────────────────────────────────
-  activeRelTab = signal<'control' | 'manage' | 'envs'>('control');
+  activeRelTab = signal<'control' | 'manage' | 'envs' | 'compare'>('control');
   managingEnvs = signal(false);
   newEnvName = signal('');
   editingEnvId = signal<string | null>(null);

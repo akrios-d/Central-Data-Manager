@@ -620,6 +620,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+
+  &.comp-panel-tab {
+    border-radius: var(--radius, 6px);
+    background: var(--surface-1);
+    padding: 1rem 1.25rem;
+  }
 }
 
 .comp-toolbar {

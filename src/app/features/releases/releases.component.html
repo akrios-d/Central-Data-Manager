@@ -27,6 +27,15 @@
     >
       {{ 'releases.tabEnvs' | translate }}
     </button>
+    @if (compareRepoId()) {
+      <button
+        class="vtab-btn"
+        [class.active]="activeRelTab() === 'compare'"
+        (click)="activeRelTab.set('compare')"
+      >
+        {{ 'releases.tabCompare' | translate }}
+      </button>
+    }
   </nav>
 
   <div class="vtab-body">
@@ -110,139 +119,6 @@
                     </button>
                   </td>
                 </tr>
-
-                @if (compareRepoId() === repo.id) {
-                  <tr class="compare-row">
-                    <td [attr.colspan]="envs().length + 2">
-                      <div class="comp-panel">
-                        <!-- toolbar -->
-                        <div class="comp-toolbar">
-                          <span class="comp-label">{{ 'releases.compareBase' | translate }}</span>
-                          <select
-                            class="form-control form-control-sm comp-select"
-                            [ngModel]="compareBaseEnvId()"
-                            (ngModelChange)="onBaseEnvChange($event)"
-                          >
-                            @for (e of envsWithTag(repo.id); track e.envId) {
-                              <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
-                            }
-                          </select>
-
-                          <span class="comp-arrow">→</span>
-
-                          <span class="comp-label">{{ 'releases.compareHead' | translate }}</span>
-                          <select
-                            class="form-control form-control-sm comp-select"
-                            [ngModel]="compareHeadEnvId()"
-                            (ngModelChange)="onHeadEnvChange($event)"
-                          >
-                            @for (e of envsWithTag(repo.id); track e.envId) {
-                              <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
-                            }
-                          </select>
-
-                          <button
-                            class="icon-btn comp-close"
-                            style="margin-left: auto"
-                            (click)="toggleCompare(repo.id)"
-                          >
-                            ✕
-                          </button>
-                        </div>
-
-                        <!-- body -->
-                        @if (compLoading()) {
-                          <p class="text-muted text-sm comp-msg">
-                            {{ 'releases.compLoading' | translate }}
-                          </p>
-                        } @else if (compError()) {
-                          <p class="comp-msg" style="color: var(--danger)">{{ compError() }}</p>
-                        } @else if (comparison(); as comp) {
-                          <div class="comp-status-row">
-                            @if (comp.status === 'identical') {
-                              <span class="comp-badge comp-identical">{{
-                                'releases.identical' | translate
-                              }}</span>
-                            } @else {
-                              @if (comp.ahead_by > 0) {
-                                <span class="comp-badge comp-ahead"
-                                  >+{{ comp.ahead_by }} {{ 'releases.ahead' | translate }}</span
-                                >
-                              }
-                              @if (comp.behind_by > 0) {
-                                <span class="comp-badge comp-behind"
-                                  >-{{ comp.behind_by }} {{ 'releases.behind' | translate }}</span
-                                >
-                              }
-                            }
-                          </div>
-
-                          @if (comp.commits.length === 0) {
-                            <p class="text-muted text-sm comp-msg">
-                              {{ 'releases.noCommits' | translate }}
-                            </p>
-                          } @else {
-                            <!-- view toggle -->
-                            <div class="comp-view-toggle">
-                              <button
-                                class="comp-toggle-btn"
-                                [class.active]="!showChangelog()"
-                                (click)="showChangelog.set(false)"
-                              >
-                                {{ 'releases.viewCommits' | translate }}
-                              </button>
-                              <button
-                                class="comp-toggle-btn"
-                                [class.active]="showChangelog()"
-                                (click)="showChangelog.set(true)"
-                              >
-                                {{ 'releases.viewChangelog' | translate }}
-                              </button>
-                            </div>
-
-                            @if (!showChangelog()) {
-                              <ul class="comp-commits">
-                                @for (c of comp.commits; track c.sha) {
-                                  <li class="comp-commit">
-                                    <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
-                                    <span class="comp-msg-text">{{
-                                      firstCommitLine(c.message)
-                                    }}</span>
-                                    <span class="comp-meta text-muted">{{ c.author }}</span>
-                                    <span class="comp-meta text-muted">{{
-                                      shortDate(c.date)
-                                    }}</span>
-                                  </li>
-                                }
-                              </ul>
-                            } @else {
-                              <div class="changelog-wrap">
-                                <button
-                                  class="btn btn-sm btn-outline changelog-copy"
-                                  (click)="copyChangelog()"
-                                >
-                                  {{ 'releases.copyMarkdown' | translate }}
-                                </button>
-                                @for (section of changelog(); track section.type) {
-                                  <div class="cl-section">
-                                    <h4 class="cl-heading">
-                                      {{ section.icon }} {{ section.label }}
-                                    </h4>
-                                    <ul class="cl-list">
-                                      @for (item of section.items; track item) {
-                                        <li class="cl-item">{{ item }}</li>
-                                      }
-                                    </ul>
-                                  </div>
-                                }
-                              </div>
-                            }
-                          }
-                        }
-                      </div>
-                    </td>
-                  </tr>
-                }
               }
             </tbody>
           </table>
@@ -374,6 +250,114 @@
             </li>
           }
         </ul>
+      </div>
+    }
+
+    <!-- ══ Tab 4: Compare ════════════════════════════════════════════════════ -->
+    @if (activeRelTab() === 'compare' && compareRepoId(); as repoId) {
+      <div class="comp-panel comp-panel-tab">
+        <div class="comp-toolbar">
+          <span class="comp-label">{{ 'releases.compareBase' | translate }}</span>
+          <select
+            class="form-control form-control-sm comp-select"
+            [ngModel]="compareBaseEnvId()"
+            (ngModelChange)="onBaseEnvChange($event)"
+          >
+            @for (e of envsWithTag(repoId); track e.envId) {
+              <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
+            }
+          </select>
+          <span class="comp-arrow">→</span>
+          <span class="comp-label">{{ 'releases.compareHead' | translate }}</span>
+          <select
+            class="form-control form-control-sm comp-select"
+            [ngModel]="compareHeadEnvId()"
+            (ngModelChange)="onHeadEnvChange($event)"
+          >
+            @for (e of envsWithTag(repoId); track e.envId) {
+              <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
+            }
+          </select>
+          <button
+            class="icon-btn comp-close"
+            style="margin-left: auto"
+            (click)="toggleCompare(repoId)"
+            [title]="'releases.closeCompare' | translate"
+          >
+            ✕
+          </button>
+        </div>
+
+        @if (compLoading()) {
+          <p class="text-muted text-sm comp-msg">{{ 'releases.compLoading' | translate }}</p>
+        } @else if (compError()) {
+          <p class="comp-msg" style="color: var(--danger)">{{ compError() }}</p>
+        } @else if (comparison(); as comp) {
+          <div class="comp-status-row">
+            @if (comp.status === 'identical') {
+              <span class="comp-badge comp-identical">{{ 'releases.identical' | translate }}</span>
+            } @else {
+              @if (comp.ahead_by > 0) {
+                <span class="comp-badge comp-ahead"
+                  >+{{ comp.ahead_by }} {{ 'releases.ahead' | translate }}</span
+                >
+              }
+              @if (comp.behind_by > 0) {
+                <span class="comp-badge comp-behind"
+                  >-{{ comp.behind_by }} {{ 'releases.behind' | translate }}</span
+                >
+              }
+            }
+          </div>
+          @if (comp.commits.length === 0) {
+            <p class="text-muted text-sm comp-msg">{{ 'releases.noCommits' | translate }}</p>
+          } @else {
+            <div class="comp-view-toggle">
+              <button
+                class="comp-toggle-btn"
+                [class.active]="!showChangelog()"
+                (click)="showChangelog.set(false)"
+              >
+                {{ 'releases.viewCommits' | translate }}
+              </button>
+              <button
+                class="comp-toggle-btn"
+                [class.active]="showChangelog()"
+                (click)="showChangelog.set(true)"
+              >
+                {{ 'releases.viewChangelog' | translate }}
+              </button>
+            </div>
+            @if (!showChangelog()) {
+              <ul class="comp-commits">
+                @for (c of comp.commits; track c.sha) {
+                  <li class="comp-commit">
+                    <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
+                    <span class="comp-msg-text">{{ firstCommitLine(c.message) }}</span>
+                    <span class="comp-meta text-muted">{{ c.author }}</span>
+                    <span class="comp-meta text-muted">{{ shortDate(c.date) }}</span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <div class="changelog-wrap">
+                <button class="btn btn-sm btn-outline changelog-copy" (click)="copyChangelog()">
+                  {{ 'releases.copyMarkdown' | translate }}
+                </button>
+                @for (section of changelog(); track section.type) {
+                  <div class="cl-section">
+                    <h4 class="cl-heading">{{ section.icon }} {{ section.label }}</h4>
+                    <ul class="cl-list">
+                      @for (item of section.items; track item) {
+                        <li class="cl-item">{{ item }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+            }
+          }
+        }
       </div>
     }
   </div>

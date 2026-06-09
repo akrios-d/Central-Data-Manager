@@ -322,7 +322,9 @@
     "reposHeading": "Repositories",
     "envsHeading": "Environments",
     "tabEnvs": "Manage Environments",
-    "searchRepos": "Search by repo or version…"
+    "searchRepos": "Search by repo or version…",
+    "tabCompare": "Compare",
+    "closeCompare": "Close compare"
   },
   "health": {
     "title": "Pipeline Health",

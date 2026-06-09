@@ -322,7 +322,9 @@
     "reposHeading": "仓库",
     "envsHeading": "环境",
     "tabEnvs": "管理环境",
-    "searchRepos": "按仓库或版本搜索…"
+    "searchRepos": "按仓库或版本搜索…",
+    "tabCompare": "比较",
+    "closeCompare": "关闭比较"
   },
   "health": {
     "title": "流水线健康",

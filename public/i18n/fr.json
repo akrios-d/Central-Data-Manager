@@ -322,7 +322,9 @@
     "reposHeading": "Dépôts",
     "envsHeading": "Environnements",
     "tabEnvs": "Gérer les environnements",
-    "searchRepos": "Rechercher par dépôt ou version…"
+    "searchRepos": "Rechercher par dépôt ou version…",
+    "tabCompare": "Comparer",
+    "closeCompare": "Fermer la comparaison"
   },
   "health": {
     "title": "Santé des pipelines",
