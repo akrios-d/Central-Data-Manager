@@ -18,6 +18,7 @@
     <button
       class="vtab-btn"
       [class.active]="activeTab() === 'editor'"
+      [disabled]="!selectedId()"
       (click)="activeTab.set('editor')"
     >
       {{ 'integrations.tabEditor' | translate }}
@@ -294,25 +295,6 @@
                 </div>
               </div>
             }
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="int-interval">
-              {{ 'integrations.pollInterval' | translate }}
-            </label>
-            <div class="orch-exec-field">
-              <input
-                id="int-interval"
-                class="form-control int-interval-input"
-                type="number"
-                min="0"
-                placeholder="30"
-                [ngModel]="formInterval()"
-                (ngModelChange)="formInterval.set(+$event)"
-              />
-              <span class="orch-exec-unit">{{ 'integrations.pollIntervalUnit' | translate }}</span>
-            </div>
-            <p class="form-hint">{{ 'integrations.pollIntervalHint' | translate }}</p>
           </div>
 
           <hr class="editor-divider" />

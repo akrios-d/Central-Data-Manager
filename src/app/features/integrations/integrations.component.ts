@@ -48,7 +48,6 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   orchPollMinutes = computed(() =>
     Math.round((this.formOrchInterval() * this.formOrchMaxPolls()) / 60),
   );
-  formInterval = signal(30);
   formStatusPath = signal('');
   formMappings = signal<MappingRow[]>(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
   formNamePath = signal('');
@@ -103,7 +102,6 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formOrchMode.set(source.orchMode ?? 'poll');
     this.formOrchInterval.set(source.orchPollIntervalSec ?? 30);
     this.formOrchMaxPolls.set(source.orchMaxPolls ?? 20);
-    this.formInterval.set(source.pollIntervalSec > 0 ? source.pollIntervalSec : 30);
     this.formStatusPath.set(source.statusPath);
     this.formMappings.set(source.mappings.map((m) => ({ ...m })));
     this.formNamePath.set(source.namePath ?? '');
@@ -125,7 +123,6 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formOrchMode.set('poll');
     this.formOrchInterval.set(30);
     this.formOrchMaxPolls.set(20);
-    this.formInterval.set(30);
     this.formStatusPath.set('');
     this.formMappings.set(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
     this.formNamePath.set('');
@@ -159,7 +156,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       authToken: this.formToken().trim() || undefined,
       authUser: this.formUser().trim() || undefined,
       authPass: this.formPass() || undefined,
-      pollIntervalSec: Math.max(0, this.formInterval()),
+      pollIntervalSec: 0,
       enabled: true,
       statusPath: this.formStatusPath().trim(),
       mappings: this.formMappings().filter(

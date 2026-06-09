@@ -504,9 +504,6 @@
     "orchMaxPolls": "Máx. tentativas",
     "duplicate": "Duplicar",
     "exportSrc": "Exportar",
-    "orchPollGlobalHint": "Usa o intervalo e máx. tentativas globais em Configurações → Execução de chains.",
-    "pollInterval": "Intervalo de atualização (s)",
-    "pollIntervalUnit": "s",
-    "pollIntervalHint": "Com que frequência buscar esta fonte em segundo plano. Defina 0 para desativar."
+    "orchPollGlobalHint": "Usa o intervalo e máx. tentativas globais em Configurações → Execução de chains."
   }
 }

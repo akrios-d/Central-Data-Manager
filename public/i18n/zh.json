@@ -504,9 +504,6 @@
     "orchMaxPolls": "最大尝试次数",
     "duplicate": "复制",
     "exportSrc": "导出",
-    "orchPollGlobalHint": "使用设置 → Chain 执行中配置的全局轮询间隔和最大尝试次数。",
-    "pollInterval": "刷新间隔（秒）",
-    "pollIntervalUnit": "秒",
-    "pollIntervalHint": "后台获取此来源的频率。设为 0 可禁用后台轮询。"
+    "orchPollGlobalHint": "使用设置 → Chain 执行中配置的全局轮询间隔和最大尝试次数。"
   }
 }

@@ -44,9 +44,13 @@
     border-bottom-color: var(--accent, #58a6ff);
     font-weight: 500;
   }
-  &:hover:not(.active) {
+  &:hover:not(.active):not(:disabled) {
     color: var(--text);
     background: var(--surface-2);
+  }
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
   }
 }
 
@@ -379,25 +383,6 @@
     background: var(--surface-2);
     color: var(--text);
   }
-}
-
-// ── Poll interval input ───────────────────────────────────────────────────────
-
-.int-interval-input {
-  width: 100px;
-}
-
-.orch-exec-field {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.orch-exec-unit {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  white-space: nowrap;
 }
 
 // ── Orch poll params (mirrors Settings layout) ────────────────────────────────

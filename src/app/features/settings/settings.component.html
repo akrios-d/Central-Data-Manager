@@ -229,24 +229,6 @@
           >
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="session-timeout-input">{{
-          'security.sessionTimeout' | translate
-        }}</label>
-        <div class="inline-row mt-1">
-          <input
-            id="session-timeout-input"
-            class="form-control exec-input"
-            type="number"
-            min="1"
-            max="24"
-            [ngModel]="editTimeoutHours()"
-            (ngModelChange)="editTimeoutHours.set(+$event)"
-          />
-          <span class="text-muted text-sm">{{ 'security.hours' | translate }}</span>
-        </div>
-        <span class="text-muted text-sm">{{ 'security.sessionTimeoutHint' | translate }}</span>
-      </div>
     </div>
     <button class="btn btn-primary btn-sm mt-2" (click)="saveExecSettings()">
       {{ 'settings.save' | translate }}
@@ -652,6 +634,30 @@
       </button>
     }
   </div>
+
+  @if (!persist()) {
+    <div class="form-group mt-3">
+      <label class="form-label" for="session-timeout-input">{{
+        'security.sessionTimeout' | translate
+      }}</label>
+      <div class="inline-row mt-1">
+        <input
+          id="session-timeout-input"
+          class="form-control exec-input"
+          type="number"
+          min="1"
+          max="24"
+          [ngModel]="editTimeoutHours()"
+          (ngModelChange)="editTimeoutHours.set(+$event)"
+        />
+        <span class="text-muted text-sm">{{ 'security.hours' | translate }}</span>
+      </div>
+      <p class="text-muted text-sm mt-1">{{ 'security.sessionTimeoutHint' | translate }}</p>
+      <button class="btn btn-primary btn-sm mt-2" (click)="saveTimeout()">
+        {{ 'settings.save' | translate }}
+      </button>
+    </div>
+  }
 </div>
 
 <!-- ── Audit log ───────────────────────────────────────────────────────────── -->

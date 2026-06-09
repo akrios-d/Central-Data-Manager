@@ -504,9 +504,6 @@
     "orchMaxPolls": "Tentatives max",
     "duplicate": "Dupliquer",
     "exportSrc": "Exporter",
-    "orchPollGlobalHint": "Utilise l'intervalle et le nombre de tentatives globaux définis dans Paramètres → Exécution.",
-    "pollInterval": "Intervalle de rafraîchissement (s)",
-    "pollIntervalUnit": "s",
-    "pollIntervalHint": "Fréquence de récupération en arrière-plan. Mettez 0 pour désactiver."
+    "orchPollGlobalHint": "Utilise l'intervalle et le nombre de tentatives globaux définis dans Paramètres → Exécution."
   }
 }

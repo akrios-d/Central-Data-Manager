@@ -504,9 +504,6 @@
     "orchMaxPolls": "Max attempts",
     "duplicate": "Duplicate",
     "exportSrc": "Export",
-    "orchPollGlobalHint": "Uses global poll interval and max attempts from Settings → Chain Execution.",
-    "pollInterval": "Refresh interval (s)",
-    "pollIntervalUnit": "s",
-    "pollIntervalHint": "How often to fetch this source in the background. Set 0 to disable background polling."
+    "orchPollGlobalHint": "Uses global poll interval and max attempts from Settings → Chain Execution."
   }
 }

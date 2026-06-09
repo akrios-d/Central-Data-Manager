@@ -403,8 +403,13 @@ export class SettingsComponent implements OnInit {
 
   saveExecSettings(): void {
     this.appSettings.save(this.editPollInterval(), this.editMaxPolls());
-    this.appSettings.saveTimeoutHours(this.editTimeoutHours());
     this.audit.log('Execution settings saved');
+    this.toasts.show(this.translate.instant('settings.execSettingsSaved'), 'success');
+  }
+
+  saveTimeout(): void {
+    this.appSettings.saveTimeoutHours(this.editTimeoutHours());
+    this.audit.log('Session timeout saved');
     this.toasts.show(this.translate.instant('settings.execSettingsSaved'), 'success');
   }
 

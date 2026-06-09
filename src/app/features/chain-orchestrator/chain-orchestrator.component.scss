@@ -251,7 +251,10 @@
     right: 0;
     top: auto;
     width: 100%;
-    max-height: 55vh;
+    // Use dvh when available so the sheet doesn't collapse when the virtual
+    // keyboard shrinks the viewport; fall back to a safe fixed min-height.
+    max-height: 55dvh;
+    min-height: 220px;
     border-radius: 12px 12px 0 0;
     z-index: 500;
     padding: 0.75rem 0.75rem 1rem;
@@ -261,6 +264,14 @@
 .orch-add-search {
   font-size: 0.82rem;
   margin-bottom: 0.2rem;
+
+  // Keep the search input visible when the list scrolls on mobile
+  @media (max-width: 640px) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-1);
+  }
 }
 
 .orch-add-item {
