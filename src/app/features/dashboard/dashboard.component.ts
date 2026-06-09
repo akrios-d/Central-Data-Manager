@@ -62,7 +62,7 @@ const MAX_REPOS_FOR_RUNS = 15;
     TranslateModule,
   ],
   templateUrl: './dashboard.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {

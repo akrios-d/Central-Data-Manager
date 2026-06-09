@@ -51,7 +51,7 @@ interface EnvDeployment {
   standalone: true,
   imports: [FormsModule, TranslateModule],
   templateUrl: './releases.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './releases.component.scss',
 })
 export class ReleasesComponent {

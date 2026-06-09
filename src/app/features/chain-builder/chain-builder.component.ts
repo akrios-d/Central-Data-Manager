@@ -28,7 +28,7 @@ interface StepInput {
   standalone: true,
   imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './chain-builder.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './chain-builder.component.scss',
 })
 export class ChainBuilderComponent {

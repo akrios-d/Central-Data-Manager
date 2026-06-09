@@ -11,7 +11,7 @@ type Provider = 'github' | 'gitlab' | 'devops' | 'jira';
   selector: 'app-onboarding',
   imports: [FormsModule, TranslateModule],
   templateUrl: './onboarding.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './onboarding.component.scss',
 })
 export class OnboardingComponent {

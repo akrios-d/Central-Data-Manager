@@ -27,7 +27,7 @@ interface ColumnConfig {
   selector: 'app-devops-boards',
   imports: [DatePipe, FormsModule, WorkItemPanelComponent, TranslateModule],
   templateUrl: './devops-boards.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './devops-boards.component.scss',
 })
 export class DevopsBoardsComponent implements OnInit {

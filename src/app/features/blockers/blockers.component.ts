@@ -42,7 +42,7 @@ interface BEdge {
   standalone: true,
   imports: [CommonModule, DatePipe, TranslateModule, FormsModule],
   templateUrl: './blockers.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './blockers.component.scss',
 })
 export class BlockersComponent implements OnInit {

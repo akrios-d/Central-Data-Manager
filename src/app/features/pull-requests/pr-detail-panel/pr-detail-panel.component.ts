@@ -29,7 +29,7 @@ export interface PullRequestDetail {
   selector: 'app-pr-detail-panel',
   imports: [DatePipe, TranslateModule, FormsModule],
   templateUrl: './pr-detail-panel.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './pr-detail-panel.component.scss',
 })
 export class PrDetailPanelComponent {

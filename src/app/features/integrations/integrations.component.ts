@@ -40,7 +40,7 @@ function defaultCheck(): CheckFormItem {
   standalone: true,
   imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './integrations.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './integrations.component.scss',
 })
 export class IntegrationsComponent implements OnInit, OnDestroy {

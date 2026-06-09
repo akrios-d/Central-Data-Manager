@@ -35,7 +35,7 @@ interface ConnectionTest {
   selector: 'app-settings',
   imports: [FormsModule, TranslateModule, DatePipe],
   templateUrl: './settings.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit {

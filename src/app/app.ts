@@ -12,7 +12,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent, TranslateModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(window:resize)': 'onResize()' },
 })
 export class App {

@@ -15,7 +15,7 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
   selector: 'app-work-item-panel',
   imports: [DatePipe, MarkdownPipe, TranslateModule],
   templateUrl: './work-item-panel.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './work-item-panel.component.scss',
 })
 export class WorkItemPanelComponent {

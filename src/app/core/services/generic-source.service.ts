@@ -4,7 +4,6 @@ import { Observable, map } from 'rxjs';
 import {
   GenericSource,
   GenericSourceCheck,
-  GenericSourceMapping,
   GenericSourceResult,
   SourceStatus,
 } from '../models/generic-source.model';

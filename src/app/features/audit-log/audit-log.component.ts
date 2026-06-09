@@ -11,7 +11,7 @@ type FilterKey = 'all' | 'token' | 'chain' | 'graph' | 'session' | 'settings';
   selector: 'app-audit-log',
   imports: [FormsModule, TranslateModule, DatePipe],
   templateUrl: './audit-log.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './audit-log.component.scss',
 })
 export class AuditLogComponent {

@@ -25,7 +25,7 @@ interface StateGroup {
   selector: 'app-sprint-widget',
   imports: [DatePipe, RouterLink, WorkItemPanelComponent, TranslateModule],
   templateUrl: './sprint-widget.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './sprint-widget.component.scss',
 })
 export class SprintWidgetComponent implements OnInit {

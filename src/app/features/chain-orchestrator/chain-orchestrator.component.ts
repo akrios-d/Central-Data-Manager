@@ -48,7 +48,7 @@ type Interaction =
   standalone: true,
   imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './chain-orchestrator.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './chain-orchestrator.component.scss',
 })
 export class ChainOrchestratorComponent {

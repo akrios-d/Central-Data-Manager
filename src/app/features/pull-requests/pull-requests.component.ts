@@ -55,7 +55,7 @@ const PAGE_SIZE = 10;
   selector: 'app-pull-requests',
   imports: [FormsModule, TranslateModule, DatePipe, PrDetailPanelComponent],
   templateUrl: './pull-requests.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './pull-requests.component.scss',
 })
 export class PullRequestsComponent implements OnInit {

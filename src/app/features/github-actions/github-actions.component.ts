@@ -29,7 +29,7 @@ interface WorkflowStat {
   selector: 'app-github-actions',
   imports: [FormsModule, DatePipe, RunStatusPipe, TranslateModule],
   templateUrl: './github-actions.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './github-actions.component.scss',
 })
 export class GithubActionsComponent implements OnInit {

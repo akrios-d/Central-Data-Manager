@@ -4,7 +4,7 @@ import { ToastService, Toast } from '../../services/toast.service';
 @Component({
   selector: 'app-toast',
   templateUrl: './toast.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './toast.component.scss',
 })
 export class ToastComponent {
