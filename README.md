@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/akrios-d/Central-Data-Manager/actions/workflows/ci.yml/badge.svg)](https://github.com/akrios-d/Central-Data-Manager/actions)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://github.com/akrios-d/Central-Data-Manager/blob/main/LICENSE)
-[![Angular](https://img.shields.io/badge/Angular-21-dd0031?logo=angular)](https://angular.dev)
+[![Angular](https://img.shields.io/badge/Angular-22-dd0031?logo=angular)](https://angular.dev)
 [![Version](https://img.shields.io/badge/version-1.0.0-success)](https://github.com/akrios-d/Central-Data-Manager/releases)
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://centraldatamanager.vercel.app/)
 
@@ -90,7 +90,7 @@ Overview of recent pipeline runs and current sprint items from the configured bo
 ### Prerequisites
 
 - **Node.js 22 LTS** — [nodejs.org/en/download](https://nodejs.org/en/download) or [nvm](https://github.com/nvm-sh/nvm)
-- **Angular CLI 21** — `npm install -g @angular/cli`
+- **Angular CLI 22** — `npm install -g @angular/cli`
 
 ### Quick start
 
@@ -207,12 +207,12 @@ See [SECURITY.md](https://github.com/akrios-d/Central-Data-Manager/blob/main/SEC
 
 | Layer     | Choice                                                           |
 | --------- | ---------------------------------------------------------------- |
-| Framework | Angular 21, standalone components, no NgModules                  |
+| Framework | Angular 22, standalone components, no NgModules                  |
 | State     | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state |
 | HTTP      | `HttpClient` with `withFetch()`                                  |
 | i18n      | `@ngx-translate/core` — English, Portuguese, French, Chinese     |
 | Styling   | Global SCSS variables, per-component SCSS, light/dark theme      |
-| Build     | Angular CLI 21 / Vite                                            |
+| Build     | Angular CLI 22 / Vite                                            |
 | Container | Docker multi-stage (Node 22 build → `nginx:alpine` serve)        |
 | Testing   | Vitest + Angular Testing Library                                 |
 

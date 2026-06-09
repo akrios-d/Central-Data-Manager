@@ -6,7 +6,7 @@ This file gives Claude Code full context on Central Data Manager so it can be pr
 
 ## What this project is
 
-**Central Data Manager (CDM)** is a 100 % client-side Angular 21 dashboard. There is no backend, no database, no Auth.js, no server. All API calls go directly from the browser to the provider APIs. All state is stored in the browser (sessionStorage by default, localStorage if the user opts in).
+**Central Data Manager (CDM)** is a 100 % client-side Angular 22 dashboard. There is no backend, no database, no Auth.js, no server. All API calls go directly from the browser to the provider APIs. All state is stored in the browser (sessionStorage by default, localStorage if the user opts in).
 
 **Owner:** Felipe "Akrios" Oliveira — ghfelipe@hotmail.com
 
@@ -16,39 +16,40 @@ This file gives Claude Code full context on Central Data Manager so it can be pr
 
 ## Tech stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Angular 21, standalone components, no NgModules |
-| State | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state, RxJS only for HTTP |
-| HTTP | `HttpClient` with `withFetch()` |
-| i18n | `@ngx-translate/core`, files in `public/i18n/{en,pt,fr,zh}.json` |
-| Styling | Global SCSS variables in `src/styles.scss`, per-component SCSS |
-| Build | Angular CLI 21, `ng build --configuration=production` |
-| Container | Docker + `nginx:alpine`, config in `nginx.conf` |
-| Formatting | Prettier — always run after HTML or TS edits |
-| Linting | ESLint + SonarLint IDE rules |
+| Layer      | Choice                                                                               |
+| ---------- | ------------------------------------------------------------------------------------ |
+| Framework  | Angular 22, standalone components, no NgModules                                      |
+| State      | Angular Signals (`signal`, `computed`, `effect`) — no RxJS state, RxJS only for HTTP |
+| HTTP       | `HttpClient` with `withFetch()`                                                      |
+| i18n       | `@ngx-translate/core`, files in `public/i18n/{en,pt,fr,zh}.json`                     |
+| Styling    | Global SCSS variables in `src/styles.scss`, per-component SCSS                       |
+| Build      | Angular CLI 22, `ng build --configuration=production`                                |
+| Container  | Docker + `nginx:alpine`, config in `nginx.conf`                                      |
+| Formatting | Prettier — always run after HTML or TS edits                                         |
+| Linting    | ESLint + SonarLint IDE rules                                                         |
 
 ---
 
 ## Routing (`src/app/app.routes.ts`)
 
-| Path | Component | Guard |
-|---|---|---|
-| `/` | redirect → `/onboarding` | none |
-| `/onboarding` | `OnboardingComponent` | `skipIfTokensGuard` |
-| `/dashboard` | `DashboardComponent` | `requireTokensGuard` |
-| `/github-actions` | `GithubActionsComponent` | `requireTokensGuard` |
-| `/chain-builder` | `ChainBuilderComponent` | `requireTokensGuard` |
+| Path                  | Component                    | Guard                |
+| --------------------- | ---------------------------- | -------------------- |
+| `/`                   | redirect → `/onboarding`     | none                 |
+| `/onboarding`         | `OnboardingComponent`        | `skipIfTokensGuard`  |
+| `/dashboard`          | `DashboardComponent`         | `requireTokensGuard` |
+| `/github-actions`     | `GithubActionsComponent`     | `requireTokensGuard` |
+| `/chain-builder`      | `ChainBuilderComponent`      | `requireTokensGuard` |
 | `/chain-orchestrator` | `ChainOrchestratorComponent` | `requireTokensGuard` |
-| `/devops-boards` | `DevopsBoardsComponent` | `requireTokensGuard` |
-| `/blockers` | `BlockersComponent` | `requireTokensGuard` |
-| `/releases` | `ReleasesComponent` | `requireTokensGuard` |
-| `/settings` | `SettingsComponent` | `requireTokensGuard` |
-| `/audit-log` | `AuditLogComponent` | `requireTokensGuard` |
-| `/pull-requests` | `PullRequestsComponent` | `requireTokensGuard` |
-| `**` | redirect → `/onboarding` | none |
+| `/devops-boards`      | `DevopsBoardsComponent`      | `requireTokensGuard` |
+| `/blockers`           | `BlockersComponent`          | `requireTokensGuard` |
+| `/releases`           | `ReleasesComponent`          | `requireTokensGuard` |
+| `/settings`           | `SettingsComponent`          | `requireTokensGuard` |
+| `/audit-log`          | `AuditLogComponent`          | `requireTokensGuard` |
+| `/pull-requests`      | `PullRequestsComponent`      | `requireTokensGuard` |
+| `**`                  | redirect → `/onboarding`     | none                 |
 
 Guards are defined in `src/app/core/guards/onboarding.guard.ts`:
+
 - `skipIfTokensGuard` — redirects to `/dashboard` if any token is already configured
 - `requireTokensGuard` — redirects to `/onboarding` if no token is configured for any provider
 
@@ -57,6 +58,7 @@ Guards are defined in `src/app/core/guards/onboarding.guard.ts`:
 ## Core services
 
 ### `TokenService` (`src/app/core/services/token.service.ts`)
+
 Single source of truth for all tokens and provider selection. Uses Signals. Reads/writes to sessionStorage (or localStorage when `persist()` is true). `savedAt` timestamps are always in `localStorage` (non-sensitive metadata).
 
 Key signals: `hasGitHub`, `hasDevOps`, `hasGitLab`, `hasJira`, `hasAnyToken`, `activeCiProvider`, `activeBoardsProvider`, `persist`, `githubOwner`, `devopsOrg`, `devopsProject`, `devopsTeam`, `gitlabBaseUrl`, `jiraEmail`, `jiraBaseUrl`, `jiraProject`, `githubSavedAt`, `devopsSavedAt`, `gitlabSavedAt`, `jiraSavedAt`.
@@ -68,6 +70,7 @@ Always-localStorage keys: `cdm:persist`, `cdm:github:saved_at`, `cdm:devops:save
 SessionStorage-only key: `cdm:expiry` (session expiry timestamp).
 
 ### `AppSettingsService` (`src/app/core/services/app-settings.service.ts`)
+
 Polling, timeout, notification, and webhook settings. All stored in `localStorage`.
 
 Signals: `pollIntervalSec` (default 6), `maxPolls` (default 120), `sessionTimeoutHours` (default 8), `notificationsEnabled` (default true), `webhookUrl` (default ''), `webhookEnabled` (default false).
@@ -77,6 +80,7 @@ Storage keys: `cdm:poll_interval_s`, `cdm:max_polls`, `cdm:session_timeout_h`, `
 Methods: `save(intervalSec, maxPolls)`, `saveTimeoutHours(h)`, `saveNotifications(enabled)`, `saveWebhook(url, enabled)`.
 
 ### `AppConfigService` (`src/app/core/services/app-config.service.ts`)
+
 Operator-level feature flags loaded from `/config.json` at startup via `APP_INITIALIZER`. Falls back silently to defaults if the file is missing.
 
 Computed signals: `allowPersistentStorage` (default true), `tokenMaxAgeDays` (default 90).
@@ -84,6 +88,7 @@ Computed signals: `allowPersistentStorage` (default true), `tokenMaxAgeDays` (de
 Method: `load(): Promise<void>` — called once at app init.
 
 ### `ThemeService` (`src/app/core/services/theme.service.ts`)
+
 Manages light/dark theme. Applies `html.light` class synchronously in constructor (prevents FOUC), then reactively via `effect()`.
 
 Signal: `theme` (`'dark' | 'light'`, default `'dark'`). Storage key: `cdm:theme` (always localStorage).
@@ -91,6 +96,7 @@ Signal: `theme` (`'dark' | 'light'`, default `'dark'`). Storage key: `cdm:theme`
 Method: `toggle()`.
 
 ### `AuditLogService` (`src/app/core/services/audit-log.service.ts`)
+
 Persistent audit trail in `localStorage` key `cdm:audit_log`, max 500 entries (FIFO). On each `log()` call, also fires a fire-and-forget `fetch()` POST to the configured webhook endpoint (if set and enabled).
 
 Signal: `entries`. Methods: `log(action, detail?)`, `clear()`.
@@ -98,50 +104,65 @@ Signal: `entries`. Methods: `log(action, detail?)`, `clear()`.
 Called from: SettingsComponent (token events), ChainExecutorService, OrchestratorExecutorService, SessionTimeoutService, WorkspaceService.
 
 ### `SessionTimeoutService` (`src/app/core/services/session-timeout.service.ts`)
+
 Inactivity timeout — only active in session-only mode (`!tokens.persist()`). Tracks activity via `click`, `keydown`, `mousemove`, `touchstart` events, throttled writes to `sessionStorage` key `cdm:last_activity` (every 30 s). Polls every 60 s. When expired: calls `tokens.clearAll()`, sets `expired` signal to `true`. Signal: `expired`. Methods: `init()` (called in `App` constructor), `dismiss()`.
 
 ### `GitHubApiService` (`src/app/core/services/github-api.service.ts`)
+
 Direct calls to `https://api.github.com`. Auth: `Authorization: Bearer <token>`. Methods: `getAuthenticatedUser`, `listRepos`, `listOrgs`, `listWorkflows`, `listRuns`, `triggerWorkflow`, `rerunWorkflow`, `cancelRun`, `listTags`, `deleteRepoCaches`, `getRepo`, `compareCommits`, `listPullRequests`.
 
 ### `GitLabApiService` (`src/app/core/services/gitlab-api.service.ts`)
+
 Direct calls to configured base URL (default `https://gitlab.com`). Auth: `PRIVATE-TOKEN` header. Methods: `listProjects`, `listPipelines`, `triggerPipeline`, `getPipeline`, `retryPipeline`, `cancelPipeline`, `listTags`, `listMergeRequests`.
 
 ### `DevOpsApiService` (`src/app/core/services/devops-api.service.ts`)
+
 Direct calls to `https://dev.azure.com` and `https://vsrm.dev.azure.com`. Auth: Basic with base64 `:PAT`. Methods: `listProjects`, `listTeams`, `getWorkItems`, `updateWorkItemState`, `getIterations`, `getIterationWorkItems`, `listBoards`.
 
 ### `JiraApiService` (`src/app/core/services/jira-api.service.ts`)
+
 Direct calls to configured Atlassian base URL. Auth: Basic with base64 `email:token`. Methods: `getMyself`, `listProjects`, `getBoard`, `getSprints`, `getSprintIssues`, `getIssueTransitions`, `transitionIssue`.
 
 ### `CiProviderService` (`src/app/core/services/ci-provider.service.ts`)
+
 Abstraction over GitHub and GitLab for Chain Builder. Delegates to the correct API service based on `tokens.activeCiProvider()`. Methods: `triggerWorkflow`, `pollGitHubRuns`, `pollGitLabPipeline`, `getLatestTag`, `deleteRepoCaches`, `listWorkflows`, `listRepos`.
 
 ### `BoardsProviderService` (`src/app/core/services/boards-provider.service.ts`)
+
 Abstraction over Azure DevOps and Jira for Boards. Delegates based on `tokens.activeBoardsProvider()`.
 
 ### `ChainService` (`src/app/core/services/chain.service.ts`)
+
 Persists chains and chain run history to localStorage. Keys: `cdm:chains`, `cdm:chain_runs`.
 
 ### `ChainExecutorService` (`src/app/core/services/chain-executor.service.ts`)
+
 Runs chains step-by-step, updates `activeRuns` signal (keyed by chainId). Polls via `CiProviderService`. Logs start/result via `AuditLogService`. Sends browser notifications via `NotificationService`.
 
 ### `OrchestratorService` (`src/app/core/services/orchestrator.service.ts`)
+
 Persists graphs and graph run history. Keys: `cdm:orch_graphs`, `cdm:orch_runs`.
 
 ### `OrchestratorExecutorService` (`src/app/core/services/orchestrator-executor.service.ts`)
+
 Runs a graph: resolves DAG with `Promise.all` per node, respects `node.disabledSteps`, logs via `AuditLogService`.
 
 ### `ReleaseService` (`src/app/core/services/release.service.ts`)
+
 Persists release tracking rows to localStorage. Key: `cdm:releases`.
 
 ### `WorkspaceService` (`src/app/core/services/workspace.service.ts`)
+
 Exports and imports the full workspace (chains, graphs, releases, settings) as a JSON file. Tokens are never exported.
 
 Methods: `exportWorkspace()` — triggers a browser download; `importWorkspace(file: File): Promise<{ok, error?}>` — parses and restores all data via the relevant services.
 
 ### `ToastService` (`src/app/shared/services/toast.service.ts`)
+
 In-app toast notifications and confirm dialogs.
 
 ### `NotificationService` (`src/app/core/services/notification.service.ts`)
+
 Browser Notification API for chain/step completion. Checks `AppSettingsService.notificationsEnabled()` before showing — returns silently if disabled. Methods: `requestPermission()`, `show(title, body)`.
 
 ---
@@ -149,6 +170,7 @@ Browser Notification API for chain/step completion. Checks `AppSettingsService.n
 ## Core models
 
 ### `Chain` (`src/app/core/models/chain.model.ts`)
+
 ```typescript
 interface Chain {
   id: string;
@@ -168,45 +190,89 @@ interface ChainStep {
   useLatestTag: boolean;
   provider?: 'github' | 'gitlab';
 }
-interface ChainRun { id, chainId, chainName, startedAt, status, steps: ChainStepRun[] }
-interface ChainStepRun { stepId, status: StepStatus, startedAt?, completedAt?, error?, runId?, runUrl? }
-type StepStatus = 'pending' | 'running' | 'success' | 'failure' | 'skipped'
+interface ChainRun {
+  id;
+  chainId;
+  chainName;
+  startedAt;
+  status;
+  steps: ChainStepRun[];
+}
+interface ChainStepRun {
+  stepId;
+  status: StepStatus;
+  startedAt?;
+  completedAt?;
+  error?;
+  runId?;
+  runUrl?;
+}
+type StepStatus = 'pending' | 'running' | 'success' | 'failure' | 'skipped';
 ```
 
 ### `OrchGraph` / `OrchNode` / `OrchRun` (`src/app/core/models/orchestrator.model.ts`)
+
 ```typescript
-interface OrchGraph { id, name, nodes: OrchNode[], edges: OrchEdge[] }
-interface OrchNode {
-  id, type: 'start' | 'chain', chainId?: string, label: string,
-  x, y, disabled?: boolean, disabledSteps?: string[]
+interface OrchGraph {
+  id;
+  name;
+  nodes: OrchNode[];
+  edges: OrchEdge[];
 }
-interface OrchEdge { id, fromId, toId }
-interface OrchRun { id, graphId, graphName, startedAt, status, nodes: OrchNodeRun[] }
-interface OrchNodeRun { nodeId, status: NodeRunStatus, startedAt?, completedAt?, error? }
-type NodeRunStatus = 'idle' | 'running' | 'success' | 'failure' | 'skipped'
+interface OrchNode {
+  id;
+  type: 'start' | 'chain';
+  chainId?: string;
+  label: string;
+  x;
+  y;
+  disabled?: boolean;
+  disabledSteps?: string[];
+}
+interface OrchEdge {
+  id;
+  fromId;
+  toId;
+}
+interface OrchRun {
+  id;
+  graphId;
+  graphName;
+  startedAt;
+  status;
+  nodes: OrchNodeRun[];
+}
+interface OrchNodeRun {
+  nodeId;
+  status: NodeRunStatus;
+  startedAt?;
+  completedAt?;
+  error?;
+}
+type NodeRunStatus = 'idle' | 'running' | 'success' | 'failure' | 'skipped';
 ```
 
 ---
 
 ## Feature components
 
-| Feature | Path |
-|---|---|
-| App shell + session modal | `src/app/app.ts` / `app.html` / `app.scss` |
-| Onboarding | `src/app/features/onboarding/` |
-| Dashboard | `src/app/features/dashboard/` |
-| Pipelines | `src/app/features/github-actions/` |
-| Chain Builder | `src/app/features/chain-builder/` |
-| Chain Orchestrator | `src/app/features/chain-orchestrator/` |
-| Boards | `src/app/features/devops-boards/` |
-| Blockers Map | `src/app/features/blockers/` |
-| Releases | `src/app/features/releases/` |
-| Pull Requests | `src/app/features/pull-requests/` |
-| Audit Log | `src/app/features/audit-log/` |
-| Settings | `src/app/features/settings/` |
-| Sprint widget | `src/app/shared/components/sprint-widget/` |
-| Work item panel | `src/app/shared/components/work-item-panel/` |
-| Toast | `src/app/shared/components/toast/` |
+| Feature                   | Path                                         |
+| ------------------------- | -------------------------------------------- |
+| App shell + session modal | `src/app/app.ts` / `app.html` / `app.scss`   |
+| Onboarding                | `src/app/features/onboarding/`               |
+| Dashboard                 | `src/app/features/dashboard/`                |
+| Pipelines                 | `src/app/features/github-actions/`           |
+| Chain Builder             | `src/app/features/chain-builder/`            |
+| Chain Orchestrator        | `src/app/features/chain-orchestrator/`       |
+| Boards                    | `src/app/features/devops-boards/`            |
+| Blockers Map              | `src/app/features/blockers/`                 |
+| Releases                  | `src/app/features/releases/`                 |
+| Pull Requests             | `src/app/features/pull-requests/`            |
+| Audit Log                 | `src/app/features/audit-log/`                |
+| Settings                  | `src/app/features/settings/`                 |
+| Sprint widget             | `src/app/shared/components/sprint-widget/`   |
+| Work item panel           | `src/app/shared/components/work-item-panel/` |
+| Toast                     | `src/app/shared/components/toast/`           |
 
 ---
 

@@ -52,5 +52,9 @@
     "public/**/*.json": [
       "prettier --write"
     ]
+  },
+  "engines": {
+    "node": ">=22.22.3",
+    "npm": ">=10"
   }
 }
