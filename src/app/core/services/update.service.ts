@@ -7,7 +7,7 @@ import { filter, first } from 'rxjs';
  *
  * Flow:
  *   1. Wait for the app to stabilise (no pending micro-tasks).
- *   2. Check for an update immediately, then every 60 s.
+ *   2. Check for an update on load and whenever the user returns to the tab.
  *   3. When the SW signals VERSION_READY, activate it and reload.
  */
 @Injectable({ providedIn: 'root' })
@@ -19,7 +19,7 @@ export class UpdateService {
     if (!this.swUpdate.isEnabled) return;
 
     // Wait until Angular is stable before doing anything SW-related.
-    // Polling before stability can delay first render.
+    // Checking before stability can delay first render.
     this.appRef.isStable.pipe(first((stable) => stable)).subscribe(() => {
       this.listenForUpdates();
       this.pollForUpdates();
@@ -39,9 +39,15 @@ export class UpdateService {
   }
 
   private pollForUpdates(): void {
-    // Check once on load, then every 60 s.
+    // Check once on load.
     this.checkNow();
-    setInterval(() => this.checkNow(), 60_000);
+
+    // Check again whenever the user returns to the tab / reopens the PWA.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.checkNow();
+      }
+    });
   }
 
   private checkNow(): void {
