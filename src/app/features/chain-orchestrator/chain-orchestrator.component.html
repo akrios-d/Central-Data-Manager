@@ -66,7 +66,12 @@
                 (dragover)="$event.preventDefault()"
                 (dragend)="onGraphDragEnd()"
               >
-                <span class="chain-drag-handle" (click)="$event.stopPropagation()">⠿</span>
+                <span
+                  class="chain-drag-handle"
+                  (click)="$event.stopPropagation()"
+                  (keydown)="$event.stopPropagation()"
+                  >⠿</span
+                >
                 <div class="chain-item-body">
                   <span class="chain-item-name">{{ g.name }}</span>
                   <span class="chain-item-meta text-muted text-sm">

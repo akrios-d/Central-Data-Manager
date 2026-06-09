@@ -10,7 +10,6 @@ import {
   CiTag,
   CiBranch,
   CiComparison,
-  CiCommit,
   CiProviderType,
 } from '../interfaces/ci-provider.interface';
 
@@ -109,16 +108,13 @@ export class CiProviderService {
         ahead_by: c.ahead_by,
         behind_by: c.behind_by,
         html_url: c.permalink_url,
-        commits: c.commits.map(
-          (cm) =>
-            ({
-              sha: cm.sha,
-              message: cm.commit.message,
-              author: cm.commit.author.name,
-              date: cm.commit.author.date,
-              url: cm.html_url,
-            }) as CiCommit,
-        ),
+        commits: c.commits.map((cm) => ({
+          sha: cm.sha,
+          message: cm.commit.message,
+          author: cm.commit.author.name,
+          date: cm.commit.author.date,
+          url: cm.html_url,
+        })),
       })),
     );
   }

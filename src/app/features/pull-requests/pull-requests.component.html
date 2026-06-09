@@ -197,7 +197,11 @@
 <!-- ── Create PR modal ────────────────────────────────────────────────────────── -->
 @if (showCreatePr()) {
   <div class="create-pr-backdrop" (click)="cancelCreatePr()" (keydown.escape)="cancelCreatePr()">
-    <div class="create-pr-modal" (click)="$event.stopPropagation()">
+    <div
+      class="create-pr-modal"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
       <div class="create-pr-header">
         <h3>{{ 'prs.createPr' | translate }}</h3>
         <button class="icon-btn" (click)="cancelCreatePr()">✕</button>

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { Chain } from '../models/chain.model';
+import { Chain, ChainStep } from '../models/chain.model';
 import {
   OrchGraph,
   OrchNode,
@@ -53,7 +53,7 @@ export class OrchestratorExecutorService {
       status: 'running',
       nodes: graph.nodes
         .filter((n) => n.type !== 'start')
-        .map((n) => ({ nodeId: n.id, status: 'idle' as NodeRunStatus })),
+        .map((n) => ({ nodeId: n.id, status: 'idle' })),
     };
     this.push(run);
 
@@ -139,22 +139,7 @@ export class OrchestratorExecutorService {
         this.setStatus(run, nr, 'failure');
         return false;
       }
-      this.setStatus(run, nr, 'running');
-      this.audit.log(`Graph step 1/1 started`, `${source.name} (${source.url})`);
-      const intResult = await this.pollIntegration(source);
-      if (!intResult.ok && intResult.error) nr.error = intResult.error;
-      const intStatus = intResult.ok ? 'success' : 'failure';
-      this.setStatus(run, nr, intStatus);
-      this.audit.log(
-        `Graph step 1/1 ${intStatus}`,
-        intResult.ok ? source.name : `${source.name} — ${intResult.error ?? 'failed'}`,
-      );
-      const t = this.translate;
-      this.notif.show(
-        `${intResult.ok ? '✓' : '✕'} ${node.label}`,
-        intResult.ok ? t.instant('notif.nodeOk') : (intResult.error ?? t.instant('notif.nodeFail')),
-      );
-      return intResult.ok;
+      return this.executeIntegrationNode(source, node, nr, run);
     }
 
     const chain = chainMap.get(node.chainId ?? '');
@@ -164,10 +149,42 @@ export class OrchestratorExecutorService {
       return false;
     }
 
+    return this.executeChainNode(node, chain, nr, run);
+  }
+
+  private async executeIntegrationNode(
+    source: GenericSource,
+    node: OrchNode,
+    nr: OrchNodeRun,
+    run: OrchRun,
+  ): Promise<boolean> {
+    this.setStatus(run, nr, 'running');
+    this.audit.log(`Graph step 1/1 started`, `${source.name} (${source.url})`);
+    const intResult = await this.pollIntegration(source);
+    if (!intResult.ok && intResult.error) nr.error = intResult.error;
+    const intStatus = intResult.ok ? 'success' : 'failure';
+    this.setStatus(run, nr, intStatus);
+    this.audit.log(
+      `Graph step 1/1 ${intStatus}`,
+      intResult.ok ? source.name : `${source.name} — ${intResult.error ?? 'failed'}`,
+    );
+    const t = this.translate;
+    this.notif.show(
+      `${intResult.ok ? '✓' : '✕'} ${node.label}`,
+      intResult.ok ? t.instant('notif.nodeOk') : (intResult.error ?? t.instant('notif.nodeFail')),
+    );
+    return intResult.ok;
+  }
+
+  private async executeChainNode(
+    node: OrchNode,
+    chain: Chain,
+    nr: OrchNodeRun,
+    run: OrchRun,
+  ): Promise<boolean> {
     const effectiveChain = node.disabledSteps?.length
       ? { ...chain, steps: chain.steps.filter((s) => !node.disabledSteps?.includes(s.id)) }
       : chain;
-
     this.setStatus(run, nr, 'running');
     const result = await this.runChain(effectiveChain, nr, run);
     if (!result.ok && result.error) nr.error = result.error;
@@ -211,9 +228,6 @@ export class OrchestratorExecutorService {
     nr: OrchNodeRun,
     run: OrchRun,
   ): Promise<{ ok: boolean; error?: string }> {
-    const total = chain.steps.length;
-
-    // Initialise step tracking
     nr.steps = chain.steps.map(
       (s): OrchNodeStepRun => ({
         stepName: s.workflowName,
@@ -224,78 +238,96 @@ export class OrchestratorExecutorService {
     this.push(run);
 
     for (let i = 0; i < chain.steps.length; i++) {
-      const step = chain.steps[i];
-      const stepRun = nr.steps[i];
-
-      if (this.stopRequested) {
-        for (let j = i; j < total; j++) nr.steps[j].status = 'skipped';
-        this.push(run);
-        return { ok: false, error: 'Stopped' };
-      }
-
-      const provider: CiProviderType = step.provider ?? 'github';
-
-      stepRun.status = 'running';
-      this.push(run);
-      this.audit.log(
-        `Graph step ${i + 1}/${total} started`,
-        `${step.workflowName} (${step.repoFullName})`,
-      );
-
-      if (step.clearCache && provider === 'github') {
-        await this.clearCache(step.repoFullName, step.ref);
-      }
-
-      let ref = step.ref;
-      if (step.useLatestTag) {
-        const tag = await this.fetchLatestTag(step.repoFullName, provider);
-        if (tag) ref = tag;
-      }
-
-      const triggerTime = Date.now();
-      const { err, gitlabPipelineId } = await this.triggerStep(
-        step.repoFullName,
-        step.workflowId ?? 0,
-        ref,
-        step.inputs,
-        provider,
-      );
-
-      if (err !== null) {
-        stepRun.status = 'failure';
-        stepRun.error = err;
-        for (let j = i + 1; j < total; j++) nr.steps[j].status = 'skipped';
-        this.push(run);
-        this.audit.log(`Graph step ${i + 1}/${total} failure`, `${step.workflowName}: ${err}`);
-        return { ok: false, error: `${step.workflowName}: ${err}` };
-      }
-
-      const stepResult = await this.waitForStep(
-        step.repoFullName,
-        step.workflowId ?? 0,
-        triggerTime,
-        provider,
-        gitlabPipelineId,
-      );
-
-      stepRun.status = stepResult.ok ? 'success' : 'failure';
-      if (!stepResult.ok) stepRun.error = stepResult.reason;
-      this.push(run);
-
-      const label = `${step.workflowName} (${step.repoFullName})`;
-      this.audit.log(
-        `Graph step ${i + 1}/${total} ${stepRun.status}`,
-        stepResult.ok ? label : `${label} — ${stepResult.reason ?? 'failed'}`,
-      );
-
-      if (!stepResult.ok) {
-        for (let j = i + 1; j < total; j++) nr.steps[j].status = 'skipped';
-        this.push(run);
-        return { ok: false, error: `${step.workflowName}: ${stepResult.reason ?? 'failed'}` };
-      }
+      const result = await this.runSingleStep(chain, i, nr, run);
+      if (!result.continue) return { ok: false, error: result.error };
     }
 
     return { ok: true };
+  }
+
+  private async runSingleStep(
+    chain: Chain,
+    i: number,
+    nr: OrchNodeRun,
+    run: OrchRun,
+  ): Promise<{ continue: boolean; error?: string }> {
+    const step = chain.steps[i];
+    const stepRun = nr.steps![i];
+    const total = chain.steps.length;
+
+    if (this.stopRequested) {
+      this.skipFromIndex(nr, i, total, run);
+      return { continue: false, error: 'Stopped' };
+    }
+
+    const provider: CiProviderType = step.provider ?? 'github';
+    stepRun.status = 'running';
+    this.push(run);
+    this.audit.log(
+      `Graph step ${i + 1}/${total} started`,
+      `${step.workflowName} (${step.repoFullName})`,
+    );
+
+    if (step.clearCache && provider === 'github') {
+      await this.clearCache(step.repoFullName, step.ref);
+    }
+
+    const ref = await this.resolveRef(step, provider);
+
+    const triggerTime = Date.now();
+    const { err, gitlabPipelineId } = await this.triggerStep(
+      step.repoFullName,
+      step.workflowId ?? 0,
+      ref,
+      step.inputs,
+      provider,
+    );
+
+    if (err !== null) {
+      stepRun.status = 'failure';
+      stepRun.error = err;
+      this.skipFromIndex(nr, i + 1, total, run);
+      this.audit.log(`Graph step ${i + 1}/${total} failure`, `${step.workflowName}: ${err}`);
+      return { continue: false, error: `${step.workflowName}: ${err}` };
+    }
+
+    const stepResult = await this.waitForStep(
+      step.repoFullName,
+      step.workflowId ?? 0,
+      triggerTime,
+      provider,
+      gitlabPipelineId,
+    );
+
+    stepRun.status = stepResult.ok ? 'success' : 'failure';
+    if (!stepResult.ok) stepRun.error = stepResult.reason;
+    this.push(run);
+
+    const label = `${step.workflowName} (${step.repoFullName})`;
+    this.audit.log(
+      `Graph step ${i + 1}/${total} ${stepRun.status}`,
+      stepResult.ok ? label : `${label} — ${stepResult.reason ?? 'failed'}`,
+    );
+
+    if (!stepResult.ok) {
+      this.skipFromIndex(nr, i + 1, total, run);
+      return { continue: false, error: `${step.workflowName}: ${stepResult.reason ?? 'failed'}` };
+    }
+
+    return { continue: true };
+  }
+
+  private skipFromIndex(nr: OrchNodeRun, from: number, total: number, run: OrchRun): void {
+    for (let j = from; j < total; j++) {
+      if (nr.steps) nr.steps[j].status = 'skipped';
+    }
+    this.push(run);
+  }
+
+  private async resolveRef(step: ChainStep, provider: CiProviderType): Promise<string> {
+    if (!step.useLatestTag) return step.ref;
+    const tag = await this.fetchLatestTag(step.repoFullName, provider);
+    return tag ?? step.ref;
   }
 
   // ── Integration polling ─────────────────────────────────────────────────────
@@ -362,31 +394,47 @@ export class OrchestratorExecutorService {
 
     for (let polls = 0; polls <= maxPolls; polls++) {
       if (this.stopRequested) return { ok: false, reason: 'stopped' };
-
       try {
-        if (provider === 'gitlab' && gitlabPipelineId !== undefined) {
-          const run = await firstValueFrom(this.ci.pollGitLabPipeline(fullName, gitlabPipelineId));
-          if (run.status === 'completed') {
-            return run.conclusion === 'success'
-              ? { ok: true }
-              : { ok: false, reason: run.conclusion ?? 'failure' };
-          }
-        } else {
-          const runs = await firstValueFrom(this.ci.pollGitHubRuns(fullName, workflowId));
-          const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
-          if (run?.status === 'completed') {
-            return run.conclusion === 'success'
-              ? { ok: true }
-              : { ok: false, reason: run.conclusion ?? 'failure' };
-          }
-        }
+        const result = await this.pollStepOnce(
+          fullName,
+          workflowId,
+          since,
+          provider,
+          gitlabPipelineId,
+        );
+        if (result.done) return { ok: result.ok ?? false, reason: result.reason };
       } catch {
         /* retry on transient network error */
       }
-
       await new Promise<void>((r) => setTimeout(r, interval));
     }
 
     return { ok: false, reason: 'timed out' };
+  }
+
+  private async pollStepOnce(
+    fullName: string,
+    workflowId: number,
+    since: number,
+    provider: CiProviderType,
+    gitlabPipelineId?: number,
+  ): Promise<{ done: boolean; ok?: boolean; reason?: string }> {
+    if (provider === 'gitlab' && gitlabPipelineId !== undefined) {
+      const run = await firstValueFrom(this.ci.pollGitLabPipeline(fullName, gitlabPipelineId));
+      if (run.status === 'completed') {
+        return run.conclusion === 'success'
+          ? { done: true, ok: true }
+          : { done: true, ok: false, reason: run.conclusion ?? 'failure' };
+      }
+    } else {
+      const runs = await firstValueFrom(this.ci.pollGitHubRuns(fullName, workflowId));
+      const run = runs.find((r) => new Date(r.created_at).getTime() >= since - 8000);
+      if (run?.status === 'completed') {
+        return run.conclusion === 'success'
+          ? { done: true, ok: true }
+          : { done: true, ok: false, reason: run.conclusion ?? 'failure' };
+      }
+    }
+    return { done: false };
   }
 }

@@ -202,7 +202,7 @@ export class GitLabApiService {
             behind_by: 0,
             commits,
             html_url: `${this.host}/${fullPath}/-/compare/${encodeURIComponent(from)}...${encodeURIComponent(to)}`,
-          } as CiComparison;
+          };
         }),
       );
   }

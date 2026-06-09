@@ -72,13 +72,7 @@ export class ChainExecutorService {
 
     // Clear cache before resolving ref and triggering
     if (step.clearCache && provider === 'github') {
-      let cacheError: string | null = null;
-      try {
-        await this.ci.deleteRepoCaches(step.repoFullName, step.ref);
-      } catch (e: any) {
-        cacheError = e?.error?.message ?? e?.message ?? 'Failed to delete cache';
-      }
-
+      const cacheError = await this.tryDeleteCache(step.repoFullName, step.ref);
       if (cacheError) {
         run.steps[i].status = 'failure';
         run.steps[i].error = cacheError;
@@ -191,6 +185,16 @@ export class ChainExecutorService {
       this.notif.show(title, body);
     } catch {
       /* notification errors must never affect chain state */
+    }
+  }
+
+  private async tryDeleteCache(repoFullName: string, ref: string): Promise<string | null> {
+    try {
+      await this.ci.deleteRepoCaches(repoFullName, ref);
+      return null;
+    } catch (e: unknown) {
+      const err = e as { error?: { message?: string }; message?: string };
+      return err?.error?.message ?? err?.message ?? 'Failed to delete cache';
     }
   }
 

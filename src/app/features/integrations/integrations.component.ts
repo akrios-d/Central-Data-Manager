@@ -219,7 +219,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
 
   // ── Mapping rows ───────────────────────────────────────────────────────────
   addMapping(): void {
-    this.formMappings.update((m) => [...m, { raw: '', mapped: '' as SourceStatus }]);
+    this.formMappings.update((m) => [...m, { raw: '', mapped: 'unknown' }]);
   }
 
   removeMapping(index: number): void {

@@ -56,7 +56,7 @@ export class GenericSourceService {
     const enabledIds = new Set(enabled.map((s) => s.id));
 
     // Stop timers no longer needed
-    for (const id of [...this.timers.keys()]) {
+    for (const id of this.timers.keys()) {
       if (!enabledIds.has(id)) this.clearTimer(id);
     }
 
@@ -71,7 +71,7 @@ export class GenericSourceService {
   }
 
   stopPolling(): void {
-    for (const id of [...this.timers.keys()]) this.clearTimer(id);
+    for (const id of this.timers.keys()) this.clearTimer(id);
   }
 
   poll(source: GenericSource): void {
@@ -167,7 +167,9 @@ export class GenericSourceService {
 
   private resolveStr(obj: unknown, path: string): string | undefined {
     const val = this.resolvePath(obj, path);
-    return val != null ? String(val) : undefined;
+    if (typeof val === 'string') return val;
+    if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+    return undefined;
   }
 
   private clearTimer(id: string): void {

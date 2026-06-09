@@ -303,6 +303,10 @@ export class ChainOrchestratorComponent {
 
   // ── Canvas events ─────────────────────────────────────────────────────────────
   onCanvasMouseDown(_e: MouseEvent): void {
+    this.clearCanvasSelection();
+  }
+
+  private clearCanvasSelection(): void {
     this.selectedNodeId.set(null);
     this.selectedEdgeId.set(null);
     this.showAddChain.set(false);
@@ -356,11 +360,7 @@ export class ChainOrchestratorComponent {
   }
 
   onCanvasTouchStart(_e: TouchEvent): void {
-    this.selectedNodeId.set(null);
-    this.selectedEdgeId.set(null);
-    this.showAddChain.set(false);
-    this.showAddIntegration.set(false);
-    this.selectedNodePopupId.set(null);
+    this.clearCanvasSelection();
   }
 
   onNodeClick(e: MouseEvent, node: OrchNode): void {
@@ -529,10 +529,10 @@ export class ChainOrchestratorComponent {
     } else if (mode.type === 'drawing-edge') {
       this.interaction.set({ ...mode, curX: x, curY: y });
       // Detect in-port under the finger via elementFromPoint
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const el = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null;
       const portNodeId =
-        el?.getAttribute('data-port-in-node-id') ??
-        el?.closest('[data-port-in-node-id]')?.getAttribute('data-port-in-node-id') ??
+        el?.dataset['portInNodeId'] ??
+        (el?.closest('[data-port-in-node-id]') as HTMLElement | null)?.dataset['portInNodeId'] ??
         null;
       this.hoveredInPortNodeId.set(portNodeId);
     }

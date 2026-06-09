@@ -16,9 +16,9 @@ export class AppSettingsService {
   readonly notificationsEnabled = signal(localStorage.getItem(NOTIF_KEY) !== 'false');
   /** Toast auto-dismiss delay in seconds. 0 = never auto-dismiss (manual close). */
   readonly toastDurationSec = signal(
-    localStorage.getItem(TOAST_DURATION_KEY) !== null
-      ? Number(localStorage.getItem(TOAST_DURATION_KEY))
-      : 4,
+    localStorage.getItem(TOAST_DURATION_KEY) === null
+      ? 4
+      : Number(localStorage.getItem(TOAST_DURATION_KEY)),
   );
   readonly webhookUrl = signal(localStorage.getItem(WEBHOOK_URL_KEY) ?? '');
   readonly webhookEnabled = signal(localStorage.getItem(WEBHOOK_ENABLED_KEY) === 'true');
