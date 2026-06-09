@@ -353,23 +353,27 @@
 
 .orch-edge-del-btn {
   cursor: pointer;
+  pointer-events: all;
+  touch-action: manipulation;
 
   circle {
     fill: var(--danger, #da3633);
     stroke: var(--surface-0, #0d1117);
     stroke-width: 1.5;
     transition: fill 0.15s;
+    pointer-events: all;
   }
 
   text {
     fill: #fff;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     pointer-events: none;
     user-select: none;
   }
 
-  &:hover circle {
+  &:hover circle,
+  &:active circle {
     fill: color-mix(in srgb, var(--danger, #da3633) 80%, white);
   }
 }

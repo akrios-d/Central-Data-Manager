@@ -716,6 +716,7 @@ export class ChainOrchestratorComponent {
 
   removeEdge(id: string, event: Event): void {
     event.stopPropagation();
+    event.preventDefault(); // prevents iOS firing click after touchend
     this.graphEdges.update((es) => es.filter((e) => e.id !== id));
     this.selectedEdgeId.set(null);
     this.persistEdits();

@@ -271,11 +271,14 @@
                   <g
                     class="orch-edge-del-btn"
                     [attr.transform]="'translate(' + mid.x + ',' + mid.y + ')'"
+                    (mousedown)="$event.stopPropagation()"
+                    (touchstart)="$event.stopPropagation()"
                     (click)="removeEdge(edge.id, $event)"
+                    (touchend)="removeEdge(edge.id, $event)"
                     role="button"
                     aria-label="Remove edge"
                   >
-                    <circle r="11" />
+                    <circle r="14" />
                     <text text-anchor="middle" dominant-baseline="middle">✕</text>
                   </g>
                 }
