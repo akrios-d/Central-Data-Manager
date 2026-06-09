@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 import { TokenService } from './token.service';
 import {
   CiRepo,
@@ -97,11 +97,16 @@ export class GitLabApiService {
   // ── Projects ──────────────────────────────────────────────────────────────────
 
   listProjects(): Observable<CiRepo[]> {
-    return this.http
-      .get<
-        GlProject[]
-      >(`${this.base}/projects?membership=true&per_page=100&order_by=last_activity_at`, { headers: this.headers })
-      .pipe(map((ps) => ps.map((p) => this.toRepo(p))));
+    const fetchPage = (page: number): Observable<GlProject[]> =>
+      this.http.get<GlProject[]>(
+        `${this.base}/projects?membership=true&per_page=100&page=${page}&order_by=last_activity_at`,
+        { headers: this.headers },
+      );
+    return fetchPage(1).pipe(
+      expand((results, idx) => (results.length === 100 ? fetchPage(idx + 2) : EMPTY)),
+      reduce((acc: GlProject[], results: GlProject[]) => [...acc, ...results], []),
+      map((ps) => ps.map((p) => this.toRepo(p))),
+    );
   }
 
   testConnection(): Observable<{ count: number }> {

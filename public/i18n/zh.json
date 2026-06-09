@@ -457,7 +457,12 @@
     "mergeMerge": "合并提交",
     "mergeSquash": "Squash",
     "mergeRebase": "Rebase",
-    "total": "总计"
+    "total": "总计",
+    "reviewStatus": "审核",
+    "reviewApproved": "已批准",
+    "reviewChanges": "需要修改",
+    "reviewRequired": "等待审核",
+    "awaitingReview": "等待审核"
   },
   "lang": {
     "en": "EN",

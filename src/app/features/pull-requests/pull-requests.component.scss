@@ -406,3 +406,16 @@
     border-color: var(--text-muted);
   }
 }
+
+.pr-review-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  &.pr-review-pending {
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+}

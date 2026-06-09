@@ -100,10 +100,40 @@
       </div>
     }
 
-    @if (pr().reviewers.length) {
+    @if (detail()?.reviewDecision) {
       <div class="pdp-section">
-        <div class="pdp-label">{{ 'panel.assignedTo' | translate }}</div>
-        <div class="text-sm">{{ pr().reviewers.join(', ') }}</div>
+        <div class="pdp-label">{{ 'prs.reviewStatus' | translate }}</div>
+        <span class="review-decision review-decision-{{ detail()!.reviewDecision }}">
+          @if (detail()!.reviewDecision === 'approved') {
+            ✓ {{ 'prs.reviewApproved' | translate }}
+          } @else if (detail()!.reviewDecision === 'changes_requested') {
+            ✗ {{ 'prs.reviewChanges' | translate }}
+          } @else {
+            ⏳ {{ 'prs.reviewRequired' | translate }}
+          }
+        </span>
+        @if (detail()!.reviewers.length > 0) {
+          <div class="review-list mt-1">
+            @for (r of detail()!.reviewers; track r.login) {
+              <span class="review-item review-item-{{ r.state.toLowerCase() }}">
+                @if (r.state === 'APPROVED') {
+                  ✓
+                } @else {
+                  ✗
+                }
+                {{ r.login }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+    } @else if (pr().reviewers.length) {
+      <div class="pdp-section">
+        <div class="pdp-label">{{ 'prs.reviewStatus' | translate }}</div>
+        <span class="review-decision review-decision-review_required"
+          >⏳ {{ 'prs.reviewRequired' | translate }}</span
+        >
+        <div class="text-sm mt-1">{{ pr().reviewers.join(', ') }}</div>
       </div>
     }
 

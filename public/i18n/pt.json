@@ -457,7 +457,12 @@
     "mergeMerge": "Merge commit",
     "mergeSquash": "Squash",
     "mergeRebase": "Rebase",
-    "total": "total"
+    "total": "total",
+    "reviewStatus": "Revisão",
+    "reviewApproved": "Aprovado",
+    "reviewChanges": "Mudanças solicitadas",
+    "reviewRequired": "Aguardando revisão",
+    "awaitingReview": "Aguardando revisão"
   },
   "lang": {
     "en": "EN",

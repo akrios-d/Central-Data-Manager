@@ -10,7 +10,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { catchError, of } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { GitHubApiService } from '../../../core/services/github-api.service';
 import { GitLabApiService } from '../../../core/services/gitlab-api.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -23,6 +23,8 @@ export interface PullRequestDetail {
   changedFiles: number | null;
   commitsCount: number | null;
   comments: number | null;
+  reviewDecision: 'approved' | 'changes_requested' | 'review_required' | null;
+  reviewers: { login: string; state: string }[];
 }
 
 @Component({
@@ -62,22 +64,44 @@ export class PrDetailPanelComponent {
     this.detail.set(null);
 
     if (isGitHub) {
-      this.gh
-        .getPullRequest(repo, number)
-        .pipe(catchError(() => of(null)))
-        .subscribe((d) => {
-          if (d) {
-            this.detail.set({
-              body: d.body,
-              additions: d.additions,
-              deletions: d.deletions,
-              changedFiles: d.changed_files,
-              commitsCount: d.commits,
-              comments: d.comments + d.review_comments,
-            });
+      forkJoin({
+        d: this.gh.getPullRequest(repo, number).pipe(catchError(() => of(null))),
+        reviews: this.gh.getReviews(repo, number).pipe(catchError(() => of([]))),
+      }).subscribe(({ d, reviews }) => {
+        if (d) {
+          const relevant = reviews.filter(
+            (r) => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED',
+          );
+          let reviewDecision: PullRequestDetail['reviewDecision'] = null;
+          if (relevant.some((r) => r.state === 'CHANGES_REQUESTED')) {
+            reviewDecision = 'changes_requested';
+          } else if (relevant.some((r) => r.state === 'APPROVED')) {
+            reviewDecision = 'approved';
+          } else if (reviews.length > 0 || this.pr().reviewers.length > 0) {
+            reviewDecision = 'review_required';
           }
-          this.loading.set(false);
-        });
+          const reviewerMap = new Map<string, string>();
+          for (const r of reviews) {
+            if (r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED') {
+              reviewerMap.set(r.user.login, r.state);
+            }
+          }
+          this.detail.set({
+            body: d.body,
+            additions: d.additions,
+            deletions: d.deletions,
+            changedFiles: d.changed_files,
+            commitsCount: d.commits,
+            comments: d.comments + d.review_comments,
+            reviewDecision,
+            reviewers: Array.from(reviewerMap.entries()).map(([login, state]) => ({
+              login,
+              state,
+            })),
+          });
+        }
+        this.loading.set(false);
+      });
     } else {
       this.gl
         .getMergeRequest(repo, number)
@@ -91,6 +115,8 @@ export class PrDetailPanelComponent {
               changedFiles: d.changes_count ? Number(d.changes_count) : null,
               commitsCount: null,
               comments: d.user_notes_count,
+              reviewDecision: null,
+              reviewers: [],
             });
           }
           this.loading.set(false);

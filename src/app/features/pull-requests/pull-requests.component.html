@@ -152,6 +152,11 @@
                       👤 {{ pr.reviewers.join(', ') }}
                     </span>
                   }
+                  @if (pr.state === 'open' && pr.reviewers.length > 0) {
+                    <span class="pr-review-badge pr-review-pending"
+                      >⏳ {{ 'prs.awaitingReview' | translate }}</span
+                    >
+                  }
                 </div>
                 @if (pr.labels.length) {
                   <div class="pr-labels">

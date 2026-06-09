@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map, switchMap, forkJoin, of } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce, switchMap, forkJoin, of } from 'rxjs';
 import { TokenService } from './token.service';
 
 export interface GhOrg {
@@ -53,9 +53,14 @@ export class GitHubApiService {
   }
 
   listRepos(): Observable<GhRepo[]> {
-    return this.http.get<GhRepo[]>(
-      `https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member`,
-      { headers: this.headers },
+    const fetchPage = (page: number): Observable<GhRepo[]> =>
+      this.http.get<GhRepo[]>(
+        `https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner,collaborator,organization_member`,
+        { headers: this.headers },
+      );
+    return fetchPage(1).pipe(
+      expand((results, idx) => (results.length === 100 ? fetchPage(idx + 2) : EMPTY)),
+      reduce((acc: GhRepo[], results: GhRepo[]) => [...acc, ...results], []),
     );
   }
 
@@ -178,6 +183,16 @@ export class GitHubApiService {
   ): Observable<GhPullRequest[]> {
     return this.http.get<GhPullRequest[]>(
       `https://api.github.com/repos/${fullName}/pulls?state=${state}&per_page=50&sort=created&direction=desc`,
+      { headers: this.headers },
+    );
+  }
+
+  getReviews(
+    fullName: string,
+    number: number,
+  ): Observable<{ state: string; user: { login: string } }[]> {
+    return this.http.get<{ state: string; user: { login: string } }[]>(
+      `https://api.github.com/repos/${fullName}/pulls/${number}/reviews`,
       { headers: this.headers },
     );
   }
