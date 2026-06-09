@@ -145,6 +145,18 @@
   font-size: 0.72rem;
 }
 
+.chain-item-actions {
+  display: flex;
+  gap: 0.1rem;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  .chain-item:hover & {
+    opacity: 1;
+  }
+}
+
 // ── Canvas tab: toolbar ───────────────────────────────────────────────────────
 
 .orch-empty {

@@ -230,6 +230,59 @@ export class ChainOrchestratorComponent {
     });
   }
 
+  // ── Graph list actions ────────────────────────────────────────────────────────
+  exportGraphFromList(graph: OrchGraph, event: MouseEvent): void {
+    event.stopPropagation();
+    const blob = new Blob([JSON.stringify(graph, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `graph-${graph.name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  duplicateGraph(graph: OrchGraph, event: MouseEvent): void {
+    event.stopPropagation();
+    const idMap = new Map<string, string>();
+    const newId = (old: string): string => {
+      const hit = idMap.get(old);
+      if (hit) return hit;
+      const fresh = crypto.randomUUID();
+      idMap.set(old, fresh);
+      return fresh;
+    };
+    const copy: OrchGraph = {
+      id: crypto.randomUUID(),
+      name: `${graph.name} (copy)`,
+      nodes: graph.nodes.map((n) => ({ ...n, id: newId(n.id) })),
+      edges: graph.edges.map((e) => ({
+        ...e,
+        id: crypto.randomUUID(),
+        fromId: newId(e.fromId),
+        toId: newId(e.toId),
+      })),
+      createdAt: new Date().toISOString(),
+    };
+    this.orchSvc.saveGraph(copy);
+    this.selectGraph(copy);
+    this.toasts.show(`Graph "${copy.name}" created`, 'success');
+  }
+
+  deleteGraphFromList(graph: OrchGraph, event: MouseEvent): void {
+    event.stopPropagation();
+    this.toasts.confirm(`Delete graph "${graph.name}"?`, 'Delete', () => {
+      this.orchSvc.deleteGraph(graph.id);
+      if (this.selectedGraphId() === graph.id) {
+        this.selectedGraphId.set(null);
+        this.graphNodes.set([]);
+        this.graphEdges.set([]);
+        this.activeTab.set('graphs');
+      }
+      this.toasts.show('Graph deleted', 'success');
+    });
+  }
+
   // ── Add chain node ────────────────────────────────────────────────────────────
   toggleAddChain(): void {
     this.showAddChain.update((v) => !v);

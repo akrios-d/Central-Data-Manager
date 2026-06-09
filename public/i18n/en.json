@@ -281,7 +281,8 @@
     "addIntegration": "+ Integration",
     "searchIntegrations": "Search integrations…",
     "noIntegrations": "No integrations configured.",
-    "nodeNotStarted": "Not started yet"
+    "nodeNotStarted": "Not started yet",
+    "duplicate": "Duplicate"
   },
   "releases": {
     "title": "Releases",
@@ -474,7 +475,6 @@
     "token": "Token",
     "username": "Username",
     "password": "Password",
-    "pollInterval": "Poll interval (s)",
     "enabled": "Enabled",
     "statusPath": "Status field path",
     "statusPathHint": "Dot-notation path, e.g. lastBuild.result",
@@ -491,8 +491,6 @@
     "corsNote": "The endpoint must allow CORS requests from this browser origin.",
     "body": "Request body (JSON)",
     "bodyHint": "{\"key\": \"value\"}",
-    "pollEnabled": "Auto-poll",
-    "pollEnabledHint": "Fetch this endpoint repeatedly in the background.",
     "enabledHint": "Allow this source to run in the Orchestrator.",
     "statusPathHint2": "Dot-path to the status field in the JSON response. If the response is {\"result\":\"SUCCESS\"}, type result. For nested fields like {\"build\":{\"status\":\"OK\"}}, type build.status.",
     "statusMapHint": "Map each raw value your API returns (left) to a CDM status (right). Examples — health endpoints: UP→success, DOWN→failure; CI/CD: success→success, failed→failure, running→running; OpenShift: Running→success, Failed→failure, Pending→running.",
@@ -503,6 +501,12 @@
     "orchModeOnce": "One-time",
     "orchModePoll": "Poll",
     "orchInterval": "Poll interval (s)",
-    "orchMaxPolls": "Max polls"
+    "orchMaxPolls": "Max attempts",
+    "duplicate": "Duplicate",
+    "exportSrc": "Export",
+    "orchPollGlobalHint": "Uses global poll interval and max attempts from Settings → Chain Execution.",
+    "pollInterval": "Refresh interval (s)",
+    "pollIntervalUnit": "s",
+    "pollIntervalHint": "How often to fetch this source in the background. Set 0 to disable background polling."
   }
 }

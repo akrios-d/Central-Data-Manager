@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   GenericSource,
@@ -21,7 +21,7 @@ const DEFAULT_MAPPINGS: MappingRow[] = [];
 @Component({
   selector: 'app-integrations',
   standalone: true,
-  imports: [FormsModule, DatePipe, DecimalPipe, TranslateModule],
+  imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './integrations.component.html',
   styleUrl: './integrations.component.scss',
 })
@@ -42,11 +42,13 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   formToken = signal('');
   formUser = signal('');
   formPass = signal('');
-  formInterval = signal(30);
-  formPollEnabled = signal(true);
   formOrchMode = signal<'once' | 'poll'>('poll');
-  formOrchInterval = signal(6);
+  formOrchInterval = signal(30);
   formOrchMaxPolls = signal(20);
+  orchPollMinutes = computed(() =>
+    Math.round((this.formOrchInterval() * this.formOrchMaxPolls()) / 60),
+  );
+  formInterval = signal(30);
   formStatusPath = signal('');
   formMappings = signal<MappingRow[]>(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
   formNamePath = signal('');
@@ -98,11 +100,10 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formToken.set(source.authToken ?? '');
     this.formUser.set(source.authUser ?? '');
     this.formPass.set(source.authPass ?? '');
-    this.formPollEnabled.set(source.pollIntervalSec > 0);
-    this.formInterval.set(source.pollIntervalSec > 0 ? source.pollIntervalSec : 30);
     this.formOrchMode.set(source.orchMode ?? 'poll');
-    this.formOrchInterval.set(source.orchPollIntervalSec ?? 6);
+    this.formOrchInterval.set(source.orchPollIntervalSec ?? 30);
     this.formOrchMaxPolls.set(source.orchMaxPolls ?? 20);
+    this.formInterval.set(source.pollIntervalSec > 0 ? source.pollIntervalSec : 30);
     this.formStatusPath.set(source.statusPath);
     this.formMappings.set(source.mappings.map((m) => ({ ...m })));
     this.formNamePath.set(source.namePath ?? '');
@@ -121,11 +122,10 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.formToken.set('');
     this.formUser.set('');
     this.formPass.set('');
-    this.formInterval.set(30);
-    this.formPollEnabled.set(true);
     this.formOrchMode.set('poll');
-    this.formOrchInterval.set(6);
+    this.formOrchInterval.set(30);
     this.formOrchMaxPolls.set(20);
+    this.formInterval.set(30);
     this.formStatusPath.set('');
     this.formMappings.set(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
     this.formNamePath.set('');
@@ -159,7 +159,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       authToken: this.formToken().trim() || undefined,
       authUser: this.formUser().trim() || undefined,
       authPass: this.formPass() || undefined,
-      pollIntervalSec: this.formPollEnabled() ? Math.max(5, this.formInterval()) : 0,
+      pollIntervalSec: Math.max(0, this.formInterval()),
       enabled: true,
       statusPath: this.formStatusPath().trim(),
       mappings: this.formMappings().filter(
@@ -168,8 +168,10 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
       orchMode: this.formOrchMode(),
-      orchPollIntervalSec: this.formOrchMode() === 'poll' ? this.formOrchInterval() : undefined,
-      orchMaxPolls: this.formOrchMode() === 'poll' ? this.formOrchMaxPolls() : undefined,
+      orchPollIntervalSec:
+        this.formOrchMode() === 'poll' ? Math.max(5, this.formOrchInterval()) : undefined,
+      orchMaxPolls:
+        this.formOrchMode() === 'poll' ? Math.max(1, this.formOrchMaxPolls()) : undefined,
       createdAt: this.selectedSource()?.createdAt ?? new Date().toISOString(),
     };
     this.svc.saveSource(source);
@@ -233,6 +235,44 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
         });
         this.testLoading.set(false);
       },
+    });
+  }
+
+  // ── Source list actions ────────────────────────────────────────────────────
+  exportSourceFromList(source: GenericSource, event: MouseEvent): void {
+    event.stopPropagation();
+    const blob = new Blob([JSON.stringify(source, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `integration-${source.name.replaceAll(/\s+/g, '-').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  duplicateSource(source: GenericSource, event: MouseEvent): void {
+    event.stopPropagation();
+    const copy: GenericSource = {
+      ...source,
+      id: crypto.randomUUID(),
+      name: `${source.name} (copy)`,
+      createdAt: new Date().toISOString(),
+    };
+    this.svc.saveSource(copy);
+    this.selectSource(copy);
+    this.svc.startPolling();
+    this.toasts.show(`"${copy.name}" created`, 'success');
+  }
+
+  deleteSourceFromList(source: GenericSource, event: MouseEvent): void {
+    event.stopPropagation();
+    this.toasts.confirm(`Delete "${source.name}"?`, 'Delete', () => {
+      this.svc.deleteSource(source.id);
+      if (this.selectedId() === source.id) {
+        this.selectedId.set(null);
+        this.activeTab.set('sources');
+      }
+      this.toasts.show('Deleted', 'success');
     });
   }
 

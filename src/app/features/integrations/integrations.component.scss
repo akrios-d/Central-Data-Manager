@@ -142,6 +142,18 @@
   text-overflow: ellipsis;
 }
 
+.source-item-actions {
+  display: flex;
+  gap: 0.1rem;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  .source-item:hover & {
+    opacity: 1;
+  }
+}
+
 .source-off-badge {
   font-size: 0.65rem;
   padding: 1px 5px;
@@ -322,33 +334,6 @@
   resize: vertical;
 }
 
-// ── Poll checkbox row ─────────────────────────────────────────────────────────
-
-.form-row-checks {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  padding: 0.25rem 0;
-}
-
-.override-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  cursor: pointer;
-
-  input[type='checkbox'] {
-    margin-right: 0.4rem;
-  }
-}
-
-.check-label-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
 // ── Hint text ─────────────────────────────────────────────────────────────────
 
 .form-hint {
@@ -356,18 +341,6 @@
   color: var(--text-muted);
   margin: 0.25rem 0 0;
   line-height: 1.45;
-}
-
-.form-hint-inline {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  line-height: 1.35;
-  display: block;
-  padding-left: 1.35rem; // align under the label text, past the checkbox
-}
-
-.int-interval-input {
-  width: 120px;
 }
 
 // ── Orchestrator execution mode toggle ────────────────────────────────────────
@@ -408,35 +381,39 @@
   }
 }
 
-// ── Orchestrator poll settings row ────────────────────────────────────────────
+// ── Poll interval input ───────────────────────────────────────────────────────
 
-.orch-exec-row {
-  display: flex;
-  gap: 1rem;
-
-  .form-group {
-    flex: 1;
-    min-width: 0;
-  }
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-  }
+.int-interval-input {
+  width: 100px;
 }
 
 .orch-exec-field {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-}
-
-.orch-exec-input {
-  width: 90px;
-  flex-shrink: 0;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .orch-exec-unit {
   font-size: 0.8rem;
   color: var(--text-muted);
   white-space: nowrap;
+}
+
+// ── Orch poll params (mirrors Settings layout) ────────────────────────────────
+
+.exec-params {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.exec-input {
+  width: 90px;
+}
+
+.inline-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }

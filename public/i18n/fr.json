@@ -281,7 +281,8 @@
     "addIntegration": "+ Intégration",
     "searchIntegrations": "Rechercher…",
     "noIntegrations": "Aucune intégration configurée.",
-    "nodeNotStarted": "Pas encore démarré"
+    "nodeNotStarted": "Pas encore démarré",
+    "duplicate": "Dupliquer"
   },
   "releases": {
     "title": "Releases",
@@ -474,7 +475,6 @@
     "token": "Token",
     "username": "Utilisateur",
     "password": "Mot de passe",
-    "pollInterval": "Intervalle (s)",
     "enabled": "Activé",
     "statusPath": "Chemin du champ de statut",
     "statusPathHint": "Notation point, ex: lastBuild.result",
@@ -491,8 +491,6 @@
     "corsNote": "L'endpoint doit autoriser les requêtes CORS depuis cette origine.",
     "body": "Corps de la requête (JSON)",
     "bodyHint": "{\"clé\": \"valeur\"}",
-    "pollEnabled": "Polling automatique",
-    "pollEnabledHint": "Interroge cet endpoint périodiquement en arrière-plan.",
     "enabledHint": "Autorise cette source à être utilisée dans l'Orchestrateur.",
     "statusPathHint2": "Chemin JSON vers le champ de statut. Si la réponse est {\"result\":\"SUCCESS\"}, tapez result.",
     "statusMapHint": "Associez chaque valeur brute de l'API (gauche) à un statut CDM (droite). Exemples — health: UP→success, DOWN→failure; CI/CD: success→success, failed→failure; OpenShift: Running→success, Failed→failure.",
@@ -503,6 +501,12 @@
     "orchModeOnce": "Une fois",
     "orchModePoll": "Poll",
     "orchInterval": "Intervalle de poll (s)",
-    "orchMaxPolls": "Polls max"
+    "orchMaxPolls": "Tentatives max",
+    "duplicate": "Dupliquer",
+    "exportSrc": "Exporter",
+    "orchPollGlobalHint": "Utilise l'intervalle et le nombre de tentatives globaux définis dans Paramètres → Exécution.",
+    "pollInterval": "Intervalle de rafraîchissement (s)",
+    "pollIntervalUnit": "s",
+    "pollIntervalHint": "Fréquence de récupération en arrière-plan. Mettez 0 pour désactiver."
   }
 }

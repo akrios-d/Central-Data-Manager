@@ -78,6 +78,29 @@
                     {{ g.nodes.length - 1 }} {{ 'orch.chainsCount' | translate }}
                   </span>
                 </div>
+                <div class="chain-item-actions">
+                  <button
+                    class="icon-btn"
+                    [title]="'orch.export' | translate"
+                    (click)="exportGraphFromList(g, $event)"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    class="icon-btn"
+                    [title]="'orch.duplicate' | translate"
+                    (click)="duplicateGraph(g, $event)"
+                  >
+                    ⧉
+                  </button>
+                  <button
+                    class="icon-btn icon-btn-danger"
+                    [title]="'orch.delete' | translate"
+                    (click)="deleteGraphFromList(g, $event)"
+                  >
+                    ✕
+                  </button>
+                </div>
               </li>
             }
           </ul>

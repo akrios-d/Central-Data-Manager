@@ -59,6 +59,29 @@
                   </span>
                 }
               </div>
+              <div class="source-item-actions">
+                <button
+                  class="icon-btn"
+                  [title]="'integrations.exportSrc' | translate"
+                  (click)="exportSourceFromList(source, $event)"
+                >
+                  ↓
+                </button>
+                <button
+                  class="icon-btn"
+                  [title]="'integrations.duplicate' | translate"
+                  (click)="duplicateSource(source, $event)"
+                >
+                  ⧉
+                </button>
+                <button
+                  class="icon-btn icon-btn-danger"
+                  [title]="'integrations.delete' | translate"
+                  (click)="deleteSourceFromList(source, $event)"
+                >
+                  ✕
+                </button>
+              </div>
             </li>
           }
         </ul>
@@ -209,38 +232,6 @@
             </div>
           }
 
-          <!-- Auto-poll toggle -->
-          <div class="form-row-checks">
-            <label class="override-label">
-              <span class="check-label-text">
-                <input
-                  type="checkbox"
-                  [ngModel]="formPollEnabled()"
-                  (ngModelChange)="formPollEnabled.set($event)"
-                />
-                {{ 'integrations.pollEnabled' | translate }}
-              </span>
-              <span class="form-hint-inline">{{ 'integrations.pollEnabledHint' | translate }}</span>
-            </label>
-          </div>
-
-          @if (formPollEnabled()) {
-            <div class="form-group">
-              <label class="form-label" for="int-interval">
-                {{ 'integrations.pollInterval' | translate }}
-              </label>
-              <input
-                id="int-interval"
-                class="form-control int-interval-input"
-                type="number"
-                min="5"
-                placeholder="30"
-                [ngModel]="formInterval()"
-                (ngModelChange)="formInterval.set(+$event)"
-              />
-            </div>
-          }
-
           <hr class="editor-divider" />
 
           <!-- Orchestrator execution mode -->
@@ -265,46 +256,64 @@
                 {{ 'integrations.orchModePoll' | translate }}
               </button>
             </div>
+            @if (formOrchMode() === 'poll') {
+              <div class="exec-params mt-2">
+                <div class="form-group">
+                  <label class="form-label" for="int-orch-interval">
+                    {{ 'integrations.orchInterval' | translate }}
+                  </label>
+                  <div class="inline-row mt-1">
+                    <input
+                      id="int-orch-interval"
+                      class="form-control exec-input"
+                      type="number"
+                      min="5"
+                      placeholder="30"
+                      [ngModel]="formOrchInterval()"
+                      (ngModelChange)="formOrchInterval.set(+$event)"
+                    />
+                    <span class="text-muted text-sm">s</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="int-orch-max">
+                    {{ 'integrations.orchMaxPolls' | translate }}
+                  </label>
+                  <div class="inline-row mt-1">
+                    <input
+                      id="int-orch-max"
+                      class="form-control exec-input"
+                      type="number"
+                      min="1"
+                      placeholder="20"
+                      [ngModel]="formOrchMaxPolls()"
+                      (ngModelChange)="formOrchMaxPolls.set(+$event)"
+                    />
+                    <span class="text-muted text-sm">≈ {{ orchPollMinutes() }} min</span>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
 
-          @if (formOrchMode() === 'poll') {
-            <div class="orch-exec-row">
-              <div class="form-group">
-                <label class="form-label" for="int-orch-interval">
-                  {{ 'integrations.orchInterval' | translate }}
-                </label>
-                <div class="orch-exec-field">
-                  <input
-                    id="int-orch-interval"
-                    class="form-control orch-exec-input"
-                    type="number"
-                    min="1"
-                    [ngModel]="formOrchInterval()"
-                    (ngModelChange)="formOrchInterval.set(+$event)"
-                  />
-                  <span class="orch-exec-unit">s</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="int-orch-max">
-                  {{ 'integrations.orchMaxPolls' | translate }}
-                </label>
-                <div class="orch-exec-field">
-                  <input
-                    id="int-orch-max"
-                    class="form-control orch-exec-input"
-                    type="number"
-                    min="1"
-                    [ngModel]="formOrchMaxPolls()"
-                    (ngModelChange)="formOrchMaxPolls.set(+$event)"
-                  />
-                  <span class="orch-exec-unit text-muted text-sm">
-                    ≈ {{ (formOrchInterval() * formOrchMaxPolls()) / 60 | number: '1.0-0' }} min
-                  </span>
-                </div>
-              </div>
+          <div class="form-group">
+            <label class="form-label" for="int-interval">
+              {{ 'integrations.pollInterval' | translate }}
+            </label>
+            <div class="orch-exec-field">
+              <input
+                id="int-interval"
+                class="form-control int-interval-input"
+                type="number"
+                min="0"
+                placeholder="30"
+                [ngModel]="formInterval()"
+                (ngModelChange)="formInterval.set(+$event)"
+              />
+              <span class="orch-exec-unit">{{ 'integrations.pollIntervalUnit' | translate }}</span>
             </div>
-          }
+            <p class="form-hint">{{ 'integrations.pollIntervalHint' | translate }}</p>
+          </div>
 
           <hr class="editor-divider" />
 

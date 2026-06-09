@@ -281,7 +281,8 @@
     "addIntegration": "+ Integração",
     "searchIntegrations": "Buscar integrações…",
     "noIntegrations": "Nenhuma integração configurada.",
-    "nodeNotStarted": "Ainda não iniciado"
+    "nodeNotStarted": "Ainda não iniciado",
+    "duplicate": "Duplicar"
   },
   "releases": {
     "title": "Releases",
@@ -474,7 +475,6 @@
     "token": "Token",
     "username": "Usuário",
     "password": "Senha",
-    "pollInterval": "Intervalo de polling (s)",
     "enabled": "Ativo",
     "statusPath": "Caminho do campo de status",
     "statusPathHint": "Notação ponto, ex: lastBuild.result",
@@ -491,8 +491,6 @@
     "corsNote": "O endpoint deve permitir requisições CORS desta origem.",
     "body": "Corpo da requisição (JSON)",
     "bodyHint": "{\"chave\": \"valor\"}",
-    "pollEnabled": "Polling automático",
-    "pollEnabledHint": "Faz chamadas periódicas em segundo plano.",
     "enabledHint": "Permite que esta fonte seja usada no Orquestrador.",
     "statusPathHint2": "Caminho no JSON para o campo de status. Se a resposta for {\"result\":\"SUCCESS\"}, escreva result. Para campos aninhados como {\"build\":{\"status\":\"OK\"}}, escreva build.status.",
     "statusMapHint": "Mapeie cada valor bruto retornado pela API (esquerda) para um status CDM (direita). Exemplos — health endpoints: UP→success, DOWN→failure; CI/CD: success→success, failed→failure, running→running; OpenShift: Running→success, Failed→failure, Pending→running.",
@@ -503,6 +501,12 @@
     "orchModeOnce": "Uma vez",
     "orchModePoll": "Poll",
     "orchInterval": "Intervalo de poll (s)",
-    "orchMaxPolls": "Máx. polls"
+    "orchMaxPolls": "Máx. tentativas",
+    "duplicate": "Duplicar",
+    "exportSrc": "Exportar",
+    "orchPollGlobalHint": "Usa o intervalo e máx. tentativas globais em Configurações → Execução de chains.",
+    "pollInterval": "Intervalo de atualização (s)",
+    "pollIntervalUnit": "s",
+    "pollIntervalHint": "Com que frequência buscar esta fonte em segundo plano. Defina 0 para desativar."
   }
 }
