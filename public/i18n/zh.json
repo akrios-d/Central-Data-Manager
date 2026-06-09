@@ -50,7 +50,8 @@
     "resetColumns": "重置",
     "columnsFilterNote": "列反映当前筛选条件，更改筛选后请重新加载以发现更多状态。",
     "resetConfirmMsg": "将清除列配置并重新加载看板。",
-    "resetConfirmBtn": "确认重置"
+    "resetConfirmBtn": "确认重置",
+    "filterAll": "全部"
   },
   "sprint": {
     "configureIntro": "在",

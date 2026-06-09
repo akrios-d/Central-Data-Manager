@@ -50,7 +50,8 @@
     "resetColumns": "Repor",
     "columnsFilterNote": "As colunas reflectem o teu filtro activo — recarrega após alterar filtros para descobrir mais estados.",
     "resetConfirmMsg": "Isto irá limpar a configuração de colunas e recarregar o board.",
-    "resetConfirmBtn": "Sim, repor"
+    "resetConfirmBtn": "Sim, repor",
+    "filterAll": "Todos"
   },
   "sprint": {
     "configureIntro": "Configura o teu provider de boards nas",

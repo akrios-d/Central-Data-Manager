@@ -50,7 +50,8 @@
     "resetColumns": "Réinitialiser",
     "columnsFilterNote": "Les colonnes reflètent votre filtre actif — rechargez après avoir modifié les filtres pour découvrir plus d'états.",
     "resetConfirmMsg": "Cela effacera la configuration des colonnes et rechargera le board.",
-    "resetConfirmBtn": "Oui, réinitialiser"
+    "resetConfirmBtn": "Oui, réinitialiser",
+    "filterAll": "Tous"
   },
   "sprint": {
     "configureIntro": "Configurez votre provider de boards dans",

@@ -103,6 +103,10 @@ export class DevopsBoardsComponent implements OnInit {
     });
   }
 
+  clearTypeFilter(): void {
+    this.filterTypes.set(new Set());
+  }
+
   toggleType(type: string): void {
     this.filterTypes.update((s) => {
       const next = new Set(s);

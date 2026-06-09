@@ -65,6 +65,13 @@
       <div class="filter-divider"></div>
       @if (availableTypes().length) {
         <div class="type-chips">
+          <button
+            class="type-chip type-chip-all"
+            [class.active]="filterTypes().size === 0"
+            (click)="clearTypeFilter()"
+          >
+            {{ 'boards.filterAll' | translate }}
+          </button>
           @for (t of availableTypes(); track t) {
             <button class="type-chip" [class.active]="isTypeSelected(t)" (click)="toggleType(t)">
               {{ t }}
