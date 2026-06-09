@@ -16,6 +16,12 @@
 
 ---
 
+## Architecture
+
+![CDM Architecture](docs/architecture.png)
+
+---
+
 ## Why CDM?
 
 Modern development teams work across multiple providers: GitHub for one project, GitLab for another, Azure DevOps for planning, Jira for tickets. Switching between four browser tabs to monitor a release is the norm — not the exception.
@@ -249,6 +255,4 @@ Pull requests are welcome. Please open an issue first to discuss what you'd like
 
 <div align="center">
 
-Made by [Felipe Oliveira](mailto:ghfelipe@hotmail.com) · [Open an issue](https://github.com/akrios-d/Central-Data-Manager/issues) · Licensed under [GPL-3.0](https://github.com/akrios-d/Central-Data-Manager/blob/main/LICENSE)
-
-</div>
+Made by [Felipe Oliveira](mailto:ghfelipe@hotmail.com) · [Open an issue](https://github.com/akrios-d/Central-Data-Manager/issues) · Licensed under [GPL-3.0](https://gi
