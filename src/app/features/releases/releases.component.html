@@ -3,174 +3,315 @@
   <p>{{ 'releases.subtitle' | translate }}</p>
 </div>
 
-<div class="card">
-  <!-- ── Toolbar ──────────────────────────────────────────────────────────── -->
-  <div class="releases-toolbar">
-    <div class="toolbar-left">
-      @if (!showAddRepo()) {
-        <button class="btn btn-sm btn-primary" (click)="openAddRepo()">
-          {{ 'releases.addRepo' | translate }}
-        </button>
+<div class="card vtab-card">
+  <!-- ── Tab strip ──────────────────────────────────────────────────────────── -->
+  <nav class="vtab-strip">
+    <button
+      class="vtab-btn"
+      [class.active]="activeRelTab() === 'control'"
+      (click)="activeRelTab.set('control')"
+    >
+      {{ 'releases.tabControl' | translate }}
+    </button>
+    <button
+      class="vtab-btn"
+      [class.active]="activeRelTab() === 'manage'"
+      (click)="activeRelTab.set('manage')"
+    >
+      {{ 'releases.tabManage' | translate }}
+    </button>
+    <button
+      class="vtab-btn"
+      [class.active]="activeRelTab() === 'envs'"
+      (click)="activeRelTab.set('envs')"
+    >
+      {{ 'releases.tabEnvs' | translate }}
+    </button>
+  </nav>
+
+  <div class="vtab-body">
+    <!-- ══ Tab 1: Release Control ══════════════════════════════════════════ -->
+    @if (activeRelTab() === 'control') {
+      <div class="release-search-row">
+        <input
+          class="form-control form-control-sm release-search-input"
+          [placeholder]="'releases.searchRepos' | translate"
+          [ngModel]="repoTableSearch()"
+          (ngModelChange)="repoTableSearch.set($event)"
+        />
+      </div>
+
+      @if (repos().length === 0) {
+        <p class="text-muted text-sm empty-state">{{ 'releases.emptyState' | translate }}</p>
       } @else {
-        <div class="add-repo-inline">
-          <div class="repo-search-wrap">
-            <input
-              class="form-control form-control-sm"
-              [placeholder]="'releases.repoPlaceholder' | translate"
-              [ngModel]="repoSearch()"
-              (ngModelChange)="onRepoSearchChange($event)"
-              (keydown.escape)="cancelAddRepo()"
-            />
-            @if (ciReposLoading()) {
-              <div class="spinner-sm"></div>
-            }
-            @if (showRepoDropdown()) {
-              <ul class="repo-dropdown">
-                @for (r of filteredRepos(); track r.id) {
-                  <li
-                    [class.already-added]="alreadyAdded().has(r.full_name)"
-                    [attr.tabindex]="alreadyAdded().has(r.full_name) ? null : '0'"
-                    (click)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)"
-                    (keydown.enter)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)"
-                  >
-                    <span class="repo-provider-badge">{{ providerBadge(r.provider) }}</span>
-                    {{ r.full_name }}
-                    @if (alreadyAdded().has(r.full_name)) {
-                      <span class="text-muted text-sm">
-                        · {{ 'releases.alreadyAdded' | translate }}</span
-                      >
-                    }
-                  </li>
+        <div class="table-wrap">
+          <table class="releases-table">
+            <thead>
+              <tr>
+                <th class="col-repo">{{ 'releases.repository' | translate }}</th>
+                @for (env of envs(); track env.id) {
+                  <th class="col-env">{{ env.name }}</th>
                 }
-              </ul>
-            }
-          </div>
-          <button
-            class="btn btn-sm btn-primary"
-            (click)="submitAddRepo()"
-            [disabled]="!selectedCiRepo()"
-          >
-            {{ 'releases.add' | translate }}
-          </button>
-          <button class="btn btn-sm btn-outline" (click)="cancelAddRepo()">
-            {{ 'releases.cancel' | translate }}
-          </button>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (repo of filteredRepos2(); track repo.id) {
+                <tr class="repo-row">
+                  <td class="cell-repo">
+                    <span class="repo-name">{{ repo.repoName }}</span>
+                  </td>
+
+                  @for (env of envs(); track env.id) {
+                    <td
+                      class="cell-tag"
+                      tabindex="0"
+                      [class.cell-active]="
+                        editTarget()?.repoId === repo.id && editTarget()?.envId === env.id
+                      "
+                      (click)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')"
+                      (keydown.enter)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')"
+                    >
+                      @if (repo.deployments[env.id]) {
+                        <span
+                          [class]="
+                            isBranch(repo.deployments[env.id]) ? 'branch-badge' : 'tag-badge'
+                          "
+                          [title]="updatedTitle(repo, env.id)"
+                        >
+                          @if (isBranch(repo.deployments[env.id])) {
+                            <span class="ref-icon-sm">⎇</span>
+                          }
+                          {{ repo.deployments[env.id] }}
+                        </span>
+                      } @else {
+                        <span class="tag-empty">—</span>
+                      }
+                    </td>
+                  }
+
+                  <td class="cell-actions">
+                    @if (canCompare(repo.id)) {
+                      <button
+                        class="icon-btn icon-btn-compare"
+                        [class.active]="compareRepoId() === repo.id"
+                        [title]="'releases.compare' | translate"
+                        (click)="toggleCompare(repo.id)"
+                      >
+                        ⇄
+                      </button>
+                    }
+                    <button
+                      class="icon-btn icon-btn-danger"
+                      [title]="'releases.removeRepo' | translate"
+                      (click)="removeRepo(repo.id)"
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+
+                @if (compareRepoId() === repo.id) {
+                  <tr class="compare-row">
+                    <td [attr.colspan]="envs().length + 2">
+                      <div class="comp-panel">
+                        <!-- toolbar -->
+                        <div class="comp-toolbar">
+                          <span class="comp-label">{{ 'releases.compareBase' | translate }}</span>
+                          <select
+                            class="form-control form-control-sm comp-select"
+                            [ngModel]="compareBaseEnvId()"
+                            (ngModelChange)="onBaseEnvChange($event)"
+                          >
+                            @for (e of envsWithTag(repo.id); track e.envId) {
+                              <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
+                            }
+                          </select>
+
+                          <span class="comp-arrow">→</span>
+
+                          <span class="comp-label">{{ 'releases.compareHead' | translate }}</span>
+                          <select
+                            class="form-control form-control-sm comp-select"
+                            [ngModel]="compareHeadEnvId()"
+                            (ngModelChange)="onHeadEnvChange($event)"
+                          >
+                            @for (e of envsWithTag(repo.id); track e.envId) {
+                              <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
+                            }
+                          </select>
+
+                          <button
+                            class="icon-btn comp-close"
+                            style="margin-left: auto"
+                            (click)="toggleCompare(repo.id)"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        <!-- body -->
+                        @if (compLoading()) {
+                          <p class="text-muted text-sm comp-msg">
+                            {{ 'releases.compLoading' | translate }}
+                          </p>
+                        } @else if (compError()) {
+                          <p class="comp-msg" style="color: var(--danger)">{{ compError() }}</p>
+                        } @else if (comparison(); as comp) {
+                          <div class="comp-status-row">
+                            @if (comp.status === 'identical') {
+                              <span class="comp-badge comp-identical">{{
+                                'releases.identical' | translate
+                              }}</span>
+                            } @else {
+                              @if (comp.ahead_by > 0) {
+                                <span class="comp-badge comp-ahead"
+                                  >+{{ comp.ahead_by }} {{ 'releases.ahead' | translate }}</span
+                                >
+                              }
+                              @if (comp.behind_by > 0) {
+                                <span class="comp-badge comp-behind"
+                                  >-{{ comp.behind_by }} {{ 'releases.behind' | translate }}</span
+                                >
+                              }
+                            }
+                          </div>
+
+                          @if (comp.commits.length === 0) {
+                            <p class="text-muted text-sm comp-msg">
+                              {{ 'releases.noCommits' | translate }}
+                            </p>
+                          } @else {
+                            <!-- view toggle -->
+                            <div class="comp-view-toggle">
+                              <button
+                                class="comp-toggle-btn"
+                                [class.active]="!showChangelog()"
+                                (click)="showChangelog.set(false)"
+                              >
+                                {{ 'releases.viewCommits' | translate }}
+                              </button>
+                              <button
+                                class="comp-toggle-btn"
+                                [class.active]="showChangelog()"
+                                (click)="showChangelog.set(true)"
+                              >
+                                {{ 'releases.viewChangelog' | translate }}
+                              </button>
+                            </div>
+
+                            @if (!showChangelog()) {
+                              <ul class="comp-commits">
+                                @for (c of comp.commits; track c.sha) {
+                                  <li class="comp-commit">
+                                    <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
+                                    <span class="comp-msg-text">{{
+                                      firstCommitLine(c.message)
+                                    }}</span>
+                                    <span class="comp-meta text-muted">{{ c.author }}</span>
+                                    <span class="comp-meta text-muted">{{
+                                      shortDate(c.date)
+                                    }}</span>
+                                  </li>
+                                }
+                              </ul>
+                            } @else {
+                              <div class="changelog-wrap">
+                                <button
+                                  class="btn btn-sm btn-outline changelog-copy"
+                                  (click)="copyChangelog()"
+                                >
+                                  {{ 'releases.copyMarkdown' | translate }}
+                                </button>
+                                @for (section of changelog(); track section.type) {
+                                  <div class="cl-section">
+                                    <h4 class="cl-heading">
+                                      {{ section.icon }} {{ section.label }}
+                                    </h4>
+                                    <ul class="cl-list">
+                                      @for (item of section.items; track item) {
+                                        <li class="cl-item">{{ item }}</li>
+                                      }
+                                    </ul>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          }
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
         </div>
       }
-    </div>
-    <button
-      class="btn btn-sm btn-outline"
-      [class.active]="managingEnvs()"
-      (click)="managingEnvs.update((v) => !v)"
-    >
-      {{ 'releases.manageEnvs' | translate }}
-    </button>
-  </div>
+    }
 
-  <!-- ── Environment manager ──────────────────────────────────────────────── -->
-  @if (managingEnvs()) {
-    <div class="env-manager">
-      <ul class="env-list">
-        @for (env of envs(); track env.id) {
-          <li class="env-item">
-            @if (editingEnvId() === env.id) {
+    <!-- ══ Tab 2: Manage Repositories ═════════════════════════════════════ -->
+    @if (activeRelTab() === 'manage') {
+      <div class="manage-section">
+        <h3 class="manage-heading">{{ 'releases.reposHeading' | translate }}</h3>
+
+        <!-- Add repo inline form -->
+        @if (!showAddRepo()) {
+          <button class="btn btn-sm btn-primary" (click)="openAddRepo()">
+            {{ 'releases.addRepo' | translate }}
+          </button>
+        } @else {
+          <div class="add-repo-inline">
+            <div class="repo-search-wrap">
               <input
-                class="form-control form-control-sm env-rename-input"
-                [ngModel]="editingEnvName()"
-                (ngModelChange)="editingEnvName.set($event)"
-                (keydown)="onEnvRenameKey($event)"
-                (blur)="commitRenameEnv()"
+                class="form-control form-control-sm"
+                [placeholder]="'releases.repoPlaceholder' | translate"
+                [ngModel]="repoSearch()"
+                (ngModelChange)="onRepoSearchChange($event)"
+                (keydown.escape)="cancelAddRepo()"
               />
-            } @else {
-              <button class="env-name" type="button" (click)="startRenameEnv(env.id, env.name)">
-                {{ env.name }}
-              </button>
-              <span class="env-hint text-muted text-sm">{{
-                'releases.clickToRename' | translate
-              }}</span>
-            }
-            <button class="icon-btn icon-btn-danger" (click)="removeEnv(env.id)">✕</button>
-          </li>
-        }
-      </ul>
-      <div class="env-add-row">
-        <input
-          class="form-control form-control-sm"
-          [placeholder]="'releases.newEnvPlaceholder' | translate"
-          [ngModel]="newEnvName()"
-          (ngModelChange)="newEnvName.set($event)"
-          (keydown.enter)="submitAddEnv()"
-        />
-        <button
-          class="btn btn-sm btn-outline"
-          (click)="submitAddEnv()"
-          [disabled]="!newEnvName().trim()"
-        >
-          {{ 'releases.addEnv' | translate }}
-        </button>
-      </div>
-    </div>
-  }
-
-  <!-- ── Table ────────────────────────────────────────────────────────────── -->
-  @if (repos().length === 0) {
-    <p class="text-muted text-sm empty-state">{{ 'releases.emptyState' | translate }}</p>
-  } @else {
-    <div class="table-wrap">
-      <table class="releases-table">
-        <thead>
-          <tr>
-            <th class="col-repo">{{ 'releases.repository' | translate }}</th>
-            @for (env of envs(); track env.id) {
-              <th class="col-env">{{ env.name }}</th>
-            }
-            <th class="col-actions"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (repo of repos(); track repo.id) {
-            <tr class="repo-row">
-              <td class="cell-repo">
-                <span class="repo-name">{{ repo.repoName }}</span>
-              </td>
-
-              @for (env of envs(); track env.id) {
-                <td
-                  class="cell-tag"
-                  tabindex="0"
-                  [class.cell-active]="
-                    editTarget()?.repoId === repo.id && editTarget()?.envId === env.id
-                  "
-                  (click)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')"
-                  (keydown.enter)="startEdit(repo.id, env.id, repo.deployments[env.id] || '')"
-                >
-                  @if (repo.deployments[env.id]) {
-                    <span
-                      [class]="isBranch(repo.deployments[env.id]) ? 'branch-badge' : 'tag-badge'"
-                      [title]="updatedTitle(repo, env.id)"
-                    >
-                      @if (isBranch(repo.deployments[env.id])) {
-                        <span class="ref-icon-sm">⎇</span>
-                      }
-                      {{ repo.deployments[env.id] }}
-                    </span>
-                  } @else {
-                    <span class="tag-empty">—</span>
-                  }
-                </td>
+              @if (ciReposLoading()) {
+                <div class="spinner-sm"></div>
               }
+              @if (showRepoDropdown()) {
+                <ul class="repo-dropdown">
+                  @for (r of filteredRepos(); track r.id) {
+                    <li
+                      [class.already-added]="alreadyAdded().has(r.full_name)"
+                      [attr.tabindex]="alreadyAdded().has(r.full_name) ? null : '0'"
+                      (click)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)"
+                      (keydown.enter)="!alreadyAdded().has(r.full_name) && selectCiRepo(r)"
+                    >
+                      <span class="repo-provider-badge">{{ providerBadge(r.provider) }}</span>
+                      {{ r.full_name }}
+                      @if (alreadyAdded().has(r.full_name)) {
+                        <span class="text-muted text-sm">
+                          · {{ 'releases.alreadyAdded' | translate }}</span
+                        >
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+            <button
+              class="btn btn-sm btn-primary"
+              (click)="submitAddRepo()"
+              [disabled]="!selectedCiRepo()"
+            >
+              {{ 'releases.add' | translate }}
+            </button>
+            <button class="btn btn-sm btn-outline" (click)="cancelAddRepo()">
+              {{ 'releases.cancel' | translate }}
+            </button>
+          </div>
+        }
 
-              <td class="cell-actions">
-                @if (canCompare(repo.id)) {
-                  <button
-                    class="icon-btn icon-btn-compare"
-                    [class.active]="compareRepoId() === repo.id"
-                    [title]="'releases.compare' | translate"
-                    (click)="toggleCompare(repo.id)"
-                  >
-                    ⇄
-                  </button>
-                }
+        @if (repos().length > 0) {
+          <ul class="manage-repo-list mt-2">
+            @for (repo of filteredRepos2(); track repo.id) {
+              <li class="manage-repo-item">
+                <span class="repo-name">{{ repo.repoName }}</span>
                 <button
                   class="icon-btn icon-btn-danger"
                   [title]="'releases.removeRepo' | translate"
@@ -178,140 +319,64 @@
                 >
                   ✕
                 </button>
-              </td>
-            </tr>
-
-            @if (compareRepoId() === repo.id) {
-              <tr class="compare-row">
-                <td [attr.colspan]="envs().length + 2">
-                  <div class="comp-panel">
-                    <!-- toolbar -->
-                    <div class="comp-toolbar">
-                      <span class="comp-label">{{ 'releases.compareBase' | translate }}</span>
-                      <select
-                        class="form-control form-control-sm comp-select"
-                        [ngModel]="compareBaseEnvId()"
-                        (ngModelChange)="onBaseEnvChange($event)"
-                      >
-                        @for (e of envsWithTag(repo.id); track e.envId) {
-                          <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
-                        }
-                      </select>
-
-                      <span class="comp-arrow">→</span>
-
-                      <span class="comp-label">{{ 'releases.compareHead' | translate }}</span>
-                      <select
-                        class="form-control form-control-sm comp-select"
-                        [ngModel]="compareHeadEnvId()"
-                        (ngModelChange)="onHeadEnvChange($event)"
-                      >
-                        @for (e of envsWithTag(repo.id); track e.envId) {
-                          <option [value]="e.envId">{{ e.envName }} · {{ e.tag }}</option>
-                        }
-                      </select>
-
-                      <button
-                        class="icon-btn comp-close"
-                        style="margin-left: auto"
-                        (click)="toggleCompare(repo.id)"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    <!-- body -->
-                    @if (compLoading()) {
-                      <p class="text-muted text-sm comp-msg">
-                        {{ 'releases.compLoading' | translate }}
-                      </p>
-                    } @else if (compError()) {
-                      <p class="comp-msg" style="color: var(--danger)">{{ compError() }}</p>
-                    } @else if (comparison(); as comp) {
-                      <div class="comp-status-row">
-                        @if (comp.status === 'identical') {
-                          <span class="comp-badge comp-identical">{{
-                            'releases.identical' | translate
-                          }}</span>
-                        } @else {
-                          @if (comp.ahead_by > 0) {
-                            <span class="comp-badge comp-ahead"
-                              >+{{ comp.ahead_by }} {{ 'releases.ahead' | translate }}</span
-                            >
-                          }
-                          @if (comp.behind_by > 0) {
-                            <span class="comp-badge comp-behind"
-                              >-{{ comp.behind_by }} {{ 'releases.behind' | translate }}</span
-                            >
-                          }
-                        }
-                      </div>
-
-                      @if (comp.commits.length === 0) {
-                        <p class="text-muted text-sm comp-msg">
-                          {{ 'releases.noCommits' | translate }}
-                        </p>
-                      } @else {
-                        <!-- view toggle -->
-                        <div class="comp-view-toggle">
-                          <button
-                            class="comp-toggle-btn"
-                            [class.active]="!showChangelog()"
-                            (click)="showChangelog.set(false)"
-                          >
-                            {{ 'releases.viewCommits' | translate }}
-                          </button>
-                          <button
-                            class="comp-toggle-btn"
-                            [class.active]="showChangelog()"
-                            (click)="showChangelog.set(true)"
-                          >
-                            {{ 'releases.viewChangelog' | translate }}
-                          </button>
-                        </div>
-
-                        @if (!showChangelog()) {
-                          <ul class="comp-commits">
-                            @for (c of comp.commits; track c.sha) {
-                              <li class="comp-commit">
-                                <code class="comp-sha">{{ c.sha.slice(0, 7) }}</code>
-                                <span class="comp-msg-text">{{ firstCommitLine(c.message) }}</span>
-                                <span class="comp-meta text-muted">{{ c.author }}</span>
-                                <span class="comp-meta text-muted">{{ shortDate(c.date) }}</span>
-                              </li>
-                            }
-                          </ul>
-                        } @else {
-                          <div class="changelog-wrap">
-                            <button
-                              class="btn btn-sm btn-outline changelog-copy"
-                              (click)="copyChangelog()"
-                            >
-                              {{ 'releases.copyMarkdown' | translate }}
-                            </button>
-                            @for (section of changelog(); track section.type) {
-                              <div class="cl-section">
-                                <h4 class="cl-heading">{{ section.icon }} {{ section.label }}</h4>
-                                <ul class="cl-list">
-                                  @for (item of section.items; track item) {
-                                    <li class="cl-item">{{ item }}</li>
-                                  }
-                                </ul>
-                              </div>
-                            }
-                          </div>
-                        }
-                      }
-                    }
-                  </div>
-                </td>
-              </tr>
+              </li>
             }
+          </ul>
+        }
+      </div>
+    }
+
+    <!-- ══ Tab 3: Manage Environments ════════════════════════════════════════ -->
+    @if (activeRelTab() === 'envs') {
+      <div class="manage-section">
+        <h3 class="manage-heading">{{ 'releases.envsHeading' | translate }}</h3>
+
+        <!-- Add env form — above the list, matches repo pattern -->
+        <div class="env-add-row">
+          <input
+            class="form-control form-control-sm"
+            [placeholder]="'releases.newEnvPlaceholder' | translate"
+            [ngModel]="newEnvName()"
+            (ngModelChange)="newEnvName.set($event)"
+            (keydown.enter)="submitAddEnv()"
+          />
+          <button
+            class="btn btn-sm btn-primary"
+            (click)="submitAddEnv()"
+            [disabled]="!newEnvName().trim()"
+          >
+            {{ 'releases.addEnv' | translate }}
+          </button>
+        </div>
+
+        <ul class="manage-repo-list">
+          @for (env of envs(); track env.id) {
+            <li class="manage-repo-item">
+              @if (editingEnvId() === env.id) {
+                <input
+                  class="form-control form-control-sm env-rename-input"
+                  [ngModel]="editingEnvName()"
+                  (ngModelChange)="editingEnvName.set($event)"
+                  (keydown)="onEnvRenameKey($event)"
+                  (blur)="commitRenameEnv()"
+                />
+              } @else {
+                <span class="env-name-text">{{ env.name }}</span>
+                <button
+                  class="icon-btn env-rename-btn"
+                  [title]="'releases.clickToRename' | translate"
+                  (click)="startRenameEnv(env.id, env.name)"
+                >
+                  ✎
+                </button>
+              }
+              <button class="icon-btn icon-btn-danger" (click)="removeEnv(env.id)">✕</button>
+            </li>
           }
-        </tbody>
-      </table>
-    </div>
-  }
+        </ul>
+      </div>
+    }
+  </div>
 </div>
 
 <!-- ── Ref picker popup ──────────────────────────────────────────────────── -->
@@ -357,10 +422,33 @@
         >
           {{ 'releases.branches' | translate }}
         </button>
+        <button
+          class="ref-tab-btn"
+          [class.active]="refMode() === 'hash'"
+          (click)="setRefMode('hash')"
+        >
+          {{ 'releases.commit' | translate }}
+        </button>
       </div>
 
-      <div class="ref-popup-list" (scroll)="onListScroll($event)">
-        @if (refsLoading()) {
+      <div class="ref-popup-list">
+        @if (refMode() === 'hash') {
+          <div class="ref-hash-wrap">
+            <input
+              class="form-control form-control-sm"
+              [placeholder]="'releases.hashPlaceholder' | translate"
+              [ngModel]="commitHash()"
+              (ngModelChange)="commitHash.set($event)"
+            />
+            <button
+              class="btn btn-sm btn-primary"
+              [disabled]="!commitHash().trim()"
+              (click)="selectRef(commitHash().trim())"
+            >
+              {{ 'releases.apply' | translate }}
+            </button>
+          </div>
+        } @else if (refsLoading()) {
           <div class="ref-loading-row"><div class="ref-spinner"></div></div>
         } @else if (refMode() === 'tags') {
           @if (!filteredCellTags().length) {
@@ -376,9 +464,6 @@
                 <span class="ref-icon">🏷</span> {{ tag }}
               </button>
             }
-            @if (hasMoreTags()) {
-              <div class="ref-more-hint">scroll for more</div>
-            }
           }
         } @else {
           @if (!filteredCellBranches().length) {
@@ -393,9 +478,6 @@
               >
                 <span class="ref-icon">⎇</span> {{ branch }}
               </button>
-            }
-            @if (hasMoreBranches()) {
-              <div class="ref-more-hint">scroll for more</div>
             }
           }
         }

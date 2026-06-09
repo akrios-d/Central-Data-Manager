@@ -4,6 +4,7 @@ export interface ReleaseEnv {
   id: string;
   name: string;
   order: number;
+  color?: string;
 }
 
 export interface RepoEntry {

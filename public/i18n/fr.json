@@ -293,7 +293,7 @@
     "cancel": "Annuler",
     "manageEnvs": "Gérer les environnements",
     "newEnvPlaceholder": "Nom de l'environnement…",
-    "addEnv": "+ Ajouter",
+    "addEnv": "+ Ajouter un environnement",
     "clickToRename": "(cliquez pour renommer)",
     "repository": "Dépôt",
     "removeRepo": "Supprimer le dépôt",
@@ -313,7 +313,16 @@
     "viewCommits": "Commits",
     "viewChangelog": "Changelog",
     "copyMarkdown": "Copier en Markdown",
-    "alreadyAdded": "déjà ajouté"
+    "alreadyAdded": "déjà ajouté",
+    "commit": "Commit",
+    "hashPlaceholder": "SHA ou hash court…",
+    "apply": "Appliquer",
+    "tabControl": "Contrôle des releases",
+    "tabManage": "Gérer les dépôts",
+    "reposHeading": "Dépôts",
+    "envsHeading": "Environnements",
+    "tabEnvs": "Gérer les environnements",
+    "searchRepos": "Rechercher par dépôt ou version…"
   },
   "health": {
     "title": "Santé des pipelines",

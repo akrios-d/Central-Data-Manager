@@ -293,7 +293,7 @@
     "cancel": "Cancel",
     "manageEnvs": "Manage Environments",
     "newEnvPlaceholder": "Environment name…",
-    "addEnv": "+ Add",
+    "addEnv": "+ Add Environment",
     "clickToRename": "(click to rename)",
     "repository": "Repository",
     "removeRepo": "Remove repository",
@@ -313,7 +313,16 @@
     "viewCommits": "Commits",
     "viewChangelog": "Changelog",
     "copyMarkdown": "Copy Markdown",
-    "alreadyAdded": "already added"
+    "alreadyAdded": "already added",
+    "commit": "Commit",
+    "hashPlaceholder": "Commit SHA or short hash…",
+    "apply": "Apply",
+    "tabControl": "Release Control",
+    "tabManage": "Manage Repositories",
+    "reposHeading": "Repositories",
+    "envsHeading": "Environments",
+    "tabEnvs": "Manage Environments",
+    "searchRepos": "Search by repo or version…"
   },
   "health": {
     "title": "Pipeline Health",

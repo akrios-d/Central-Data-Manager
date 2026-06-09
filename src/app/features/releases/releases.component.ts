@@ -53,22 +53,31 @@ export class ReleasesComponent {
 
   readonly envs = this.svc.envs;
   readonly repos = this.svc.repos;
+  repoTableSearch = signal('');
+  readonly filteredRepos2 = computed(() => {
+    const q = this.repoTableSearch().toLowerCase().trim();
+    return q
+      ? this.repos().filter(
+          (r) =>
+            r.repoName.toLowerCase().includes(q) ||
+            Object.values(r.deployments).some((v) => v.toLowerCase().includes(q)),
+        )
+      : this.repos();
+  });
 
   // ── Cell ref popup ──────────────────────────────────────────────────────────
   editTarget = signal<EditTarget | null>(null);
   currentRef = signal('');
   popupSearch = signal('');
   showRefPopup = signal(false);
-  refMode = signal<'tags' | 'branches'>('tags');
+  refMode = signal<'tags' | 'branches' | 'hash'>('tags');
+  commitHash = signal('');
 
   private readonly tagsCache = new Map<string, string[]>();
   private readonly branchesCache = new Map<string, string[]>();
   cellTags = signal<string[]>([]);
   cellBranches = signal<string[]>([]);
   refsLoading = signal(false);
-  visibleTagCount = signal(5);
-  visibleBranchCount = signal(5);
-
   filteredCellTags = computed(() => {
     const q = this.popupSearch().toLowerCase();
     return q ? this.cellTags().filter((t) => t.toLowerCase().includes(q)) : this.cellTags();
@@ -79,12 +88,9 @@ export class ReleasesComponent {
     return q ? this.cellBranches().filter((b) => b.toLowerCase().includes(q)) : this.cellBranches();
   });
 
-  displayedTags = computed(() => this.filteredCellTags().slice(0, this.visibleTagCount()));
-  displayedBranches = computed(() =>
-    this.filteredCellBranches().slice(0, this.visibleBranchCount()),
-  );
-  hasMoreTags = computed(() => this.filteredCellTags().length > this.visibleTagCount());
-  hasMoreBranches = computed(() => this.filteredCellBranches().length > this.visibleBranchCount());
+  readonly POPUP_LIMIT = 5;
+  displayedTags = computed(() => this.filteredCellTags().slice(0, this.POPUP_LIMIT));
+  displayedBranches = computed(() => this.filteredCellBranches().slice(0, this.POPUP_LIMIT));
 
   // ── Add-repo form ───────────────────────────────────────────────────────────
   showAddRepo = signal(false);
@@ -154,6 +160,7 @@ export class ReleasesComponent {
   });
 
   // ── Manage environments ─────────────────────────────────────────────────────
+  activeRelTab = signal<'control' | 'manage' | 'envs'>('control');
   managingEnvs = signal(false);
   newEnvName = signal('');
   editingEnvId = signal<string | null>(null);
@@ -171,11 +178,6 @@ export class ReleasesComponent {
         }, 0);
       }
     });
-    effect(() => {
-      this.popupSearch();
-      this.visibleTagCount.set(5);
-      this.visibleBranchCount.set(5);
-    });
   }
 
   // ── Cell ref popup ───────────────────────────────────────────────────────────
@@ -184,11 +186,10 @@ export class ReleasesComponent {
     this.editTarget.set({ repoId, envId });
     this.currentRef.set(currentVal);
     this.popupSearch.set('');
+    this.commitHash.set('');
     this.cellTags.set([]);
     this.cellBranches.set([]);
     this.refMode.set('tags');
-    this.visibleTagCount.set(5);
-    this.visibleBranchCount.set(5);
     this.showRefPopup.set(true);
 
     const repo = this.repos().find((r) => r.id === repoId);
@@ -254,18 +255,8 @@ export class ReleasesComponent {
     this.closePopup();
   }
 
-  setRefMode(mode: 'tags' | 'branches'): void {
+  setRefMode(mode: 'tags' | 'branches' | 'hash'): void {
     this.refMode.set(mode);
-    this.visibleTagCount.set(5);
-    this.visibleBranchCount.set(5);
-  }
-
-  onListScroll(event: Event): void {
-    const el = event.target as HTMLElement;
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) {
-      if (this.refMode() === 'tags') this.visibleTagCount.update((n) => n + 10);
-      else this.visibleBranchCount.update((n) => n + 10);
-    }
   }
 
   closePopup(): void {

@@ -46,13 +46,19 @@ export class ReleaseService {
 
   // ── Environments ────────────────────────────────────────────────────────────
 
-  addEnv(name: string): void {
+  addEnv(name: string, color?: string): void {
     const env: ReleaseEnv = {
       id: crypto.randomUUID(),
       name: name.trim(),
       order: this._envs().length,
+      color,
     };
     this._envs.update((list) => [...list, env]);
+    this.saveEnvs();
+  }
+
+  updateEnvColor(id: string, color: string): void {
+    this._envs.update((list) => list.map((e) => (e.id === id ? { ...e, color } : e)));
     this.saveEnvs();
   }
 

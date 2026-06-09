@@ -293,7 +293,7 @@
     "cancel": "取消",
     "manageEnvs": "管理环境",
     "newEnvPlaceholder": "环境名称…",
-    "addEnv": "+ 添加",
+    "addEnv": "+ 添加环境",
     "clickToRename": "（点击重命名）",
     "repository": "仓库",
     "removeRepo": "移除仓库",
@@ -313,7 +313,16 @@
     "viewCommits": "提交",
     "viewChangelog": "更新日志",
     "copyMarkdown": "复制 Markdown",
-    "alreadyAdded": "已添加"
+    "alreadyAdded": "已添加",
+    "commit": "提交",
+    "hashPlaceholder": "提交 SHA 或短哈希…",
+    "apply": "应用",
+    "tabControl": "发布控制",
+    "tabManage": "管理仓库",
+    "reposHeading": "仓库",
+    "envsHeading": "环境",
+    "tabEnvs": "管理环境",
+    "searchRepos": "按仓库或版本搜索…"
   },
   "health": {
     "title": "流水线健康",
