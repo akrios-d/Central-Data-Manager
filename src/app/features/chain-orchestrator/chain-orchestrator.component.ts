@@ -528,21 +528,18 @@ export class ChainOrchestratorComponent {
       );
     } else if (mode.type === 'drawing-edge') {
       this.interaction.set({ ...mode, curX: x, curY: y });
-      // Use elementsFromPoint (plural) so the SVG preview-edge overlay doesn't block
-      // the in-port button sitting underneath it
-      const els = document.elementsFromPoint(touch.clientX, touch.clientY);
-      const portEl = els.find((e) => (e as HTMLElement).dataset?.['portInNodeId'] != null) as
-        | HTMLElement
-        | undefined;
-      const portNodeId =
-        portEl?.dataset['portInNodeId'] ??
-        (
-          els
-            .map((e) => (e as HTMLElement).closest?.('[data-port-in-node-id]'))
-            .find(Boolean) as HTMLElement | null
-        )?.dataset['portInNodeId'] ??
-        null;
-      this.hoveredInPortNodeId.set(portNodeId);
+      // Use canvas-space proximity detection: fingers are much larger than the
+      // 12px in-port circle, so hit-testing a single pixel is unreliable on mobile.
+      // Snap to any in-port within SNAP_RADIUS canvas px.
+      const SNAP_RADIUS = 36;
+      const portNode = this.graphNodes().find((n) => {
+        if (n.type === 'start' || n.id === mode.fromNodeId) return false;
+        // In-port sits at the left-centre of the node
+        const portX = n.x;
+        const portY = n.y + NODE_H / 2;
+        return Math.hypot(x - portX, y - portY) <= SNAP_RADIUS;
+      });
+      this.hoveredInPortNodeId.set(portNode?.id ?? null);
     }
   }
 
