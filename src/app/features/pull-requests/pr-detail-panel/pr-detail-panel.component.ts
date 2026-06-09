@@ -1,4 +1,12 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -21,6 +29,7 @@ export interface PullRequestDetail {
   selector: 'app-pr-detail-panel',
   imports: [DatePipe, TranslateModule, FormsModule],
   templateUrl: './pr-detail-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './pr-detail-panel.component.scss',
 })
 export class PrDetailPanelComponent {

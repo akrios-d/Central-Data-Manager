@@ -1,4 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -48,6 +55,7 @@ const PAGE_SIZE = 10;
   selector: 'app-pull-requests',
   imports: [FormsModule, TranslateModule, DatePipe, PrDetailPanelComponent],
   templateUrl: './pull-requests.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './pull-requests.component.scss',
 })
 export class PullRequestsComponent implements OnInit {

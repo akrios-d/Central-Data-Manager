@@ -1,4 +1,11 @@
-import { Component, input, output, computed, HostListener } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  computed,
+  HostListener,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { BoardWorkItem } from '../../../core/interfaces/boards-provider.interface';
@@ -8,6 +15,7 @@ import { MarkdownPipe } from '../../pipes/markdown.pipe';
   selector: 'app-work-item-panel',
   imports: [DatePipe, MarkdownPipe, TranslateModule],
   templateUrl: './work-item-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './work-item-panel.component.scss',
 })
 export class WorkItemPanelComponent {

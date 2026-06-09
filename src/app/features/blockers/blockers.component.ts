@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +42,7 @@ interface BEdge {
   standalone: true,
   imports: [CommonModule, DatePipe, TranslateModule, FormsModule],
   templateUrl: './blockers.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './blockers.component.scss',
 })
 export class BlockersComponent implements OnInit {

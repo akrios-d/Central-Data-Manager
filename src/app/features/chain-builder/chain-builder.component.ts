@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -28,6 +28,7 @@ interface StepInput {
   standalone: true,
   imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './chain-builder.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chain-builder.component.scss',
 })
 export class ChainBuilderComponent {

@@ -6,6 +6,7 @@ import {
   computed,
   inject,
   signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -47,6 +48,7 @@ type Interaction =
   standalone: true,
   imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './chain-orchestrator.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './chain-orchestrator.component.scss',
 })
 export class ChainOrchestratorComponent {

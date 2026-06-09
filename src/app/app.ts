@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TokenService } from './core/services/token.service';
@@ -12,6 +12,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent, TranslateModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { '(window:resize)': 'onResize()' },
 })
 export class App {

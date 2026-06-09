@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -11,6 +11,7 @@ type FilterKey = 'all' | 'token' | 'chain' | 'graph' | 'session' | 'settings';
   selector: 'app-audit-log',
   imports: [FormsModule, TranslateModule, DatePipe],
   templateUrl: './audit-log.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './audit-log.component.scss',
 })
 export class AuditLogComponent {

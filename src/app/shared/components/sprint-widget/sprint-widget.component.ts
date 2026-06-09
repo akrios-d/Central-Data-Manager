@@ -1,4 +1,11 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,6 +25,7 @@ interface StateGroup {
   selector: 'app-sprint-widget',
   imports: [DatePipe, RouterLink, WorkItemPanelComponent, TranslateModule],
   templateUrl: './sprint-widget.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sprint-widget.component.scss',
 })
 export class SprintWidgetComponent implements OnInit {

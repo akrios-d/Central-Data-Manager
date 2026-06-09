@@ -1,4 +1,12 @@
-import { Component, ElementRef, inject, signal, effect, computed } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  signal,
+  effect,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReleaseService } from '../../core/services/release.service';
@@ -43,6 +51,7 @@ interface EnvDeployment {
   standalone: true,
   imports: [FormsModule, TranslateModule],
   templateUrl: './releases.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './releases.component.scss',
 })
 export class ReleasesComponent {

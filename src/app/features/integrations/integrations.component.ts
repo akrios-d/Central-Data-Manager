@@ -1,4 +1,12 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -23,6 +31,7 @@ const DEFAULT_MAPPINGS: MappingRow[] = [];
   standalone: true,
   imports: [FormsModule, DatePipe, TranslateModule],
   templateUrl: './integrations.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './integrations.component.scss',
 })
 export class IntegrationsComponent implements OnInit, OnDestroy {

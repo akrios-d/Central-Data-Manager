@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -11,6 +11,7 @@ type Provider = 'github' | 'gitlab' | 'devops' | 'jira';
   selector: 'app-onboarding',
   imports: [FormsModule, TranslateModule],
   templateUrl: './onboarding.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './onboarding.component.scss',
 })
 export class OnboardingComponent {

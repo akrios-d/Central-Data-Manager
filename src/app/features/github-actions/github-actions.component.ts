@@ -1,4 +1,11 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -22,6 +29,7 @@ interface WorkflowStat {
   selector: 'app-github-actions',
   imports: [FormsModule, DatePipe, RunStatusPipe, TranslateModule],
   templateUrl: './github-actions.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './github-actions.component.scss',
 })
 export class GithubActionsComponent implements OnInit {

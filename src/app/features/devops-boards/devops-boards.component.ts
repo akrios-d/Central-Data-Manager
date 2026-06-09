@@ -1,4 +1,11 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  OnInit,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,6 +27,7 @@ interface ColumnConfig {
   selector: 'app-devops-boards',
   imports: [DatePipe, FormsModule, WorkItemPanelComponent, TranslateModule],
   templateUrl: './devops-boards.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './devops-boards.component.scss',
 })
 export class DevopsBoardsComponent implements OnInit {
