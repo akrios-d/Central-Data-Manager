@@ -15,7 +15,10 @@ import { GitLabApiService, GlMergeRequest } from '../../core/services/gitlab-api
 import { CiRepo } from '../../core/interfaces/ci-provider.interface';
 import { CiProviderService } from '../../core/services/ci-provider.service';
 import { PinnedReposService } from '../../core/services/pinned-repos.service';
-import { PrDetailPanelComponent } from './pr-detail-panel/pr-detail-panel.component';
+import {
+  PrDetailPanelComponent,
+  PullRequestDetail,
+} from './pr-detail-panel/pr-detail-panel.component';
 import { ToastService } from '../../shared/services/toast.service';
 import { catchError, of } from 'rxjs';
 
@@ -33,6 +36,7 @@ export interface PullRequest {
   baseBranch: string;
   labels: { name: string; color?: string }[];
   reviewers: string[];
+  reviewDecision?: 'approved' | 'changes_requested' | 'review_required' | null;
 }
 
 type PrStateFilter = 'open' | 'closed' | 'all';
@@ -209,6 +213,14 @@ export class PullRequestsComponent implements OnInit {
   reload(): void {
     const repo = this.selectedRepo();
     if (repo) this.loadPrs(repo);
+  }
+
+  onReviewDecisionLoaded(e: { prId: number; decision: PullRequestDetail['reviewDecision'] }): void {
+    this.prs.update((list) =>
+      list.map((pr) => (pr.id === e.prId ? { ...pr, reviewDecision: e.decision } : pr)),
+    );
+    const sel = this.selectedPr();
+    if (sel?.id === e.prId) this.selectedPr.set({ ...sel, reviewDecision: e.decision });
   }
 
   onPrUpdated(): void {

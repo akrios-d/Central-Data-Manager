@@ -153,9 +153,19 @@
                     </span>
                   }
                   @if (pr.state === 'open' && pr.reviewers.length > 0) {
-                    <span class="pr-review-badge pr-review-pending"
-                      >⏳ {{ 'prs.awaitingReview' | translate }}</span
-                    >
+                    @if (pr.reviewDecision === 'approved') {
+                      <span class="pr-review-badge pr-review-approved"
+                        >✓ {{ 'prs.reviewApproved' | translate }}</span
+                      >
+                    } @else if (pr.reviewDecision === 'changes_requested') {
+                      <span class="pr-review-badge pr-review-changes"
+                        >✗ {{ 'prs.reviewChanges' | translate }}</span
+                      >
+                    } @else {
+                      <span class="pr-review-badge pr-review-pending"
+                        >⏳ {{ 'prs.awaitingReview' | translate }}</span
+                      >
+                    }
                   }
                 </div>
                 @if (pr.labels.length) {

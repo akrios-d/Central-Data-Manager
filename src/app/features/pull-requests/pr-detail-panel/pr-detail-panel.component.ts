@@ -44,6 +44,10 @@ export class PrDetailPanelComponent {
   readonly isGitHub = input.required<boolean>();
   readonly closed = output<void>();
   readonly prUpdated = output<void>();
+  readonly reviewDecisionLoaded = output<{
+    prId: number;
+    decision: PullRequestDetail['reviewDecision'];
+  }>();
 
   readonly loading = signal(false);
   readonly detail = signal<PullRequestDetail | null>(null);
@@ -86,7 +90,7 @@ export class PrDetailPanelComponent {
               reviewerMap.set(r.user.login, r.state);
             }
           }
-          this.detail.set({
+          const detailVal: PullRequestDetail = {
             body: d.body,
             additions: d.additions,
             deletions: d.deletions,
@@ -98,7 +102,9 @@ export class PrDetailPanelComponent {
               login,
               state,
             })),
-          });
+          };
+          this.detail.set(detailVal);
+          this.reviewDecisionLoaded.emit({ prId: this.pr().id, decision: reviewDecision });
         }
         this.loading.set(false);
       });

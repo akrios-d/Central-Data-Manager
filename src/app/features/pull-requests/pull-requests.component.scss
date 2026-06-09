@@ -418,4 +418,14 @@
     background: var(--surface-2);
     color: var(--text-muted);
   }
+
+  &.pr-review-approved {
+    background: rgba(63, 185, 80, 0.15);
+    color: var(--success, #3fb950);
+  }
+
+  &.pr-review-changes {
+    background: rgba(248, 81, 73, 0.15);
+    color: var(--danger, #f85149);
+  }
 }
