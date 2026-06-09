@@ -96,7 +96,7 @@ export class GenericSourceService {
     return this.buildRequest(source, headers).pipe(
       map((data) => {
         const { status, rawStatus, checkResults } = this.resolveChecks(source, data);
-        const preview = data != null ? JSON.stringify(data, null, 2).slice(0, 400) : '';
+        const preview = data != null ? JSON.stringify(data, null, 2) : '';
         return {
           status,
           rawStatus,

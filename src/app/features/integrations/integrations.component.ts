@@ -69,6 +69,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   );
   formChecks = signal<CheckFormItem[]>([defaultCheck()]);
   editingCheckIdx = signal<number | null>(null);
+  checkTestResult = signal<{ raw: string; mapped: string } | { error: string } | null>(null);
   formNamePath = signal('');
   formUrlPath = signal('');
   formMethod = signal<'GET' | 'POST'>('GET');
@@ -85,6 +86,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     responsePreview?: string;
     error?: string;
   } | null>(null);
+  readonly previewPaths = signal<string[]>([]);
 
   // ── Options ────────────────────────────────────────────────────────────────
   readonly authOptions: { value: 'none' | 'bearer' | 'basic'; label: string }[] = [
@@ -253,6 +255,65 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     });
   }
 
+  testCheck(idx: number): void {
+    const preview = this.testResult()?.responsePreview;
+    if (!preview) {
+      this.checkTestResult.set({ error: 'Run a connection test first' });
+      return;
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(preview);
+    } catch {
+      this.checkTestResult.set({ error: 'Could not parse response JSON' });
+      return;
+    }
+    const check = this.formChecks()[idx];
+    if (!check?.fieldPath) {
+      this.checkTestResult.set({ error: 'Enter a field path first' });
+      return;
+    }
+    const raw = this.resolvePath(parsed, check.fieldPath);
+    const rawStr = raw !== undefined && raw !== null ? String(raw) : '(not found)';
+    const match = check.mappings.find((m) => m.raw === rawStr);
+    this.checkTestResult.set({ raw: rawStr, mapped: match?.mapped ?? 'unknown' });
+  }
+
+  private resolvePath(obj: unknown, path: string): unknown {
+    if (!path.trim()) return undefined;
+    return path
+      .split('.')
+      .reduce(
+        (cur, key) =>
+          cur != null && typeof cur === 'object'
+            ? (cur as Record<string, unknown>)[key]
+            : undefined,
+        obj,
+      );
+  }
+
+  private extractPaths(obj: unknown, prefix = ''): string[] {
+    const paths: string[] = [];
+    if (obj === null || typeof obj !== 'object') return paths;
+    const entries = Array.isArray(obj)
+      ? (obj as unknown[]).slice(0, 1).map((v, i) => [String(i), v] as [string, unknown])
+      : (Object.entries(obj as Record<string, unknown>) as [string, unknown][]);
+    for (const [key, val] of entries) {
+      const p = prefix ? `${prefix}.${key}` : key;
+      paths.push(p);
+      if (val !== null && typeof val === 'object') {
+        paths.push(...this.extractPaths(val, p));
+      }
+    }
+    return paths;
+  }
+
+  copyPreview(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      this.toasts.show('Copied to clipboard', 'success');
+    });
+  }
+
   testSource(): void {
     const url = this.formUrl().trim();
     if (!url) {
@@ -299,6 +360,12 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.testResult.set(null);
     this.svc.testFetch(tempSource).subscribe({
       next: (result) => {
+        try {
+          const parsed: unknown = JSON.parse(result.responsePreview);
+          this.previewPaths.set(this.extractPaths(parsed));
+        } catch {
+          this.previewPaths.set([]);
+        }
         this.testResult.set({
           ok: true,
           status: result.status,
@@ -370,10 +437,12 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   }
 
   openCheckPanel(idx: number): void {
+    this.checkTestResult.set(null);
     this.editingCheckIdx.set(idx);
   }
 
   closeCheckPanel(): void {
+    this.checkTestResult.set(null);
     this.editingCheckIdx.set(null);
   }
 

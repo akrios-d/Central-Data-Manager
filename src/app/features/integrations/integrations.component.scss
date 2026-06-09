@@ -698,6 +698,14 @@
   }
 }
 
+.resp-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .resp-preview-body {
   font-family: monospace;
   font-size: 0.72rem;
@@ -708,7 +716,7 @@
   overflow-x: auto;
   white-space: pre;
   color: var(--text-muted);
-  max-height: 180px;
+  max-height: 380px;
   overflow-y: auto;
 }
 
@@ -767,6 +775,25 @@
   min-width: 0;
   font-family: monospace;
   font-size: 0.82rem;
+}
+
+.check-test-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.check-test-raw {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.check-test-error {
+  font-size: 0.8rem;
+  color: var(--danger);
 }
 
 .header-val {

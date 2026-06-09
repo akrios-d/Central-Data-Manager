@@ -164,7 +164,17 @@
                   <p class="form-hint mt-1">{{ 'integrations.testNoChecks' | translate }}</p>
                 }
                 @if (tr.responsePreview) {
-                  <pre class="resp-preview-body mt-1">{{ tr.responsePreview }}</pre>
+                  <div class="resp-preview-header">
+                    <span class="text-muted text-sm">Response</span>
+                    <button
+                      class="btn btn-sm btn-outline"
+                      type="button"
+                      (click)="copyPreview(tr.responsePreview)"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <pre class="resp-preview-body">{{ tr.responsePreview }}</pre>
                 }
               }
             </div>
@@ -476,10 +486,39 @@
                 <input
                   class="form-control"
                   placeholder="e.g. result  or  lastBuild.result"
+                  list="check-path-options"
                   [ngModel]="check.fieldPath"
                   (ngModelChange)="setCheckFieldPath(ci, $event)"
                 />
+                @if (previewPaths().length > 0) {
+                  <datalist id="check-path-options">
+                    @for (p of previewPaths(); track p) {
+                      <option [value]="p"></option>
+                    }
+                  </datalist>
+                }
                 <p class="form-hint">{{ 'integrations.statusPathHint2' | translate }}</p>
+                <div class="check-test-row">
+                  <button
+                    class="btn btn-sm btn-outline"
+                    type="button"
+                    [disabled]="!testResult()"
+                    (click)="testCheck(ci)"
+                  >
+                    ▶ Test path
+                  </button>
+                  @if (checkTestResult(); as ctr) {
+                    @if ($any(ctr).error) {
+                      <span class="check-test-error">{{ $any(ctr).error }}</span>
+                    } @else {
+                      <span class="check-test-raw">"{{ $any(ctr).raw }}"</span>
+                      <span class="mapping-arrow">→</span>
+                      <span class="cr-mapped cr-mapped-{{ $any(ctr).mapped }}">{{
+                        $any(ctr).mapped
+                      }}</span>
+                    }
+                  }
+                </div>
               </div>
 
               <div class="form-group">
