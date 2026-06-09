@@ -333,8 +333,20 @@ export class OrchestratorExecutorService {
   // ── Integration polling ─────────────────────────────────────────────────────
 
   private async pollIntegration(source: GenericSource): Promise<{ ok: boolean; error?: string }> {
-    const maxPolls = this.settings.maxPolls();
-    const interval = this.settings.pollIntervalSec() * 1000;
+    // One-time mode: single fetch, use immediate response
+    if (source.orchMode === 'once') {
+      try {
+        const result = await firstValueFrom(this.genericSvc.testFetch(source));
+        if (result.status === 'success') return { ok: true };
+        return { ok: false, error: result.rawStatus || result.status };
+      } catch {
+        return { ok: false, error: 'Request failed' };
+      }
+    }
+
+    // Poll mode (default): keep fetching until success/failure/timeout
+    const maxPolls = source.orchMaxPolls ?? this.settings.maxPolls();
+    const interval = (source.orchPollIntervalSec ?? this.settings.pollIntervalSec()) * 1000;
     await new Promise<void>((r) => setTimeout(r, 2000));
 
     for (let polls = 0; polls <= maxPolls; polls++) {

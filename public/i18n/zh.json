@@ -488,6 +488,21 @@
     "save": "保存",
     "delete": "删除",
     "test": "测试",
-    "corsNote": "端点必须允许来自此浏览器源的 CORS 请求。"
+    "corsNote": "端点必须允许来自此浏览器源的 CORS 请求。",
+    "body": "请求体 (JSON)",
+    "bodyHint": "{\"键\": \"值\"}",
+    "pollEnabled": "自动轮询",
+    "pollEnabledHint": "在后台定期获取此端点。",
+    "enabledHint": "允许此数据源在编排器中使用。",
+    "statusPathHint2": "JSON响应中状态字段的点路径。若响应为{\"result\":\"SUCCESS\"}，输入 result。",
+    "statusMapHint": "将API返回的原始值（左）映射到CDM状态（右）。示例 — 健康检查：UP→success，DOWN→failure；CI/CD：success→success，failed→failure，running→running。",
+    "namePathHint2": "可选。节点弹窗中显示标签的JSON路径。",
+    "urlPathHint2": "可选。节点弹窗中显示链接的JSON路径。",
+    "orchMode": "编排器执行模式",
+    "orchModeHint": "控制编排器在作为节点运行时如何等待此数据源。单次：立即请求并映射结果。轮询：持续请求直到成功/失败或达到上限。",
+    "orchModeOnce": "单次",
+    "orchModePoll": "轮询",
+    "orchInterval": "轮询间隔 (s)",
+    "orchMaxPolls": "最大轮询次数"
   }
 }

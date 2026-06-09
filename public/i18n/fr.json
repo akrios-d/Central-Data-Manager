@@ -488,6 +488,21 @@
     "save": "Enregistrer",
     "delete": "Supprimer",
     "test": "Tester",
-    "corsNote": "L'endpoint doit autoriser les requêtes CORS depuis cette origine."
+    "corsNote": "L'endpoint doit autoriser les requêtes CORS depuis cette origine.",
+    "body": "Corps de la requête (JSON)",
+    "bodyHint": "{\"clé\": \"valeur\"}",
+    "pollEnabled": "Polling automatique",
+    "pollEnabledHint": "Interroge cet endpoint périodiquement en arrière-plan.",
+    "enabledHint": "Autorise cette source à être utilisée dans l'Orchestrateur.",
+    "statusPathHint2": "Chemin JSON vers le champ de statut. Si la réponse est {\"result\":\"SUCCESS\"}, tapez result.",
+    "statusMapHint": "Associez chaque valeur brute de l'API (gauche) à un statut CDM (droite). Exemples — health: UP→success, DOWN→failure; CI/CD: success→success, failed→failure; OpenShift: Running→success, Failed→failure.",
+    "namePathHint2": "Optionnel. Chemin JSON vers un libellé affiché dans le popup du nœud.",
+    "urlPathHint2": "Optionnel. Chemin JSON vers un lien affiché dans le popup du nœud.",
+    "orchMode": "Mode d'exécution dans l'orchestrateur",
+    "orchModeHint": "Contrôle comment l'orchestrateur attend cette source lors de l'exécution en tant que nœud. Une fois : effectue une requête et mappe le résultat immédiatement. Poll : continue jusqu'au succès/échec ou à la limite.",
+    "orchModeOnce": "Une fois",
+    "orchModePoll": "Poll",
+    "orchInterval": "Intervalle de poll (s)",
+    "orchMaxPolls": "Polls max"
   }
 }

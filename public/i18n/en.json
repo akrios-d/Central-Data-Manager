@@ -488,6 +488,21 @@
     "save": "Save",
     "delete": "Delete",
     "test": "Test",
-    "corsNote": "The endpoint must allow CORS requests from this browser origin."
+    "corsNote": "The endpoint must allow CORS requests from this browser origin.",
+    "body": "Request body (JSON)",
+    "bodyHint": "{\"key\": \"value\"}",
+    "pollEnabled": "Auto-poll",
+    "pollEnabledHint": "Fetch this endpoint repeatedly in the background.",
+    "enabledHint": "Allow this source to run in the Orchestrator.",
+    "statusPathHint2": "Dot-path to the status field in the JSON response. If the response is {\"result\":\"SUCCESS\"}, type result. For nested fields like {\"build\":{\"status\":\"OK\"}}, type build.status.",
+    "statusMapHint": "Map each raw value your API returns (left) to a CDM status (right). Examples — health endpoints: UP→success, DOWN→failure; CI/CD: success→success, failed→failure, running→running; OpenShift: Running→success, Failed→failure, Pending→running.",
+    "namePathHint2": "Optional. Dot-path to a label shown in the node popup, e.g. fullDisplayName.",
+    "urlPathHint2": "Optional. Dot-path to a link shown in the node popup, e.g. lastBuild.url.",
+    "orchMode": "Orchestrator execution mode",
+    "orchModeHint": "Controls how the orchestrator waits on this source when it runs as a node. One-time: fetches once and maps the result immediately. Poll: keeps fetching until success/failure or the poll limit is reached.",
+    "orchModeOnce": "One-time",
+    "orchModePoll": "Poll",
+    "orchInterval": "Poll interval (s)",
+    "orchMaxPolls": "Max polls"
   }
 }

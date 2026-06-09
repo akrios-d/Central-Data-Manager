@@ -488,6 +488,21 @@
     "save": "Salvar",
     "delete": "Excluir",
     "test": "Testar",
-    "corsNote": "O endpoint deve permitir requisições CORS desta origem."
+    "corsNote": "O endpoint deve permitir requisições CORS desta origem.",
+    "body": "Corpo da requisição (JSON)",
+    "bodyHint": "{\"chave\": \"valor\"}",
+    "pollEnabled": "Polling automático",
+    "pollEnabledHint": "Faz chamadas periódicas em segundo plano.",
+    "enabledHint": "Permite que esta fonte seja usada no Orquestrador.",
+    "statusPathHint2": "Caminho no JSON para o campo de status. Se a resposta for {\"result\":\"SUCCESS\"}, escreva result. Para campos aninhados como {\"build\":{\"status\":\"OK\"}}, escreva build.status.",
+    "statusMapHint": "Mapeie cada valor bruto retornado pela API (esquerda) para um status CDM (direita). Exemplos — health endpoints: UP→success, DOWN→failure; CI/CD: success→success, failed→failure, running→running; OpenShift: Running→success, Failed→failure, Pending→running.",
+    "namePathHint2": "Opcional. Caminho no JSON para um rótulo exibido no popup do nó.",
+    "urlPathHint2": "Opcional. Caminho no JSON para um link exibido no popup do nó.",
+    "orchMode": "Modo de execução no orquestrador",
+    "orchModeHint": "Define como o orquestrador aguarda esta fonte ao executar como nó. Uma vez: faz uma requisição e mapeia o resultado imediatamente. Poll: continua tentando até sucesso/falha ou atingir o limite.",
+    "orchModeOnce": "Uma vez",
+    "orchModePoll": "Poll",
+    "orchInterval": "Intervalo de poll (s)",
+    "orchMaxPolls": "Máx. polls"
   }
 }

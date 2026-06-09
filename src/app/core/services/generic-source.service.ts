@@ -60,12 +60,14 @@ export class GenericSourceService {
       if (!enabledIds.has(id)) this.clearTimer(id);
     }
 
-    // Start timers for newly enabled sources
+    // Start timers for newly enabled sources (skip if pollIntervalSec === 0)
     for (const source of enabled) {
       if (!this.timers.has(source.id)) {
-        this.poll(source);
-        const timer = setInterval(() => this.poll(source), source.pollIntervalSec * 1000);
-        this.timers.set(source.id, timer);
+        if (source.pollIntervalSec > 0) {
+          this.poll(source);
+          const timer = setInterval(() => this.poll(source), source.pollIntervalSec * 1000);
+          this.timers.set(source.id, timer);
+        }
       }
     }
   }
@@ -76,7 +78,7 @@ export class GenericSourceService {
 
   poll(source: GenericSource): void {
     const headers = this.buildHeaders(source);
-    this.http.get<unknown>(source.url, { headers }).subscribe({
+    this.buildRequest(source, headers).subscribe({
       next: (data) => this.applyResult(source, data),
       error: (err) => this.applyError(source, err),
     });
@@ -89,7 +91,7 @@ export class GenericSourceService {
     runUrl?: string;
   }> {
     const headers = this.buildHeaders(source);
-    return this.http.get<unknown>(source.url, { headers }).pipe(
+    return this.buildRequest(source, headers).pipe(
       map((data) => {
         const rawStr = this.resolveStr(data, source.statusPath) ?? '';
         const mapped = source.mappings.find((m) => m.raw === rawStr)?.mapped;
@@ -139,6 +141,19 @@ export class GenericSourceService {
       localStorage.setItem(RESULTS_KEY, JSON.stringify(next));
       return next;
     });
+  }
+
+  private buildRequest(
+    source: GenericSource,
+    headers: Record<string, string>,
+  ): Observable<unknown> {
+    if (source.method === 'POST') {
+      const body = source.body?.trim() ? JSON.parse(source.body) : null;
+      return this.http.post<unknown>(source.url, body, {
+        headers: { 'Content-Type': 'application/json', ...headers },
+      });
+    }
+    return this.http.get<unknown>(source.url, { headers });
   }
 
   private buildHeaders(source: GenericSource): Record<string, string> {

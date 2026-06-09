@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   GenericSource,
@@ -16,18 +16,12 @@ interface MappingRow {
   mapped: SourceStatus | '';
 }
 
-const DEFAULT_MAPPINGS: MappingRow[] = [
-  { raw: 'SUCCESS', mapped: 'success' },
-  { raw: 'FAILURE', mapped: 'failure' },
-  { raw: 'UNSTABLE', mapped: 'failure' },
-  { raw: 'BUILDING', mapped: 'running' },
-  { raw: 'ABORTED', mapped: 'failure' },
-];
+const DEFAULT_MAPPINGS: MappingRow[] = [];
 
 @Component({
   selector: 'app-integrations',
   standalone: true,
-  imports: [FormsModule, DatePipe, TranslateModule],
+  imports: [FormsModule, DatePipe, DecimalPipe, TranslateModule],
   templateUrl: './integrations.component.html',
   styleUrl: './integrations.component.scss',
 })
@@ -49,11 +43,16 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
   formUser = signal('');
   formPass = signal('');
   formInterval = signal(30);
-  formEnabled = signal(true);
+  formPollEnabled = signal(true);
+  formOrchMode = signal<'once' | 'poll'>('poll');
+  formOrchInterval = signal(6);
+  formOrchMaxPolls = signal(20);
   formStatusPath = signal('');
   formMappings = signal<MappingRow[]>(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
   formNamePath = signal('');
   formUrlPath = signal('');
+  formMethod = signal<'GET' | 'POST'>('GET');
+  formBody = signal('');
 
   // ── Test state ─────────────────────────────────────────────────────────────
   testLoading = signal(false);
@@ -93,12 +92,17 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.selectedId.set(source.id);
     this.formName.set(source.name);
     this.formUrl.set(source.url);
+    this.formMethod.set(source.method ?? 'GET');
+    this.formBody.set(source.body ?? '');
     this.formAuthType.set(source.authType);
     this.formToken.set(source.authToken ?? '');
     this.formUser.set(source.authUser ?? '');
     this.formPass.set(source.authPass ?? '');
-    this.formInterval.set(source.pollIntervalSec);
-    this.formEnabled.set(source.enabled);
+    this.formPollEnabled.set(source.pollIntervalSec > 0);
+    this.formInterval.set(source.pollIntervalSec > 0 ? source.pollIntervalSec : 30);
+    this.formOrchMode.set(source.orchMode ?? 'poll');
+    this.formOrchInterval.set(source.orchPollIntervalSec ?? 6);
+    this.formOrchMaxPolls.set(source.orchMaxPolls ?? 20);
     this.formStatusPath.set(source.statusPath);
     this.formMappings.set(source.mappings.map((m) => ({ ...m })));
     this.formNamePath.set(source.namePath ?? '');
@@ -111,12 +115,17 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     this.selectedId.set('new');
     this.formName.set('');
     this.formUrl.set('');
+    this.formMethod.set('GET');
+    this.formBody.set('');
     this.formAuthType.set('none');
     this.formToken.set('');
     this.formUser.set('');
     this.formPass.set('');
     this.formInterval.set(30);
-    this.formEnabled.set(true);
+    this.formPollEnabled.set(true);
+    this.formOrchMode.set('poll');
+    this.formOrchInterval.set(6);
+    this.formOrchMaxPolls.set(20);
     this.formStatusPath.set('');
     this.formMappings.set(DEFAULT_MAPPINGS.map((m) => ({ ...m })));
     this.formNamePath.set('');
@@ -139,22 +148,28 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
     }
     const currentId = this.selectedId();
     const id = currentId === 'new' || !currentId ? crypto.randomUUID() : currentId;
+    const method = this.formMethod();
     const source: GenericSource = {
       id,
       name,
       url,
+      method,
+      body: method === 'POST' ? this.formBody().trim() || undefined : undefined,
       authType: this.formAuthType(),
       authToken: this.formToken().trim() || undefined,
       authUser: this.formUser().trim() || undefined,
       authPass: this.formPass() || undefined,
-      pollIntervalSec: Math.max(5, this.formInterval()),
-      enabled: this.formEnabled(),
+      pollIntervalSec: this.formPollEnabled() ? Math.max(5, this.formInterval()) : 0,
+      enabled: true,
       statusPath: this.formStatusPath().trim(),
       mappings: this.formMappings().filter(
         (m): m is GenericSourceMapping => !!m.raw.trim() && !!m.mapped,
       ),
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
+      orchMode: this.formOrchMode(),
+      orchPollIntervalSec: this.formOrchMode() === 'poll' ? this.formOrchInterval() : undefined,
+      orchMaxPolls: this.formOrchMode() === 'poll' ? this.formOrchMaxPolls() : undefined,
       createdAt: this.selectedSource()?.createdAt ?? new Date().toISOString(),
     };
     this.svc.saveSource(source);
@@ -181,10 +196,13 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       this.toasts.show('Enter a URL first', 'danger');
       return;
     }
+    const testMethod = this.formMethod();
     const tempSource: GenericSource = {
       id: '__test__',
       name: 'test',
       url,
+      method: testMethod,
+      body: testMethod === 'POST' ? this.formBody().trim() || undefined : undefined,
       authType: this.formAuthType(),
       authToken: this.formToken().trim() || undefined,
       authUser: this.formUser().trim() || undefined,
@@ -197,6 +215,7 @@ export class IntegrationsComponent implements OnInit, OnDestroy {
       ),
       namePath: this.formNamePath().trim() || undefined,
       urlPath: this.formUrlPath().trim() || undefined,
+      orchMode: 'once',
       createdAt: '',
     };
     this.testLoading.set(true);
