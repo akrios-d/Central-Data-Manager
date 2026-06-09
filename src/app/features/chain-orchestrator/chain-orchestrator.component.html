@@ -266,6 +266,19 @@
                     selectedEdgeId() === edge.id ? 'url(#orch-arr-sel)' : 'url(#orch-arr)'
                   "
                 />
+                @if (selectedEdgeId() === edge.id) {
+                  @let mid = getEdgeMidpoint(edge);
+                  <g
+                    class="orch-edge-del-btn"
+                    [attr.transform]="'translate(' + mid.x + ',' + mid.y + ')'"
+                    (click)="removeEdge(edge.id, $event)"
+                    role="button"
+                    aria-label="Remove edge"
+                  >
+                    <circle r="11" />
+                    <text text-anchor="middle" dominant-baseline="middle">✕</text>
+                  </g>
+                }
               }
 
               @if (isDrawingEdge()) {

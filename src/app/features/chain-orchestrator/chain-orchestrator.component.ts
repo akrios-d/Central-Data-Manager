@@ -648,6 +648,7 @@ export class ChainOrchestratorComponent {
     } else if (edgeId) {
       this.graphEdges.update((es) => es.filter((e) => e.id !== edgeId));
       this.selectedEdgeId.set(null);
+      this.persistEdits();
     }
   }
 
@@ -688,6 +689,36 @@ export class ChainOrchestratorComponent {
     const to = this.graphNodes().find((n) => n.id === edge.toId);
     if (!from || !to) return '';
     return this.bezier(this.portOut(from), this.portIn(to));
+  }
+
+  /** Silently persist the current canvas state (no toast, no name-validation). */
+  private persistEdits(): void {
+    const id = this.selectedGraphId();
+    if (!id || id === 'new') return;
+    const graph: OrchGraph = {
+      id,
+      name: this.graphName(),
+      nodes: this.graphNodes(),
+      edges: this.graphEdges(),
+      createdAt: this.selectedGraph()?.createdAt ?? new Date().toISOString(),
+    };
+    this.orchSvc.saveGraph(graph);
+  }
+
+  getEdgeMidpoint(edge: OrchEdge): { x: number; y: number } {
+    const from = this.graphNodes().find((n) => n.id === edge.fromId);
+    const to = this.graphNodes().find((n) => n.id === edge.toId);
+    if (!from || !to) return { x: 0, y: 0 };
+    const p0 = this.portOut(from);
+    const p3 = this.portIn(to);
+    return { x: (p0.x + p3.x) / 2, y: (p0.y + p3.y) / 2 };
+  }
+
+  removeEdge(id: string, event: Event): void {
+    event.stopPropagation();
+    this.graphEdges.update((es) => es.filter((e) => e.id !== id));
+    this.selectedEdgeId.set(null);
+    this.persistEdits();
   }
 
   getTempEdgePath(): string {
